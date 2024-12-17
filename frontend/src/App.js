@@ -1,20 +1,32 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-const url = "http://localhost:3001"
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './authentication';
+import ProtectedRoute from './ProtectedRoute';
+import AdminPage from './pages/AdminPage';
+import UserPage from './pages/Dashboard';
+import Unauthorized from './pages/Unauthorized';
+import Login from './pages/Login';
 
 function App() {
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    axios.get(`${url}`)
-      .then((res) => setMessage(res.data))
-      .catch((err) => console.error(err));
-  }, []);
-
   return (
-    <div>
-      <h1>{message || "Loading..."}</h1>
-    </div>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            <Route path="/admin" element={<AdminPage />} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
+            <Route path="/user" element={<Dashboard />} />
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
