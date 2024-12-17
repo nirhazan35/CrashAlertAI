@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './authentication';
 import ProtectedRoute from './ProtectedRoute';
 import AdminPage from './pages/AdminPage';
-import UserPage from './pages/Dashboard';
+import Dashboard from './pages/Dashboard';
 import Unauthorized from './pages/Unauthorized';
 import Login from './pages/Login';
 
@@ -22,7 +22,7 @@ function App() {
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
-            <Route path="/user" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Route>
         </Routes>
       </Router>
