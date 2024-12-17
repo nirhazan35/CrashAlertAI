@@ -22,7 +22,7 @@ function App() {
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/" element={<Dashboard />} />
           </Route>
         </Routes>
       </Router>
