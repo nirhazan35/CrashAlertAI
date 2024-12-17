@@ -1,15 +1,27 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const cors = require('cors');
 
 const app = express();
+app.use(express.json());
+app.use(cors());
+
 const port = 3001;
 
-app.use(cors());
-app.use(express.json());
+// Test login endpoint
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
 
-app.get('/', (req, res) => {
-    res.json('Test' );
+  // Testing authentication with jwt and roles
+  if (username === 'admin' && password === 'password') {
+    const token = jwt.sign({ role: 'admin' }, 'secretKey', { expiresIn: '1h' });
+    return res.json({ token });
+  }
+  if (username === 'user' && password === 'password') {
+    const token = jwt.sign({ role: 'user' }, 'secretKey', { expiresIn: '1h' });
+    return res.json({ token });
+  }
+  return res.status(401).json({ message: 'Invalid credentials' });
 });
-app.listen(port, () => {
-    console.log(`Backend server running at http://localhost:${port}`);
-});
+
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
