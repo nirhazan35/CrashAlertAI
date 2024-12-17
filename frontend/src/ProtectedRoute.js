@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './authentication';
 
+
 const ProtectedRoute = ({ allowedRoles }) => {
   const { user } = useAuth();
 
