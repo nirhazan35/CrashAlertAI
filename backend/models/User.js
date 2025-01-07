@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+const { Schema, model } = require("mongoose");
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
   username: {
     type: String,
     required: true,
@@ -19,13 +19,17 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['admin', 'user'],
     default: 'user',
+    required: true,
   },
   createdAt: {
     type: Date,
     default: Date.now,
   },
+  refreshToken: {
+    type: String,
+  },
 });
 
-const User = mongoose.model("User", userSchema);
+const User = model("User", userSchema);
 
 export default User;
