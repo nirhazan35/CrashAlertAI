@@ -1,7 +1,8 @@
-import mongoose from "mongoose";
+const { Schema, model } = require("mongoose");
+
 
 // Accident Detection Schema
-const accidentSchema = new mongoose.Schema({
+const accidentSchema = new Schema({
   cameraId: {
     type: String,
     required: true,
@@ -27,6 +28,6 @@ const accidentSchema = new mongoose.Schema({
   },
 });
 
-const Accident = mongoose.model("Accident", accidentSchema);
+const Accident = model("Accident", accidentSchema);
 
 export default Accident;
