@@ -4,7 +4,6 @@ const authLogsSchema = new Schema({
   username: {
     type: String,
     required: true,
-    unique: true,
   },
   type: {
     type: String,
@@ -13,7 +12,7 @@ const authLogsSchema = new Schema({
   },
   timeStamp: {
     type: Date,
-    required: true,
+    default: Date.now,
   },
   result: {
     type: String,
