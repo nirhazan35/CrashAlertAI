@@ -13,8 +13,12 @@ app.use(express.json());
 connectDB();
 
 // Routes
-app.use('/api/accidents', require('./routes/accidents'));
-app.use('/api/users', require('./routes/users'));
+// app.use('/api/accidents', require('./routes/accidents'));
+// //app.use('/api/users', require('./routes/users'));
+// app.use('/api/auth', require('./routes/auth'));
+app.use('/accidents', require('./routes/accidents'));
+//app.use('/api/users', require('./routes/users'));
+app.use('/auth', require('./routes/auth'));
 
 app.get('/', (req, res) => {
   res.send('CrashAlertAI Backend is running!');
