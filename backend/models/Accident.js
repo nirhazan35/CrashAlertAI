@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Accident Detection Schema
 const accidentSchema = new mongoose.Schema({
@@ -27,4 +27,6 @@ const accidentSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('Accident', accidentSchema);
+const Accident = mongoose.model("Accident", accidentSchema);
+
+export default Accident;
