@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
  * @param {Object} options - Additional options for token generation (expiry).
  * @returns {String} - The signed JWT.
  */
-const generateToken = (payload, secret=process.env.JWT_SECRET, options = {}) => {
+const generateToken = (payload, secret=process.env.JWT_SECRET, options = {expiresIn: '1h',}) => {
   return jwt.sign(payload, secret, options);
 };
 
