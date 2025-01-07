@@ -1,60 +1,71 @@
-const express = require('express');
-const router = express.Router();
-const { hash } = require("bcryptjs");
-const User = require('../models/User');
+const bcrypt = require("bcryptjs");
+const User = require("../models/User");
 
-
-// @route   POST /api/users
-// @desc    Register a new user
-router.post('/', async (req, res) => {
+// Register
+const register = async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
+
+    const salt = await bcrypt.genSalt();
+    const passwordHash = await bcrypt.hash(password, salt);
 
     const newUser = new User({
       username,
       email,
-      password,
+      password: passwordHash,
       role,
     });
+
+    // Check unique fields
+    if (await User.findOne({ username: newUser.username })) {
+      throw new Error(`Username already exists.`);
+    }
+    if (await User.findOne({ email: newUser.email })) {
+      throw new Error(`Email already exists.`);
+    }
 
     const savedUser = await newUser.save();
     res.status(201).json(savedUser);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create user' });
+    res.status(500).json({ error: "Failed to create user", message: error.message });
   }
-});
+};
 
-// @route   GET /api/users
-// @desc    Login a user
-router.post('/login', async (req, res) => {
+// Login
+const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ username });
     if (!user) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+      return res.status(400).json({ error: "Username does not exist." });
     }
 
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid password." });
     }
 
-    res.status(200).json({ message: 'Login successful' });
+    // Exclude password from response
+    const { password: _, ...userWithoutPassword } = user.toObject();
+    res.status(200).json({ message: "Login successful", user: userWithoutPassword });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to login user' });
+    res.status(500).json({ error: "Failed to login user", message: error.message });
   }
-});
+};
 
-// @route   GET /api/users
-// @desc    Fetch all users
-router.get('/', async (req, res) => {
+// Logout
+const logout = async (req, res) => {
   try {
-    const users = await User.find();
-    res.status(200).json(users);
+    res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch users' });
+    res.status(500).json({ error: error.message });
   }
-});
+};
 
-module.exports = router;
+// Export the handlers using module.exports
+module.exports = {
+  register,
+  login,
+  logout,
+};
