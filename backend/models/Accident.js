@@ -30,4 +30,4 @@ const accidentSchema = new Schema({
 
 const Accident = model("Accident", accidentSchema);
 
-export default Accident;
+module.exports = Accident;
