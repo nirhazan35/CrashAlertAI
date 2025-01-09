@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
 // Register
 const register = async (req, res) => {
@@ -45,10 +46,11 @@ const login = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ error: "Invalid password." });
     }
+    const token = jwt.sign( user.id, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Exclude password from response
-    const { password: _, ...userWithoutPassword } = user.toObject();
-    res.status(200).json({ message: "Login successful", user: userWithoutPassword });
+      // Store token in cookie
+    res.cookie('token', token, { httpOnly: true});
+    res.status(200).json({ message: 'Login successful' });
   } catch (error) {
     res.status(500).json({ error: "Failed to login user", message: error.message });
   }
@@ -57,6 +59,7 @@ const login = async (req, res) => {
 // Logout
 const logout = async (req, res) => {
   try {
+    res.clearCookie('token');
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
