@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Accident = require('../models/Accident');
 
+
 // @route   POST /api/accidents
 // @desc    Create a new accident log
 router.post('/', async (req, res) => {
