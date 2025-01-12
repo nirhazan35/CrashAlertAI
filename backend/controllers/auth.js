@@ -44,7 +44,6 @@ const login = async (req, res) => {
     result: "Failure", // Default to "Failure" and update later if successful
   });
 
-
   try {
     const { username, password } = req.body;
 

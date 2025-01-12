@@ -20,7 +20,7 @@ connectDB();
 // //app.use('/api/users', require('./routes/users'));
 // app.use('/api/auth', require('./routes/auth'));
 app.use('/accidents', require('./routes/accidents'));
-//app.use('/api/users', require('./routes/users'));
+app.use('/users', require('./routes/users'));
 app.use('/auth', require('./routes/auth'));
 
 app.get('/', (req, res) => {
