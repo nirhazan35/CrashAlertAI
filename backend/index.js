@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./src/db');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const port = 3001;
@@ -8,6 +9,8 @@ const port = 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
+
 
 // Connect to MongoDB
 connectDB();
