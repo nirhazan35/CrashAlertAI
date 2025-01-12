@@ -12,7 +12,7 @@ const authLogsSchema = new Schema({
   },
   timeStamp: {
     type: Date,
-    required: true,
+    default: Date.now,
   },
   result: {
     type: String,

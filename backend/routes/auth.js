@@ -3,6 +3,7 @@ const { register, login, logout  } = require ("../controllers/auth.js");
 const { verifyToken, hasPermission } = require("../middleware/auth");
 
 
+
 const router = express.Router();
 
 router.post("/register", verifyToken, hasPermission("admin"), register);
