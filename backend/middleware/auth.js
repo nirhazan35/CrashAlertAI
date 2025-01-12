@@ -19,8 +19,7 @@ const verifyToken = async (req, res, next) => {
 function hasPermission(roles) {
   return async (req, res, next) => {
     try{
-      const user = await User.findById(req.user.id).select('role');
-      const userRole = user.role;
+      const userRole = (await User.findById(req.user.id)).get('role');
       if (!userRole) {
         return res.status(400).json({ message: "Role not found for user" });
       }

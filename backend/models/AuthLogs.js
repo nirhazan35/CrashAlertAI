@@ -7,7 +7,7 @@ const authLogsSchema = new Schema({
   },
   type: {
     type: String,
-    enum: ['Login', 'Logout'],
+    enum: ['Login', 'Logout', 'Register'],
     required: true,
   },
   timeStamp: {
@@ -20,6 +20,20 @@ const authLogsSchema = new Schema({
     required: true,
   },
 });
+
+// Instance method to initialize and save a log
+authLogsSchema.methods.initializeAndSave = async function (username, type, result = 'Failure') {
+  this.username = username || 'Unknown';
+  this.type = type;
+  this.result = result;
+
+  return await this.save(); // Save the document to the database
+};
+
+authLogsSchema.methods.updateResult = async function (result) {
+  this.result = result;
+  return await this.save(); // Save the document to the database
+};
 
 const AuthLogs = model("AuthLogs", authLogsSchema);
 
