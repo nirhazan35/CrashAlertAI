@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const {getRole} = require("../controllers/users");
+const User = require("../models/User");
 
 const verifyToken = async (req, res, next) => {
   const token = req.cookies.token;
@@ -15,12 +17,21 @@ const verifyToken = async (req, res, next) => {
 }
 // Middleware to authorize roles
 function hasPermission(roles) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
+    try{
+      const user = await User.findById(req.user.id).select('role');
+      const userRole = user.role;
+      if (!userRole) {
+        return res.status(400).json({ message: "Role not found for user" });
+      }
     
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Access denied' });
+      if (!roles.includes(userRole)) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+      next();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get user role", message: error.message });
     }
-    next();
   };
 }
 
