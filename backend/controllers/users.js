@@ -30,9 +30,44 @@ const getRole = async (req, res) => {
   }
 };
 
+
+const deleteUser = async (req, res) => {
+  try{
+    const result = await User.findByIdAndDelete(req.user.id);
+    console.log('User deleted:', result);
+    } catch (error){
+    res.status(500).json({ error: "Failed to delete user", message: error.message });
+  }
+};
+
+const changePassword = async(req, res) => {
+  try {
+    const { id, newPassword } = req.body;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // Hash the new password
+    const salt = await bcrypt.genSalt();
+    const newHashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update the user's password
+    user.password = newHashedPassword;
+    await user.save();
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update password", message: error.message });
+  }
+};
+
+
+
 // Export the handlers using module.exports
 module.exports = {
     getUser,
     getRole,
+    deleteUser,
+    changePassword,
+    requestPasswordChange,
   };
   
