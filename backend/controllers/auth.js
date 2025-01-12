@@ -38,15 +38,6 @@ const register = async (req, res) => {
 
 // Login
 const login = async (req, res) => {
-
-  finally {
-
-    console.log("User created");
-  }
-};
-
-// Login
-const login = async (req, res) => {
   const authLog = new authLogs({
     username: req.body.username || "Unknown", // Use provided username or "Unknown" if undefined
     type: "Login",
@@ -60,7 +51,7 @@ const login = async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) {
 
-      await authLog.save(); // Log the failure
+       // Log the failure
 
       return res.status(400).json({ error: "Username does not exist." });
     }
@@ -69,45 +60,40 @@ const login = async (req, res) => {
     if (!isMatch) {
 
 
-      await authLog.save(); // Log the failure
+       // Log the failure
 
       return res.status(400).json({ error: "Invalid password." });
     }
-    const token = jwt.sign( user.id, process.env.JWT_SECRET, { expiresIn: '1h' });
-
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
       // Store token in cookie
     res.cookie('token', token, { httpOnly: true});
     res.status(200).json({ message: 'Login successful' });
-  } catch (error) {
-
     // Update authLog to success and save
     authLog.result = "Success";
-    await authLog.save();
+    
 
-    // Exclude password from response
-    const { password: _, ...userWithoutPassword } = user.toObject();
-    res.status(200).json({ message: "Login successful", user: userWithoutPassword });
   } catch (error) {
-    await authLog.save(); // Log the failure
-
+     // Log the failure
     res.status(500).json({ error: "Failed to login user", message: error.message });
+  }
+
+  finally {
+    await authLog.save();
   }
 };
 
 // Logout
 const logout = async (req, res) => {
 
-  try {
-    res.clearCookie('token');
-
   const authLog = new authLogs({
     username: req.body.username || "Unknown", // Use provided username or "Unknown" if undefined
     type: "Logout",
     result: "Failure", // Default to "Failure" and update later if successful
   });
-  try {
 
+  try {
+    res.clearCookie('token');
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });

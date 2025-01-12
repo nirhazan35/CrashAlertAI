@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+
 const verifyToken = async (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
@@ -15,6 +16,7 @@ const verifyToken = async (req, res, next) => {
 // Middleware to authorize roles
 function hasPermission(roles) {
   return (req, res, next) => {
+    
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({ message: 'Access denied' });
     }
