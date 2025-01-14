@@ -54,7 +54,7 @@ const login = async (req, res) => {
         }
         // Create Access Token
         const accessToken = jwt.sign(
-            { id: user.id },
+            { id: user.id, role: user.role },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '15m' }
         );
@@ -105,23 +105,31 @@ const refreshToken = async (req, res) => {
   try {
         // Check if the HTTP-only cookie exists
         const cookies = req.cookies;
-        if (!cookies?.jwt) {
+        if (!cookies?.token) {
             return res.status(401).json({ message: "Refresh Token not found" });
         }
-        const refreshToken = cookies.jwt;
+        const refreshToken = cookies.token;
         // Verify the Refresh Token
+        console.log("0");
+        console.log("refreshToken",refreshToken);
         const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        if (!decoded) {
+          console.log("Invalid or expired Refresh Token");
+            return res.status(403).json({ message: "Invalid or expired Refresh Token" });
+        }
+        console.log("1");
         // Find the user with the Refresh Token in the database
         const user = await User.findOne({ refreshToken });
+        console.log("2");
         if (!user) {
             return res.status(403).json({ message: "Unauthorized" });
         }
         // Generate a new Access Token
         const accessToken = jwt.sign(
-            { username: user.id },
-            process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: '15m' }
-        );
+          { id: user.id, role: user.role },
+          process.env.ACCESS_TOKEN_SECRET,
+          { expiresIn: '15m' }
+      );
         res.json({ accessToken });
     } catch (error) {
         res.status(403).json({ message: "Invalid or expired Refresh Token", error: error.message });
