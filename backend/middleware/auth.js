@@ -30,7 +30,7 @@ function hasPermission(roles) {
       }
       next();
     } catch (error) {
-      res.status(500).json({ error: "Failed to get user role", message: error.message });
+      res.status(500).json({ error: "Failed to authorize user", message: error.message });
     }
   };
 }

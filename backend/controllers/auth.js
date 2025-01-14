@@ -39,9 +39,9 @@ const register = async (req, res) => {
 
 // Login
 const login = async (req, res) => {
-  const authLog = new authLogs();
-  await authLog.initializeAndSave(req.user.username, "Login");
   const { username, password } = req.body;
+  const authLog = new authLogs();
+  await authLog.initializeAndSave(username, "Login");
     try {
         const user = await User.findOne({ username });
         if (!user) {
@@ -54,14 +54,14 @@ const login = async (req, res) => {
         }
         // Create Access Token
         const accessToken = jwt.sign(
-            { username: user.id },
+            { id: user.id },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '15m' }
         );
 
         // Create Refresh Token
         const refreshToken = jwt.sign(
-            { username: user.id },
+            { id: user.id },
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '1d' }
         );
