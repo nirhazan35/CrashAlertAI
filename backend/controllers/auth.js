@@ -1,6 +1,5 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
-
 const jwt = require("jsonwebtoken");
 const authLogs = require("../models/AuthLogs");
 
@@ -40,6 +39,8 @@ const register = async (req, res) => {
 
 // Login
 const login = async (req, res) => {
+  const authLog = new authLogs();
+  await authLog.initializeAndSave(req.user.username, "Login");
   const { username, password } = req.body;
     try {
         const user = await User.findOne({ username });
@@ -73,6 +74,7 @@ const login = async (req, res) => {
             sameSite: 'None',
             secure: true,
         });
+        await authLog.updateResult("Success");
         res.json({ accessToken });
     } catch (error) {
         res.status(500).json({ message: "Login failed", error: error.message });
