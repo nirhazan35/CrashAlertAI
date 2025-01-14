@@ -33,7 +33,6 @@ const Login = () => {
 
       setError(null);
 
-
       // Redirect to the dashboard
       navigate('/dashboard');
     } catch (err) {
