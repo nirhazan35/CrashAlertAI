@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
-// import Cookies from "js-cookie";
-// import { useAuth, AuthProvider } from '../authentication';
+import { useAuth } from '../authentication';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+  const { login } = useAuth()
 
   const navigate = useNavigate();
 
@@ -25,6 +25,7 @@ const Login = () => {
         body: JSON.stringify({ username, password }),
         credentials: "include",
       });
+      console.log("POST /auth/login", response.status);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -32,9 +33,11 @@ const Login = () => {
       }
 
       setError(null);
-
+      const data = await response.json();
+      const token = data.accessToken;
+      login(token);
       // Redirect to the dashboard
-      navigate('/dashboard');
+      navigate('/admin');
     } catch (err) {
       setError('Login failed. Please try again.');
     }
