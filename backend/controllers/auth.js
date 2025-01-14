@@ -40,55 +40,98 @@ const register = async (req, res) => {
 
 // Login
 const login = async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const authLog = new authLogs();
-    await authLog.initializeAndSave(username, "Login"); // Initialize and save the log
-    const user = await User.findOne({ username });
-    if (!user) {
+  const { username, password } = req.body;
+    try {
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(401).json({ message: "Invalid username or password" });
+        }
+        // Check if password matches
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid username or password" });
+        }
+        // Create Access Token
+        const accessToken = jwt.sign(
+            { username: user.id },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '15m' }
+        );
 
-       // Log the failure
-
-      return res.status(400).json({ error: "Username does not exist." });
+        // Create Refresh Token
+        const refreshToken = jwt.sign(
+            { username: user.id },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: '1d' }
+        );
+        // Save Refresh Token in the database
+        user.refreshToken = refreshToken;
+        await user.save();
+        // Set the Refresh Token in an HTTP-only cookie
+        res.cookie('jwt', refreshToken, {
+            httpOnly: true,
+            sameSite: 'None',
+            secure: true,
+        });
+        res.json({ accessToken });
+    } catch (error) {
+        res.status(500).json({ message: "Login failed", error: error.message });
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-
-
-       // Log the failure
-
-      return res.status(400).json({ error: "Invalid password." });
-    }
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    await authLog.updateResult("Success"); // Update the log result to "Success"
-    res.cookie('token', token, { httpOnly: true}); // Store token in cookie
-    res.status(200).json({ message: 'Login successful' });
-    
-
-  } catch (error) {
-     // Log the failure
-    res.status(500).json({ error: "Failed to login user", message: error.message });
-  }
 };
+
 
 // Logout
 const logout = async (req, res) => {
-
   const authLog = new authLogs();
-  await authLog.initializeAndSave(req.user.username, "Logout"); // Initialize and save the log
+  await authLog.initializeAndSave(req.user.username, "Logout");
   try {
-    res.clearCookie('token');
-    authLog.updateResult("Success"); // Update the log result to "Success"
+    const { id } = req.body;
+    // Clear the stored Refresh Token
+    const user = await User.findById(id);
+    if (user) {
+      user.refreshToken = null;
+      await user.save();
+    }
     res.status(200).json({ message: "Logged out successfully" });
+    await authLog.updateResult("Success");
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
+const refreshToken = async (req, res) => {
+  try {
+        // Check if the HTTP-only cookie exists
+        const cookies = req.cookies;
+        if (!cookies?.jwt) {
+            return res.status(401).json({ message: "Refresh Token not found" });
+        }
+        const refreshToken = cookies.jwt;
+        // Verify the Refresh Token
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        // Find the user with the Refresh Token in the database
+        const user = await User.findOne({ refreshToken });
+        if (!user) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        // Generate a new Access Token
+        const accessToken = jwt.sign(
+            { username: user.id },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '15m' }
+        );
+        res.json({ accessToken });
+    } catch (error) {
+        res.status(403).json({ message: "Invalid or expired Refresh Token", error: error.message });
+    }
+};
+
+
 
 // Export the handlers using module.exports
 module.exports = {
   register,
   login,
   logout,
+  refreshToken,
 };
