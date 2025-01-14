@@ -68,6 +68,5 @@ module.exports = {
     getRole,
     deleteUser,
     changePassword,
-    requestPasswordChange,
   };
   

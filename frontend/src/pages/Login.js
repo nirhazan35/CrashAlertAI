@@ -23,6 +23,7 @@ const Login = () => {
 
     try {
       // Simulating a login call with a mock token
+      console.log("trying login");
       const mockToken = 'mock-jwt-token'; // Replace with actual authentication logic
       login(mockToken);  // Assuming your login function accepts a token
       setError(null); // Reset error state

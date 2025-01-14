@@ -1,20 +1,21 @@
 const jwt = require("jsonwebtoken");
-const {getRole} = require("../controllers/users");
 const User = require("../models/User");
 
-const verifyToken = async (req, res, next) => {
-  const token = req.cookies.token;
-  if (!token) {
-    return res.status(401).json({ message: 'Authentication required' });
-  }
-  try {
-    const user = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = user; // Attach decoded user info to the request
-    next();
-  } catch (error) {
-    res.status(403).json({ message: 'Invalid token' });
-  }
-}
+const verifyToken = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    const token = authHeader.split(' ')[1];
+    try {
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        req.user = decoded; // Attach user info to the request
+        next();
+    } catch (error) {
+        res.status(403).json({ message: "Invalid or expired Access Token", error: error.message });
+    }
+};
+
 // Middleware to authorize roles
 function hasPermission(roles) {
   return async (req, res, next) => {
