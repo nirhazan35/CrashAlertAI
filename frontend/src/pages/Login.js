@@ -1,31 +1,38 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../authentication'; // Assuming you have AuthContext set up
 import './Login.css';
+// import Cookies from "js-cookie";
+// import { useAuth, AuthProvider } from '../authentication';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
 
-  const { login } = useAuth();
   const navigate = useNavigate();
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Simple validation
-    if (!username || !password) {
-      setError('Please enter both username and password');
-      return;
-    }
-
     try {
-      // Simulating a login call with a mock token
-      const mockToken = 'mock-jwt-token'; // Replace with actual authentication logic
-      login(mockToken);  // Assuming your login function accepts a token
-      setError(null); // Reset error state
+      // Call the login function from the AuthProvider
+      console.log("POST /auth/login", { username, password });
+
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.msg || "Login failed");
+      }
+
+      setError(null);
+
 
       // Redirect to the dashboard
       navigate('/dashboard');

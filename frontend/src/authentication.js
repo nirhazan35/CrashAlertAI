@@ -6,12 +6,15 @@ const AuthContext = createContext();
 
 // Export AuthProvider
 export const AuthProvider = ({ children }) => {
+  console.log("AuthProvider rendered"); // Debug log
+  console.log("AuthProvider", children);
   const [user, setUser] = useState({
     isLoggedIn: false,
     role: null,
   });
 
   const login = (token) => {
+    console.log("AuthProvider login", token);
     const decoded = jwtDecode(token);
     setUser({
       isLoggedIn: true,
