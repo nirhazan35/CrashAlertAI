@@ -7,7 +7,7 @@ const app = express();
 const port = 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: process.env.REACT_APP_URL_FRONTEND, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -16,9 +16,6 @@ app.use(cookieParser());
 connectDB();
 
 // Routes
-// app.use('/api/accidents', require('./routes/accidents'));
-// //app.use('/api/users', require('./routes/users'));
-// app.use('/api/auth', require('./routes/auth'));
 app.use('/accidents', require('./routes/accidents'));
 app.use('/users', require('./routes/users'));
 app.use('/auth', require('./routes/auth'));
