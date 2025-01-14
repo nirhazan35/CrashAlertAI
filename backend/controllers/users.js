@@ -12,7 +12,7 @@ const getUser = async (req, res) => {
 
     res.status(200).json({ role: userRole });
   } catch (error) {
-    res.status(500).json({ error: "Failed to get user role", message: error.message });
+    res.status(500).json({ error: "Failed to get user", message: error.message });
   }
 };
 
