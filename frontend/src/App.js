@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Cookies from "js-cookie";
 import { AuthProvider } from './authentication';
 import ProtectedRoute from './ProtectedRoute';
 import AdminPage from './pages/AdminPage';
@@ -23,6 +24,7 @@ function App() {
 
           <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Route>
         </Routes>
       </Router>
