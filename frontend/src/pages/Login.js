@@ -29,7 +29,9 @@ const Login = () => {
         throw new Error(response.data || "Login failed");
       }
       setError(null);
+      console.log("Response:", response.data);
       const token =  response.data.accessToken;
+      console.log("Token in login page:", token);
       login(token);
       // Redirect to the dashboard
       navigate('/admin');
