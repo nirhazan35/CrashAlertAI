@@ -54,7 +54,7 @@ const login = async (req, res) => {
         }
         // Create Access Token
         const accessToken = jwt.sign(
-            { id: user.id },
+            { id: user.id, role: user.role },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '15m' }
         );
@@ -75,7 +75,7 @@ const login = async (req, res) => {
             secure: true,
         });
         await authLog.updateResult("Success");
-        res.json({ accessToken });
+        res.status(200).json({ "accessToken" : accessToken });
     } catch (error) {
         res.status(500).json({ message: "Login failed", error: error.message });
     }
@@ -84,49 +84,57 @@ const login = async (req, res) => {
 
 // Logout
 const logout = async (req, res) => {
-  const authLog = new authLogs();
-  await authLog.initializeAndSave(req.user.username, "Logout");
   try {
-    const { id } = req.body;
-    // Clear the stored Refresh Token
-    const user = await User.findById(id);
-    if (user) {
-      user.refreshToken = null;
-      await user.save();
+    const cookies = req.cookies;
+    if (!cookies?.jwt) {
+      return res.status(204).send(); // No content
     }
+
+    const refreshToken = cookies.jwt;
+
+    // Find the user by refresh token and clear it
+    const user = await User.findOne({ refreshToken });
+    if (!user) {
+      res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+      return res.status(204).send(); // No content
+    }
+
+    user.refreshToken = null;
+    await user.save();
+
+    // Clear the refresh token cookie
+    res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
     res.status(200).json({ message: "Logged out successfully" });
-    await authLog.updateResult("Success");
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Logout failed", error: error.message });
   }
 };
 
 const refreshToken = async (req, res) => {
   try {
-        // Check if the HTTP-only cookie exists
-        const cookies = req.cookies;
-        if (!cookies?.jwt) {
-            return res.status(401).json({ message: "Refresh Token not found" });
-        }
-        const refreshToken = cookies.jwt;
-        // Verify the Refresh Token
-        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-        // Find the user with the Refresh Token in the database
-        const user = await User.findOne({ refreshToken });
-        if (!user) {
-            return res.status(403).json({ message: "Unauthorized" });
-        }
-        // Generate a new Access Token
-        const accessToken = jwt.sign(
-            { username: user.id },
-            process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: '15m' }
-        );
-        res.json({ accessToken });
-    } catch (error) {
-        res.status(403).json({ message: "Invalid or expired Refresh Token", error: error.message });
+    const cookies = req.cookies;
+    if (!cookies?.jwt) {
+      return res.status(401).json({ message: "Refresh Token not found" });
     }
+    const refreshToken = cookies.jwt;
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const user = await User.findOne({ refreshToken });
+    if (!user) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+    // Generate a new Access Token
+    const accessToken = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.json({ accessToken });
+  } catch (error) {
+    res.status(403).json({ message: "Invalid or expired Refresh Token", error: error.message });
+  }
 };
+
 
 
 
