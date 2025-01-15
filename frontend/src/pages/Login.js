@@ -11,25 +11,16 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user?.isLoggedIn) {
-      // If user is logged in, redirect to the dashboard using navigate
-      navigate('/admin');
-    }
-  }, [user, navigate]);
-
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Call the login function from the AuthProvider
-      const payload = { username, password };
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ username, password }),
         credentials: "include",
       });
       if (response.status !== 200) {
@@ -41,7 +32,7 @@ const Login = () => {
       const {accessToken} =  data;
       login(accessToken);
       // Redirect
-      navigate('/admin');
+      navigate('/dashboard');
     } catch (err) {
       setError('Login failed. Please try again.');
     }
@@ -52,7 +43,7 @@ const Login = () => {
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Username</label>  {}
+          <label>Username</label>  
           <input
             type="text"
             value={username}
