@@ -11,7 +11,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
     return <div>Loading...</div>; // You can replace this with a spinner or loading screen
   }
 
-  if (!user.isLoggedIn) {
+  if (!user?.isLoggedIn) {
     console.log("User is not logged in");
     return <Navigate to="/login" />; // Redirect to login if not logged in
   }

@@ -2,13 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./src/db');
 const cookieParser = require('cookie-parser');
+require('dotenv').config();
 
 const app = express();
 const port = 3001;
 
 // Middleware
 app.use(cors({
-  origin: process.env.REACT_APP_URL_FRONTEND, 
+  origin: process.env.REACT_APP_URL_FRONTEND,
   credentials: true,
   allowedHeaders: ['Authorization', 'Content-Type'], 
 }));
