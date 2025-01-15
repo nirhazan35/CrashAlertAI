@@ -40,7 +40,7 @@ const register = async (req, res) => {
 // Login
 const login = async (req, res) => {
   const authLog = new authLogs();
-  await authLog.initializeAndSave(req.user.username, "Login");
+  await authLog.initializeAndSave(req.username, "Login");
   const { username, password } = req.body;
     try {
         const user = await User.findOne({ username });
@@ -58,7 +58,6 @@ const login = async (req, res) => {
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '15m' }
         );
-
         // Create Refresh Token
         const refreshToken = jwt.sign(
             { username: user.id },
