@@ -7,6 +7,7 @@ const authLogs = require("../models/AuthLogs");
 // Register
 const register = async (req, res) => {
   try {
+    console.log("Registering user..."); 
     const adminUsername = (await User.findById( req.user.id )).get('username');
     const authLog = new authLogs();
     await authLog.initializeAndSave(adminUsername, "Register"); // Initialize and save the log
