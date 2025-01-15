@@ -1,68 +1,136 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import {jwtDecode} from 'jwt-decode';
+// import React, { createContext, useContext, useState, useEffect } from "react";
+// import {jwtDecode} from "jwt-decode";
 
-// Create AuthContext
+// const AuthContext = createContext();
+
+// export const AuthProvider = ({ children }) => {
+//   const [user, setUser] = useState({
+//     isLoggedIn: false,
+//     role: null,
+//     token: null,
+//   });
+
+//   const login = (accessToken) => {
+//     const decoded = jwtDecode(accessToken);
+//     setUser({
+//       isLoggedIn: true,
+//       role: decoded.role,
+//       token: accessToken,
+//     });
+//   };
+
+//   const logout = async () => {
+//     try {
+//       await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/logout`, {
+//         method: "POST",
+//         credentials: "include", // Include the refresh token cookie
+//       });
+//       setUser({ isLoggedIn: false, role: null, token: null });
+//     } catch (error) {
+//       console.error("Logout failed:", error.message);
+//     }
+//   };
+
+//   useEffect(() => {
+//     async function refreshAccessToken() {
+//       try {
+//         const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/authMe`, {
+//           method: "GET",
+//           credentials: "include", // Send HTTP-only refresh token cookie
+//         });
+
+//         if (response.ok) {
+//           const data = await response.json();
+//           const { accessToken } = data;
+//           const decoded = jwtDecode(accessToken);
+
+//           setUser({
+//             isLoggedIn: true,
+//             role: decoded.role,
+//             token: accessToken,
+//           });
+//         } else {
+//           console.error("Failed to refresh access token:", response.status);
+//           setUser({ isLoggedIn: false, role: null, token: null });
+//         }
+//       } catch (error) {
+//         console.error("Error during token refresh:", error.message);
+//         setUser({ isLoggedIn: false, role: null, token: null });
+//       }
+//     }
+
+//     refreshAccessToken();
+//   }, []); // Run on component mount
+
+//   return (
+//     <AuthContext.Provider value={{ user, login, logout }}>
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// };
+
+// export const useAuth = () => useContext(AuthContext);
+
+import React, { createContext, useContext, useState, useEffect } from "react";
+import {jwtDecode} from "jwt-decode";
+import api from "./api"; // Axios instance
+
 const AuthContext = createContext();
 
-// Export AuthProvider
 export const AuthProvider = ({ children }) => {
-  console.log("AuthProvider rendered"); // Debug log
-  console.log("AuthProvider", children);
   const [user, setUser] = useState({
     isLoggedIn: false,
     role: null,
     token: null,
   });
-
-  const login = (token) => {
-    console.log("AuthProvider login", token);
-    const decoded = jwtDecode(token);
-    console.log("AuthProvider login decoded", decoded);
-    setUser({
-      isLoggedIn: true,
-      role: decoded.role,
-      token: token,
-    });
-  };
+  const [loading, setLoading] = useState(true); // Track loading state
 
   useEffect(() => {
-    async function checkToken() {
-      console.log('Checking token...');
+    async function refreshAccessToken() {
       try {
-        const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/authMe`, {
-          method: 'GET',
-          credentials: 'include',
+        const response = await api.get("/auth/authMe");
+        const { accessToken } = response.data;
+
+        const decoded = jwtDecode(accessToken);
+        setUser({
+          isLoggedIn: true,
+          role: decoded.role,
+          token: accessToken,
         });
-        console.log('GET /auth/authMe', response.status);
-    
-        if (response.ok) {
-          const data = await response.json();
-          const { accessToken } = data;
-          console.log('New Access Token:', accessToken);
-          return accessToken;
-        } else {
-          console.error('Error refreshing token:', response.status);
-          const errorData = await response.json();
-          console.error('Error refreshing token:', errorData.message);
-          return null;
-        }
       } catch (error) {
-        console.error('Error refreshing token:', error.message);
-        return null;
+        console.error("Error during token refresh:", error.message);
+        setUser({ isLoggedIn: false, role: null, token: null });
+      } finally {
+        setLoading(false); // Ensure loading is set to false after refresh attempt
       }
     }
 
-    checkToken();
+    refreshAccessToken();
   }, []);
 
+  const login = (accessToken) => {
+    const decoded = jwtDecode(accessToken);
+    setUser({
+      isLoggedIn: true,
+      role: decoded.role,
+      token: accessToken,
+    });
+  };
+
+  const logout = async () => {
+    try {
+      await api.post("/auth/logout");
+      setUser({ isLoggedIn: false, role: null, token: null });
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Export useAuth hook
-export const useAuth = () => {
-  return useContext(AuthContext); // Make sure AuthContext is defined before this
-};
+export const useAuth = () => useContext(AuthContext);
