@@ -1,12 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-// import Cookies from "js-cookie";
-// import { AuthProvider } from './authentication';
 import ProtectedRoute from './ProtectedRoute';
 import AdminPage from './pages/AdminPage';
 import Dashboard from './pages/Dashboard';
 import Unauthorized from './pages/Unauthorized';
 import Login from './pages/Login';
+import {useAuth} from "./authentication";
+
 
 function App() {
   return (

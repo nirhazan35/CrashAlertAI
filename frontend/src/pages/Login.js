@@ -1,39 +1,46 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import './Login.css';
 import { useAuth } from '../authentication';
-import api from "../api";
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
-  const { login } = useAuth()
+  const { user, login } = useAuth();
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.isLoggedIn) {
+      // If user is logged in, redirect to the dashboard using navigate
+      navigate('/admin');
+    }
+  }, [user]);
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       // Call the login function from the AuthProvider
-      console.log("POST /auth/login", { username, password });
       const payload = { username, password };
-      const response = await api.post("/auth/login", payload);
-
-      console.log("POST /auth/login", response.status);
-
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        credentials: "include",
+      });
       if (response.status !== 200) {
         console.error("Login failed:", response.status);
-        throw new Error(response.data || "Login failed");
+        throw new Error("Login failed");
       }
       setError(null);
-      console.log("Response:", response.data);
-      const token =  response.data.accessToken;
-      console.log("Token in login page:", token);
-      login(token);
-      // Redirect to the dashboard
+      const data = await response.json();
+      const {accessToken} =  data;
+      login(accessToken);
+      // Redirect
       navigate('/admin');
     } catch (err) {
       setError('Login failed. Please try again.');
