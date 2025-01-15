@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 import { useAuth } from '../authentication';
+import api from "../api";
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -18,23 +19,17 @@ const Login = () => {
     try {
       // Call the login function from the AuthProvider
       console.log("POST /auth/login", { username, password });
+      const payload = { username, password };
+      const response = await api.post("/auth/login", payload);
 
-      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-        credentials: "include",
-      });
       console.log("POST /auth/login", response.status);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.msg || "Login failed");
+      if (response.status !== 200) {
+        console.error("Login failed:", response.status);
+        throw new Error(response.data || "Login failed");
       }
-
       setError(null);
-      const data = await response.json();
-      const token = data.accessToken;
+      const token =  response.data.accessToken;
       login(token);
       // Redirect to the dashboard
       navigate('/admin');
