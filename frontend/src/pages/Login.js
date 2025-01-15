@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import './Login.css';
-import { useAuth } from '../authentication';
+import { useAuth } from '../authentication/AuthProvider';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -16,7 +16,7 @@ const Login = () => {
       // If user is logged in, redirect to the dashboard using navigate
       navigate('/admin');
     }
-  }, [user]);
+  }, [user, navigate]);
 
   // Handle form submission
   const handleSubmit = async (e) => {
