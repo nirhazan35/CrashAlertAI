@@ -1,11 +1,10 @@
-import React, { createContext, useContext, useState, useLayoutEffect, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import {jwtDecode} from "jwt-decode";
 
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(); // Track token state
   const [loading, setLoading] = useState(true); // Track loading state
   const [user, setUser] = useState();
 
@@ -27,7 +26,6 @@ export const AuthProvider = ({ children }) => {
             role: decoded.role,
             token: accessToken,
           });
-          setToken(accessToken);
         } else {
           console.error("Failed to fetch access token:", response.status);
           setUser({ isLoggedIn: false, role: null, token: null });
@@ -49,7 +47,6 @@ export const AuthProvider = ({ children }) => {
       role: decoded.role,
       token: accessToken,
     });
-    setToken(accessToken);
   };
 
 
@@ -59,7 +56,11 @@ export const AuthProvider = ({ children }) => {
             method: "POST",
             credentials: "include", // Send HTTP-only refresh token cookie
           });
-       setUser({ isLoggedIn: false, role: null, token: null });
+        if (response.ok) {
+          setUser({ isLoggedIn: false, role: null, token: null });
+        } else {
+          console.error("Logout failed:", response.status);
+        }
      } catch (error) {
        console.error("Logout failed:", error.message);
      }
