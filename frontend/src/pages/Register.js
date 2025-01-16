@@ -3,7 +3,7 @@ import { useAuth } from "../authentication/AuthProvider";
 import "./Register.css";
 
 const Register = () => {
-    const { user } = useAuth();
+  const { user } = useAuth();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,8 +11,6 @@ const Register = () => {
   const [message, setMessage] = useState("");
 
   const handleRegister = async () => {
-    console.log("Registering...");
-    console.log("token", user.token);
     setMessage(""); // Clear any previous message
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/register`, {
@@ -24,8 +22,6 @@ const Register = () => {
         body: JSON.stringify({ username, email, password, role }),
         credentials: "include",
       });
-
-      console.log("response", response);
 
       if (response.ok) {
         setMessage("Registration successful!");
