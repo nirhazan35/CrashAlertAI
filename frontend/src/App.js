@@ -13,6 +13,7 @@ import StatisticsPage from "./pages/StatisticsPage";
 import AccidentHistoryPage from "./pages/AccidentHistoryPage";
 import LiveCameraPage from "./pages/LiveCameraPage";
 import ResetPassword from './pages/ResetPassword';
+import ForgotPassword from './pages/ForgotPassword';
 
 
 function App() {
@@ -39,6 +40,8 @@ function App() {
               <Route path="/statistics" element={<StatisticsPage />} />
               <Route path="/history" element={<AccidentHistoryPage />} />
               <Route path="/live" element={<LiveCameraPage />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              
             </Route>
           </Routes>
         </Router>

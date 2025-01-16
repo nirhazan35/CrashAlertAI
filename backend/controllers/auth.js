@@ -137,26 +137,7 @@ const refreshToken = async (req, res) => {
     res.status(403).json({ message: "Invalid or expired Refresh Token", error: error.message });
   }
 };
-
-// Reset Password
-const resetPassword = async (req, res) => {
-  try {
-    const { username, newPassword } = req.body;
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    const salt = await bcrypt.genSalt();
-    const passwordHash = await bcrypt.hash(newPassword, salt);
-
-    user.password = passwordHash;
-    console.log("user", user);
-    await user.save();
-    res.status(200).json({ message: "Password reset successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to reset password", error: error.message });
-  }
-};
+    
 
 
 // Export the handlers using module.exports
@@ -165,5 +146,4 @@ module.exports = {
   login,
   logout,
   refreshToken,
-  resetPassword
 };
