@@ -15,7 +15,7 @@ import LiveCameraPage from "./pages/LiveCameraPage";
 
 
 function App() {
-  const user = useAuth().user;
+  const { user } = useAuth(); 
   return (
         <Router>
           <Routes>

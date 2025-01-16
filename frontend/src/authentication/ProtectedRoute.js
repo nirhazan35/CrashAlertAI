@@ -8,7 +8,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
   // Wait until loading completes
   if (loading) {
     console.log("Loading...");
-    return <div>Loading...</div>; // You can replace this with a spinner or loading screen
+    return <div>Loading...</div>;
   }
 
   if (!user?.isLoggedIn) {
