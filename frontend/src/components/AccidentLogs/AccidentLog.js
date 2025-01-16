@@ -11,7 +11,7 @@ const AccidentLog = ({ logs, handleMarkAsHandled }) => {
   };
 
   // Handle double-click: execute the function
-  const handleRowDoubleClick = (index, log) => {
+  const handleRowDoubleClick = (index, log, e) => {
     console.log("Row double click", index);
   };
 
