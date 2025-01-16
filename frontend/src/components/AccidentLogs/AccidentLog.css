@@ -1,0 +1,51 @@
+.accident-log-container {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+.accident-log-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.accident-log-table th,
+.accident-log-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.accident-log-table th {
+  background-color: #f4f4f4;
+}
+
+.mark-as-handled {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.mark-as-handled:hover {
+  background-color: #0056b3;
+}
+
+/* Highlight row when clicked */
+.highlighted {
+  background-color: rgba(0, 123, 255, 0.1); /* Light blue highlight */
+}
+
+.accident-log-table tr {
+  cursor: pointer; /* Change cursor to indicate clickability */
+}
+
+.accident-log-table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}

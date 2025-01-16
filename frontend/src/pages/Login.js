@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import './Login.css';
 import { useAuth } from '../authentication/AuthProvider';
@@ -7,7 +7,7 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
-  const { user, login } = useAuth();
+  const { login } = useAuth();
 
   const navigate = useNavigate();
 
