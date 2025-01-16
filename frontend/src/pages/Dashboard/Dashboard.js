@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import DashboardLayout from './DashboardLayout.js';
 import AccidentLog from '../../components/AccidentLogs/AccidentLog.js';
-
+import Alert from '../../components/AccidentView/Alert'; // Import the Alert component
 
 const Dashboard = () => {
   const [accidentLogs, setAccidentLogs] = useState([
@@ -23,21 +23,34 @@ const Dashboard = () => {
     },
   ]);
 
+  const [selectedAlert, setSelectedAlert] = useState(null); // State to track the selected alert
+
   const handleMarkAsHandled = (index) => {
-    // Remove the log from the list
     const updatedLogs = accidentLogs.filter((_, i) => i !== index);
     setAccidentLogs(updatedLogs);
   };
 
+  const handleRowDoubleClick = (log) => {
+    setSelectedAlert(log); // Update the selected alert when an accident log is double-clicked
+  };
+
   return (
     <DashboardLayout>
-      <div className="dashboard-main-content">
-        <h2>Welcome to the Dashboard!</h2>
-        <p>This is the dashboard content area.</p>
-      </div>
-      <div className="dashboard-logs">
-        <h3>Accident Logs</h3>
-        <AccidentLog logs={accidentLogs} handleMarkAsHandled={handleMarkAsHandled} />
+      {/* The Alert component */}
+       <div className="alert-container">
+        <Alert alert={selectedAlert} />
+       </div>
+      {/* The Alert component will be displayed alongside the logs */}
+      <div className="dashboard-content-container">
+        {/* Accident Logs */}
+        <div className="dashboard-logs">
+          <h3>Accident Logs</h3>
+          <AccidentLog
+            logs={accidentLogs}
+            handleMarkAsHandled={handleMarkAsHandled}
+            handleDoubleClick={handleRowDoubleClick}
+          />
+        </div>
       </div>
     </DashboardLayout>
   );
