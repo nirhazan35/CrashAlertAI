@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import DashboardLayout from './DashboardLayout.js';
 import AccidentLog from '../../components/AccidentLogs/AccidentLog.js';
-import Alert from '../../components/AccidentView/Alert'; // Import the Alert component
+import Alert from '../../components/AccidentView/Alert';
 
 const Dashboard = () => {
   const [accidentLogs, setAccidentLogs] = useState([

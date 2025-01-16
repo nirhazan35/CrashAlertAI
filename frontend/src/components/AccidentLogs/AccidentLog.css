@@ -36,13 +36,13 @@
   background-color: #0056b3;
 }
 
-/* Highlight row when clicked */
+
 .highlighted {
-  background-color: rgba(0, 123, 255, 0.1); /* Light blue highlight */
+  background-color: rgba(0, 123, 255, 0.1);
 }
 
 .accident-log-table tr {
-  cursor: pointer; /* Change cursor to indicate clickability */
+  cursor: pointer;
 }
 
 .accident-log-table td {
