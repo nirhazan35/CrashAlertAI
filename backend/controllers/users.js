@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const authLogs = require("../models/AuthLogs");
+const { sendEmail } = require("../services/emailService");
 
 // get user
 const getUser = async (req, res) => {
@@ -60,7 +61,39 @@ const changePassword = async(req, res) => {
   }
 };
 
-
+// Request Password Change
+const requestPasswordChange = async (req, res) => {
+  try {
+    console.log("Requesting password change...");
+    const { username, email } = req.body;
+    console.log(username, email);
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.email !== email) {
+      return res.status(400).json({ message: "Invalid email" });
+    }
+    adminUsername = user.superior;
+    const adminUser = await User.findOne( {username: adminUsername} );
+    if (!adminUser) {
+      return res.status(404).json({ message: "Admin user not found" });
+    }
+    const adminEmail = adminUser.email;
+    console.log("adminEmail", adminEmail);  
+    // Send an email to the admin
+    const forgotPasswordEmail = {
+      to: adminEmail,
+      subject: "Password Reset Request",
+      text: `A password reset request has been made for the user: ${username}`,
+      html: `<p>A password reset request has been made for the user: ${username}</p>`,
+    };
+    await sendEmail(forgotPasswordEmail);
+    res.status(200).json({ message: "Password reset request sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to send password reset request", error: error.message });
+  }
+};
 
 // Export the handlers using module.exports
 module.exports = {
@@ -68,5 +101,6 @@ module.exports = {
     getRole,
     deleteUser,
     changePassword,
+    requestPasswordChange
   };
   
