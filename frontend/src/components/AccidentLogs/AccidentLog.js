@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './AccidentLog.css';
 
-const AccidentLog = ({ logs, handleMarkAsHandled }) => {
+const AccidentLog = ({ logs, handleMarkAsHandled, handleDoubleClick }) => {
   // Track the clicked row index
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
 
@@ -13,6 +13,7 @@ const AccidentLog = ({ logs, handleMarkAsHandled }) => {
   // Handle double-click: execute the function
   const handleRowDoubleClick = (index, log, e) => {
     console.log("Row double click", index);
+    handleDoubleClick(log);
   };
 
   return (

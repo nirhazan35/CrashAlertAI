@@ -1,0 +1,42 @@
+.dashboard-main-content {
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.alert-container p {
+  font-size: 1.2rem;
+  color: #333;
+  margin-top: 10px;
+}
+
+.alert-video {
+  width: 48%;
+  max-height: 100%;
+  object-fit: contain;
+  margin-right: 20px;
+}
+
+.alert-details {
+  width: 48%;
+  font-size: 1rem;
+  overflow-y: auto;
+}
+
+.dashboard-logs {
+  margin-top: 20px;
+  border-top: 2px solid #ddd;
+  padding-top: 20px;
+  overflow-y: auto;
+}
+
+.alert-container {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  max-width: 900px;
+  margin: 20px;
+  padding: 3px;
+  display: flex;
+  justify-content: flex-start;
+  overflow: hidden;
+}
