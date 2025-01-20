@@ -86,6 +86,8 @@ const login = async (req, res) => {
 
 // Logout
 const logout = async (req, res) => {
+  const authLog = new authLogs();
+  await authLog.initializeAndSave(username, "Logout");
   try {
     const cookies = req.cookies;
     if (!cookies?.jwt) {
@@ -106,6 +108,7 @@ const logout = async (req, res) => {
 
     // Clear the refresh token cookie
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+    await authLog.updateResult("Success");
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     res.status(500).json({ message: "Logout failed", error: error.message });
