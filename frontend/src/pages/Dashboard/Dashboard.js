@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import DashboardLayout from './DashboardLayout.js';
 import AccidentLog from '../../components/AccidentLogs/AccidentLog.js';
 import Alert from '../../components/AccidentView/Alert.js';
-import Logout from '../../components/Logout';
 
 const Dashboard = () => {
   const [accidentLogs, setAccidentLogs] = useState([
@@ -37,9 +36,6 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <h2>Welcome to the Dashboard!</h2>
-      <p>This is the dashboard content area.</p>
-      <Logout />
       {/* The Alert component */}
        <div className="alert-container">
         <Alert alert={selectedAlert} />
