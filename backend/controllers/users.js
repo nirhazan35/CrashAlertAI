@@ -99,12 +99,36 @@ const requestPasswordChange = async (req, res) => {
   }
 };
 
+const notifyPasswordChange = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    const data = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const { id } = data;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const email = user.email;
+    const emailData = {
+      to: email,
+      subject: "Password Change Notification",
+      text: `Your password has been changed successfully. your new password is: ${newPassword}`,
+      html: `<p>Your password has been changed successfully. your new password is: ${newPassword}</p>`,
+    };
+    await sendEmail(emailData);
+    res.status(200).json({ message: "Password change notification sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to send password change notification", error: error.message });
+  }
+};
+
 // Export the handlers using module.exports
 module.exports = {
     getUser,
     getRole,
     deleteUser,
     changePassword,
-    requestPasswordChange
+    requestPasswordChange,
+    notifyPasswordChange
   };
   
