@@ -7,7 +7,7 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
-  const { user, login } = useAuth();
+  const { login } = useAuth();
 
   const navigate = useNavigate();
 
