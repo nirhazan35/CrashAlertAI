@@ -20,6 +20,7 @@ const register = async (req, res) => {
       email,
       password: passwordHash,
       role,
+      superior: adminUsername
     });
 
     // Check unique fields
