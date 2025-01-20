@@ -25,13 +25,13 @@ function App() {
             <Route path="/login" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <Login />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="/logout" element={<Logout />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* Protected routes */}
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
@@ -40,7 +40,7 @@ function App() {
               <Route path="/statistics" element={<StatisticsPage />} />
               <Route path="/history" element={<AccidentHistoryPage />} />
               <Route path="/live" element={<LiveCameraPage />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+
               
             </Route>
           </Routes>

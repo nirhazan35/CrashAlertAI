@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import "./ForgotPassword.css";
-import { useAuth } from "../authentication/AuthProvider";
 
 const ForgotPassword = () => {
-    const { user } = useAuth();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -15,11 +13,10 @@ const ForgotPassword = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.token}`,
         },
         body: JSON.stringify({ username, email }),
-        credentials: "include",
       });
+      console.log("response", response);
 
       if (response.ok) {
         setMessage("An email has been sent to your admin for further instructions.");

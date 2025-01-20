@@ -1,30 +1,33 @@
 import React, { useState } from "react";
 import "./ResetPassword.css";
 import { useAuth } from "../authentication/AuthProvider";
+import { useSearchParams } from "react-router-dom";
 
 const ResetPassword = () => {
   const { user } = useAuth();
-  const [username, setUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [searchParams] = useSearchParams();
+
+  const token = searchParams.get('token');
 
   const handleResetPassword = async () => {
     setMessage(""); // Clear previous messages
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/reset-password`, {
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/users/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${user.token}`,
         },
-        body: JSON.stringify({ username, newPassword }),
-        credentials: "include",
+        body: JSON.stringify({ token, newPassword }),
       });
 
       if (response.ok) {
         setMessage("Password reset successfully!");
-        setUsername("");
         setNewPassword("");
+        setConfirmNewPassword("");
       } else {
         const errorData = await response.json();
         setMessage(`Failed to reset password: ${errorData.message}`);
@@ -46,22 +49,22 @@ const ResetPassword = () => {
         }}
       >
         <div>
-          <label htmlFor="username">Username</label>
-          <input
-            type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
-        <div>
           <label htmlFor="newPassword">New Password</label>
           <input
             type="password"
             id="newPassword"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="confirmNewPassword">Confirm New Password</label>
+          <input
+            type="password"
+            id="confirmNewPassword"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
             required
           />
         </div>
