@@ -11,7 +11,6 @@ const transporter = nodemailer.createTransport({
 
 // Function to send an email
 const sendEmail = async (data) => {
-    console.log("Sending email...");
   try {
     const mail = {
         from: `"CrashAlertAI" <${process.env.EMAIL_USER}>`, // Sender address
@@ -20,7 +19,6 @@ const sendEmail = async (data) => {
       text : data.text,
       html : data.html, 
     };
-    console.log(mail);
 
     // Send the email
     await transporter.sendMail(mail);
