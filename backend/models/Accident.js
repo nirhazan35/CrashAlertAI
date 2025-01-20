@@ -19,15 +19,15 @@ const accidentSchema = new Schema({
     enum: ['low', 'medium', 'high'],
     required: true,
   },
+  video: {
+    type: String, // Link to stored image/video of the detected event
+  },
   description: {
     type: String,
     default: null,
   },
-  video: {
-    type: String, // Link to stored image/video of the detected event
-  },
   assignedTo: {
-    userid: String,
+    type: String,
     default: null,
   },
   status: {

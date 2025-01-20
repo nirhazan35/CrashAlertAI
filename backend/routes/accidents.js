@@ -1,5 +1,4 @@
 const express = require('express');
-const router = express.Router();
 const { hash } = require("bcryptjs");
 const User = require('../models/Accident');
 const { get } = require('mongoose');
@@ -8,8 +7,8 @@ const { getRole, deleteUser, changePassword, requestPasswordChange } = require('
 
 const router = express.Router();
 
-router.get("/get-accidents" ,verifyToken, getAccidents);
-router.post("/handle-accident", verifyToken, hasPermission("admin"), changePassword);
+// router.get("/get-accidents" ,verifyToken, getAccidents);
+// router.post("/handle-accident", verifyToken, hasPermission("admin"), changePassword);
 
 
 

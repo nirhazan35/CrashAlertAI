@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './authentication/ProtectedRoute';
 import AdminPage from './pages/AdminPage/AdminPage';
@@ -14,37 +14,44 @@ import AccidentHistoryPage from "./pages/AccidentHistoryPage/AccidentHistoryPage
 import LiveCameraPage from "./pages/LiveCameraPage/LiveCameraPage";
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
-
+import { subscribeToAccidents } from './services/websocket';
 
 function App() {
   const { user } = useAuth(); 
+  const [accidents, setAccidents] = useState([]);
+
+  useEffect(() => {
+    subscribeToAccidents((accidentData) => {
+      setAccidents((prevAccidents) => [...prevAccidents, accidentData]);
+      console.log("New accident:", accidentData);
+    });
+  }, []);
+
   return (
-        <Router>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <Login />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            <Route path="/logout" element={<Logout />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
+    <Router>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/login" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
-            {/* Protected routes */}
-            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-              <Route path="/admin" element={<AdminPage />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-            </Route>
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+        </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/statistics" element={<StatisticsPage />} />
-              <Route path="/history" element={<AccidentHistoryPage />} />
-              <Route path="/live" element={<LiveCameraPage />} />
-
-              
-            </Route>
-          </Routes>
-        </Router>
+        <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard accidents={accidents} />} />
+          <Route path="/statistics" element={<StatisticsPage />} />
+          <Route path="/history" element={<AccidentHistoryPage />} />
+          <Route path="/live" element={<LiveCameraPage />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 

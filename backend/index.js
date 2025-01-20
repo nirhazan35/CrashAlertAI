@@ -2,10 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./src/db');
 const cookieParser = require('cookie-parser');
+const { socket } = require('./socket/initSocket');
 require('dotenv').config();
+
 
 const app = express();
 const port = 3001;
+const server = socket(app);
 
 // Middleware
 app.use(cors({
@@ -15,7 +18,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
-
 
 // Connect to MongoDB
 connectDB();
@@ -29,6 +31,7 @@ app.get('/', (req, res) => {
   res.send('CrashAlertAI Backend is running!');
 });
 
-app.listen(port, () => {
+// Start server
+server.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
