@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../authentication/AuthProvider";
+import { useAuth } from "../../authentication/AuthProvider";
 import "./Register.css";
 
 const Register = () => {
