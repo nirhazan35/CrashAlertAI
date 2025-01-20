@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, logout, refreshToken  } = require ("../controllers/auth.js");
+const { register, login, logout, refreshToken } = require ("../controllers/auth.js");
 const { verifyToken, hasPermission } = require("../middleware/auth");
 
 

@@ -7,7 +7,7 @@ const authLogs = require("../models/AuthLogs");
 // Register
 const register = async (req, res) => {
   try {
-    console.log("Registering user..."); 
+    console.log("Registering user...");
     const adminUsername = (await User.findById( req.user.id )).get('username');
     const authLog = new authLogs();
     await authLog.initializeAndSave(adminUsername, "Register"); // Initialize and save the log
@@ -20,7 +20,7 @@ const register = async (req, res) => {
       email,
       password: passwordHash,
       role,
-      superior: adminUsername
+      superior: adminUsername,
     });
 
     // Check unique fields
@@ -52,7 +52,7 @@ const login = async (req, res) => {
         // Check if password matches
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({ message: "Invalid username or password" });
+          return res.status(401).json({ message: "Invalid username or password" });
         }
         // Create Access Token
         const accessToken = jwt.sign(
@@ -93,14 +93,14 @@ const logout = async (req, res) => {
     }
 
     const refreshToken = cookies.jwt;
-
+    
     // Find the user by refresh token and clear it
     const user = await User.findOne({ refreshToken });
     if (!user) {
       res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
       return res.status(204).send(); // No content
     }
-
+    
     user.refreshToken = null;
     await user.save();
 
@@ -112,6 +112,7 @@ const logout = async (req, res) => {
   }
 };
 
+// Refresh Token
 const refreshToken = async (req, res) => {
   try {
     const cookies = req.cookies;
@@ -136,8 +137,7 @@ const refreshToken = async (req, res) => {
     res.status(403).json({ message: "Invalid or expired Refresh Token", error: error.message });
   }
 };
-
-
+    
 
 
 // Export the handlers using module.exports
