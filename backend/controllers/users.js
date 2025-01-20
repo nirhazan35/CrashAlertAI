@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const authLogs = require("../models/AuthLogs");
+const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../services/emailService");
 
 // get user
@@ -43,7 +44,9 @@ const deleteUser = async (req, res) => {
 
 const changePassword = async(req, res) => {
   try {
-    const { id, newPassword } = req.body;
+    const { token, newPassword } = req.body;
+    const data = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const { id } = data;
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -64,9 +67,7 @@ const changePassword = async(req, res) => {
 // Request Password Change
 const requestPasswordChange = async (req, res) => {
   try {
-    console.log("Requesting password change...");
     const { username, email } = req.body;
-    console.log(username, email);
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -79,14 +80,17 @@ const requestPasswordChange = async (req, res) => {
     if (!adminUser) {
       return res.status(404).json({ message: "Admin user not found" });
     }
+
     const adminEmail = adminUser.email;
-    console.log("adminEmail", adminEmail);  
+    const token = jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
+    const resetLink = `${process.env.REACT_APP_URL_FRONTEND}/reset-password?token=${token}`;
+
     // Send an email to the admin
     const forgotPasswordEmail = {
       to: adminEmail,
       subject: "Password Reset Request",
-      text: `A password reset request has been made for the user: ${username}`,
-      html: `<p>A password reset request has been made for the user: ${username}</p>`,
+      text: `A password reset request has been made for the user: ${username}, click the link below to reset the password: ${resetLink}`,
+      html: `<p>A password reset request has been made for the user: ${username}, click the link below to reset the password: <a href="${resetLink}">${resetLink}</a></p>`,
     };
     await sendEmail(forgotPasswordEmail);
     res.status(200).json({ message: "Password reset request sent successfully" });
