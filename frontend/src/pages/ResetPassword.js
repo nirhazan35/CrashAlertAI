@@ -14,6 +14,12 @@ const ResetPassword = () => {
 
   const handleResetPassword = async () => {
     setMessage(""); // Clear previous messages
+
+    if (newPassword !== confirmNewPassword) {
+      setMessage("Passwords do not match.");
+      return;
+    }
+
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/users/change-password`, {
         method: "POST",
@@ -41,7 +47,7 @@ const ResetPassword = () => {
   return (
     <div className="reset-password-container">
       <h2>Reset Password</h2>
-      {message && <p className="error-message">{message}</p>}
+      {message && <p className={`message ${message.includes("successfully") ? "success-message" : "error-message"}`}>{message}</p>}
       <form
         onSubmit={(e) => {
           e.preventDefault();
