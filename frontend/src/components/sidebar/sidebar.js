@@ -27,6 +27,9 @@ const Sidebar = () => {
             <Link to="/admin">Admin Page</Link>
           </li>
         )}
+        <li>
+          <Link to="/logout">Logout</Link>
+        </li>
       </ul>
     </div>
   );
