@@ -1,4 +1,4 @@
-import { useAuth } from "../authentication/AuthProvider";
+import { useAuth } from "../../authentication/AuthProvider";
 
 const Logout = async () => {
     const { logout } = useAuth();

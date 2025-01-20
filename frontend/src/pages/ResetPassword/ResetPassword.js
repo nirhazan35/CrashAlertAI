@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./ResetPassword.css";
 import { useAuth } from "../../authentication/AuthProvider";
 import { useSearchParams } from "react-router-dom";
+import notifyPasswordChange from "./NotifyUser";
 
 const ResetPassword = () => {
   const { user } = useAuth();
@@ -32,6 +33,7 @@ const ResetPassword = () => {
 
       if (response.ok) {
         setMessage("Password reset successfully!");
+        notifyPasswordChange(token, user, newPassword);
         setNewPassword("");
         setConfirmNewPassword("");
       } else {
@@ -43,6 +45,7 @@ const ResetPassword = () => {
       console.error("Error:", error);
     }
   };
+
 
   return (
     <div className="reset-password-container">
