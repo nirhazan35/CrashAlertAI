@@ -32,7 +32,12 @@ const userSchema = new Schema({
   refreshToken: {
     type: String,
   },
+  superior:{
+    type:String,
+    default: null,
+  }
 });
+
 
 const User = model("User", userSchema);
 
