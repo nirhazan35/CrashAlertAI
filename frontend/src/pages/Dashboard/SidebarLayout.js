@@ -1,7 +1,7 @@
 // DashboardLayout.js
 import React from 'react';
 import Sidebar from '../../components/sidebar/sidebar';
-import './DashboardLayout.css';
+import './SidebarLayout.css';
 
 const DashboardLayout = ({ children }) => {
   return (

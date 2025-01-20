@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./ResetPassword.css";
-import { useAuth } from "../authentication/AuthProvider";
+import { useAuth } from "../../authentication/AuthProvider";
 import { useSearchParams } from "react-router-dom";
 
 const ResetPassword = () => {

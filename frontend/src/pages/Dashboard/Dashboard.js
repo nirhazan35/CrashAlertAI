@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import DashboardLayout from './DashboardLayout.js';
+import DashboardLayout from './SidebarLayout.js';
 import AccidentLog from '../../components/AccidentLogs/AccidentLog.js';
 import Alert from '../../components/AccidentView/Alert.js';
 
