@@ -1,38 +1,18 @@
 const express = require('express');
+const { hash } = require("bcryptjs");
+const User = require('../models/Accident');
+const { get } = require('mongoose');
+const { verifyToken, hasPermission} = require('../middleware/auth');
+const { saveNewAccident, getActiveAccidents} = require('../controllers/accidents')
+
 const router = express.Router();
-const Accident = require('../models/Accident');
+
+router.get("/active-accidents" , saveNewAccident);
+router.post("/handle-accident", verifyToken, getActiveAccidents);
 
 
-// @route   POST /api/accidents
-// @desc    Create a new accident log
-router.post('/', async (req, res) => {
-  try {
-    const { cameraId, location, severity, description, imageUrl } = req.body;
-
-    const newAccident = new Accident({
-      cameraId,
-      location,
-      severity,
-      description,
-      imageUrl,
-    });
-
-    const savedAccident = await newAccident.save();
-    res.status(201).json(savedAccident);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to save accident data' });
-  }
-});
-
-// @route   GET /api/accidents
-// @desc    Fetch all accident logs
-router.get('/', async (req, res) => {
-  try {
-    const accidents = await Accident.find();
-    res.status(200).json(accidents);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch accident data' });
-  }
-});
 
 module.exports = router;
+
+
+

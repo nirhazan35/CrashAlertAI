@@ -35,7 +35,11 @@ const userSchema = new Schema({
   superior:{
     type:String,
     default: null,
-  }
+  },
+  assignedCameras:{
+    type: [String],
+    default: [],
+  },
 });
 
 
