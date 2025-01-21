@@ -1,6 +1,5 @@
 const { Schema, model } = require("mongoose");
 
-
 // Accident Detection Schema
 const accidentSchema = new Schema({
   cameraId: {
@@ -11,7 +10,7 @@ const accidentSchema = new Schema({
     type: String,
     required: true,
   },
-  detectedAt: {
+  date: {
     type: Date,
     default: Date.now,
   },
@@ -20,11 +19,21 @@ const accidentSchema = new Schema({
     enum: ['low', 'medium', 'high'],
     required: true,
   },
+  video: {
+    type: String, // Link to stored image/video of the detected event
+  },
   description: {
     type: String,
+    default: null,
   },
-  imageUrl: {
-    type: String, // Link to stored image/video of the detected event
+  assignedTo: {
+    type: String,
+    default: null,
+  },
+  status: {
+    type: String,
+    enum: ['active', 'assigned', 'handled'],
+    default: 'active',
   },
 });
 
