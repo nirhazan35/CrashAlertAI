@@ -1,20 +1,16 @@
 import React, { useState } from 'react';
 import './AccidentLog.css';
+import { useAccidentLogs } from '../../context/AccidentContext'; // Import the custom hook
 
-const AccidentLog = ({ logs, handleMarkAsHandled, handleDoubleClick }) => {
-  // Track the clicked row index
-  const [selectedRowIndex, setSelectedRowIndex] = useState(null);
+const AccidentLog = () => {
+  const { accidentLogs, handleMarkAsHandled, handleRowDoubleClick } = useAccidentLogs(); // Use context
+  const [selectedRowIndex, setSelectedRowIndex] = useState(null); // Track the clicked row index
 
   // Handle row click: highlight the clicked row
   const handleRowClick = (index) => {
     setSelectedRowIndex(index);
   };
 
-  // Handle double-click: execute the function
-  const handleRowDoubleClick = (index, log, e) => {
-    console.log("Row double click", index);
-    handleDoubleClick(log);
-  };
 
   return (
     <div className="accident-log-container">
@@ -31,12 +27,12 @@ const AccidentLog = ({ logs, handleMarkAsHandled, handleDoubleClick }) => {
           </tr>
         </thead>
         <tbody>
-          {logs.map((log, index) => (
+          {accidentLogs.map((log, index) => (
             <tr
               key={index}
               className={selectedRowIndex === index ? 'highlighted' : ''}
-              onClick={() => handleRowClick(index)}  // Highlight row on click
-              onDoubleClick={() => handleRowDoubleClick(index, log)}  // Trigger action on double click
+              onClick={() => handleRowClick(index)} // Highlight row on click
+              onDoubleClick={() => handleRowDoubleClick(index, log)} // Trigger action on double click
             >
               <td>
                 <a href={log.videoReference} target="_blank" rel="noopener noreferrer">
@@ -51,7 +47,7 @@ const AccidentLog = ({ logs, handleMarkAsHandled, handleDoubleClick }) => {
               <td>
                 <button
                   className="mark-as-handled"
-                  onClick={() => handleMarkAsHandled(index)}
+                  onClick={() => handleMarkAsHandled(index)} // Call context function
                 >
                   Mark as Handled
                 </button>
