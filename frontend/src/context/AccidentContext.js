@@ -15,7 +15,6 @@ const FetchAccidents = async (user) => {
               },
             });
             const data = await response.json();
-            console.log(data.data[0]);
         if (data.success) {
           return data.data;
         } else {
