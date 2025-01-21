@@ -1,20 +1,18 @@
-const bcrypt = require("bcryptjs");
 const Accident = require("../models/Accident");
-const authLogs = require("../models/AuthLogs");
-const jwt = require("jsonwebtoken");
-
 
 // Save Accident
-const saveNewAccident = async (req, res) => {
+const saveNewAccident = async (accident) => {
   try {
-    const { cameraId, location, date, severity, video } = req.body;
+    const { cameraId, location, date, severity, video } = accident;
+
     // Validate required fields
     if (!cameraId || !location || !severity) {
-      return res.status(400).json({
+      return {
         success: false,
         message: "cameraId, location, and severity are required.",
-      });
+      };
     }
+
     // Create a new Accident document
     const newAccident = new Accident({
       cameraId,
@@ -23,24 +21,28 @@ const saveNewAccident = async (req, res) => {
       severity,
       video,
     });
+
     // Save the new accident to the database
     const savedAccident = await newAccident.save();
-    // Respond with success and the saved accident data
-    res.status(201).json({
+
+    // Return success response with the saved accident
+    return {
       success: true,
       message: "New accident saved successfully.",
       data: savedAccident,
-    });
+    };
   } catch (error) {
     console.error("Error saving accident:", error);
-    // Respond with an error message
-    res.status(500).json({
+
+    // Return error response
+    return {
       success: false,
       message: "An error occurred while saving the accident.",
       error: error.message,
-    });
+    };
   }
 };
+
 
 const getActiveAccidents = async (req, res) => {
   try {
@@ -65,9 +67,27 @@ const getActiveAccidents = async (req, res) => {
   }
 };
 
+const changeAccidentStatus = async (req, res) => {
+  try {
+    const { id, status } = req.body;
+    if (status !== "active" || status !== "assigned" || status !== "handled") {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+    const updatedAccident = await Accident.findByIdAndUpdate(id, { status }, { new: true });
+    if (!updatedAccident) {
+      return res.status(404).json({ message: "Accident not found" });
+    }
+    res.status(200).json({ message: "Accident status updated successfully", data: updatedAccident });
+  } catch (error) {
+    console.error("Error updating accident status:", error);
+    res.status(500).json({ message: "An error occurred while updating accident status", error: error.message });
+  }
+};
+
 // Export the handlers using module.exports
 module.exports = {
     saveNewAccident,
-    getActiveAccidents
+    getActiveAccidents,
+    changeAccidentStatus,
   };
   
