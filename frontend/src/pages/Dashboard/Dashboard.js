@@ -4,21 +4,18 @@ import AccidentLog from '../../components/AccidentLogs/AccidentLog.js';
 import Alert from '../../components/AccidentView/Alert.js';
 import { subscribeToAccidents } from '../../services/websocket'; // WebSocket service
 
+
 const Dashboard = () => {
-
-  const [accidentLogs, setAccidentLogs] = useState([]); // State for accident logs
+  const [accidentLogs, setAccidentLogs] = useState(() => []); // State for accident logs
   const [selectedAlert, setSelectedAlert] = useState(null); // State to track the selected alert
+  console.log("test", accidentLogs);
 
-  // Subscribe to real-time alerts when the component mounts
   useEffect(() => {
     const handleNewAccident = (accident) => {
-      console.log("New accident:", accident);
-      // setAccidentLogs((prevLogs) => [accident, ...prevLogs]); // Add new accident to the top of the list
-      const prev = accidentLogs;
-      console.log("Previous logs:", prev);
-      const logs = [ ...prev, accident];
-      console.log("Updated logs:", logs);
-      setAccidentLogs(logs);
+      setAccidentLogs((prevAccidentLogs) => {
+        const updatedLogs = [accident, ...prevAccidentLogs];
+        return updatedLogs;
+      });
     };
 
     subscribeToAccidents(handleNewAccident);
