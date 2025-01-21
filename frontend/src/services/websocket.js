@@ -9,6 +9,7 @@ ws.onclose = onClose;
 ws.onerror = onError;
 
 export const subscribeToAccidents = (callback) => {
+  console.log("Subscribing to accidents frontend");
   ws.onmessage = (event) => {
     const accidentData = JSON.parse(event.data);
     callback(accidentData);
