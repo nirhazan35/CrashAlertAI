@@ -1,6 +1,6 @@
 const http = require('http');
 const WebSocket = require('ws');
-const { saveAccident } = require('../controllers/accidents');
+const { saveNewAccident } = require('../controllers/accidents');
 
 const socket = (app) => {
 
