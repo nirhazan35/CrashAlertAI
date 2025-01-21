@@ -47,7 +47,7 @@ const socket = (app) => {
         };
         const res = {
           status: (statusCode) => ({
-            json: (data) => console.log(`Response: ${statusCode}`, data),
+            json: (data) => console.log('broadcast accident'),
           }),
         };
         await saveNewAccident(req, res);

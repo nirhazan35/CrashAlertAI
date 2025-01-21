@@ -46,13 +46,13 @@ const getActiveAccidents = async (req, res) => {
   try {
     // Query the database to find accidents with status "active"
     const activeAccidents = await Accident.find({ status: "active" });
-
     // Send success response with the active accidents
     res.status(200).json({
       success: true,
       message: "Active accidents retrieved successfully.",
       data: activeAccidents,
     });
+
   } catch (error) {
     console.error("Error fetching active accidents:", error);
 
