@@ -1,16 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import { useAccidentLogs } from '../../context/AccidentContext';
+import React, { useState } from 'react';
+import { useAuth } from "../../authentication/AuthProvider";
 import './AccidentHistory.css'; 
 
 const AccidentHistory = () => {
-  const { accidentLogs } = useAccidentLogs(); // Use the context to get accident logs
+  const { user } = useAuth();
   const [handledAccidents, setHandledAccidents] = useState([]);
 
-  // Filter handled accidents whenever accidentLogs change
-  useEffect(() => {
-    const filteredAccidents = accidentLogs.filter(accident => accident.status === 'handled');
-    setHandledAccidents(filteredAccidents);
-  }, [accidentLogs]);
+  const getHandledAccidents = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/handled-accidents`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.token}`,
+        },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setHandledAccidents(data.data);
+      } else {
+        console.error("Error fetching handled accidents:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching handled accidents:", error);
+    }
+  };
+
+  getHandledAccidents();
+
+  
 
   return (
     <div className="accident-history">
@@ -19,7 +37,7 @@ const AccidentHistory = () => {
         <table className="accident-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>Camera ID</th>
               <th>Location</th>
               <th>Date</th>
               <th>Description</th>
@@ -29,10 +47,10 @@ const AccidentHistory = () => {
           <tbody>
             {handledAccidents.map((accident, index) => (
               <tr key={index}>
-                <td>{accident.id || 'N/A'}</td>
+                <td>{accident.cameraId || 'N/A'}</td>
                 <td>{accident.location || 'N/A'}</td>
-                <td>{accident.date || 'N/A'}</td>
-                <td>{accident.description || 'N/A'}</td>
+                <td>{accident.displayDate || 'N/A'}</td>
+                <td>{accident.description || 'No Description'}</td>
                 <td>{accident.severity || 'N/A'}</td>
               </tr>
             ))}

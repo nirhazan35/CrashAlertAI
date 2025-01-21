@@ -80,20 +80,33 @@ const changeAccidentStatus = async (req, res) => {
     if (!updatedAccident) {
        res.status(404).json({ message: "Accident not found" });
     }
-        console.log("3");
-
      res.status(200).json({ message: "Accident status updated successfully" });
   } catch (error) {
     console.error("Error updating accident status:", error);
     res.status(500).json({ message: "An error occurred while updating accident status" });
   }
-
 };
+
+// Function to get handled accident logs
+const getHandledAccidents = async (req, res) => {
+  try {
+    // Query the database for accidents with status 'handled'
+    const handledAccidents = await Accident.find({ status: 'handled' });
+
+    // Respond with the data
+    res.status(200).json({ success: true, data: handledAccidents });
+  } catch (error) {
+    console.error('Error fetching handled accidents:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 
 // Export the handlers using module.exports
 module.exports = {
     saveNewAccident,
     getActiveAccidents,
     changeAccidentStatus,
+    getHandledAccidents,
   };
   
