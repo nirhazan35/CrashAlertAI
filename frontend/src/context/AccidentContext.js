@@ -16,7 +16,6 @@ const fetchAccidents = async () => {
             });
             const data = await response.json();
         if (data.success) {
-          console.log("Fetched accidents date:", data.data[0].date);
           return data.data;
         } else {
           console.error("Error fetching accidents:", data.message);

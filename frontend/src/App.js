@@ -10,7 +10,7 @@ import Logout from './components/sidebar/logout';
 import { useAuth } from './authentication/AuthProvider';
 import { Navigate } from "react-router-dom";
 import StatisticsPage from "./pages/StatisticsPage/StatisticsPage";
-import AccidentHistoryPage from "./pages/AccidentHistoryPage/AccidentHistoryPage";
+import AccidentHistoryPage from "./pages/AccidentHistory/AccidentHistory";
 import LiveCameraPage from "./pages/LiveCameraPage/LiveCameraPage";
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
