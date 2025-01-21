@@ -73,18 +73,21 @@ const getActiveAccidents = async (req, res) => {
 const changeAccidentStatus = async (req, res) => {
   try {
     const { id, status } = req.body;
-    if (status !== "active" || status !== "assigned" || status !== "handled") {
-      return res.status(400).json({ message: "Invalid status value" });
+    if (status !== "active" && status !== "assigned" && status !== "handled") {
+      res.status(400).json({ message: "Invalid status value" });
     }
     const updatedAccident = await Accident.findByIdAndUpdate(id, { status }, { new: true });
     if (!updatedAccident) {
-      return res.status(404).json({ message: "Accident not found" });
+       res.status(404).json({ message: "Accident not found" });
     }
-    res.status(200).json({ message: "Accident status updated successfully", data: updatedAccident });
+        console.log("3");
+
+     res.status(200).json({ message: "Accident status updated successfully" });
   } catch (error) {
     console.error("Error updating accident status:", error);
-    res.status(500).json({ message: "An error occurred while updating accident status", error: error.message });
+    res.status(500).json({ message: "An error occurred while updating accident status" });
   }
+
 };
 
 // Export the handlers using module.exports
