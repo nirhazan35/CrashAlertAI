@@ -2,7 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./src/db');
 const cookieParser = require('cookie-parser');
-const { socket } = require('./socket/initSocket');
+const { socket } = require('./socket/websocket');
+const { startFakeAccidentSimulation } = require("./services/MLmodel");
 require('dotenv').config();
 
 
@@ -30,6 +31,8 @@ app.use('/auth', require('./routes/auth'));
 app.get('/', (req, res) => {
   res.send('CrashAlertAI Backend is running!');
 });
+
+startFakeAccidentSimulation();
 
 // Start server
 server.listen(port, () => {
