@@ -2,20 +2,21 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { subscribeToAccidents } from '../services/websocket'; // WebSocket service
 
 
+
 // Create context
 const AccidentLogsContext = createContext();
 // Init accidents
 const fetchAccidents = async () => {
       try {
-            const data = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/active-accidents`, {
+            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/active-accidents`, {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",
               },
             });
-            console.log("data", data.data);
+            const data = await response.json();
         if (data.success) {
-          return data.body;
+          return data.data;
         } else {
           console.error("Error fetching accidents:", data.message);
           return [];
