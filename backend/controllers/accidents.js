@@ -1,4 +1,5 @@
 const Accident = require("../models/Accident");
+const formatDate = require("../util/DateFormatting")
 
 // Save Accident
 const saveNewAccident = async (accident) => {
@@ -21,6 +22,8 @@ const saveNewAccident = async (accident) => {
       severity,
       video,
     });
+    
+    newAccident.displayDate = formatDate(newAccident.date);
 
     // Save the new accident to the database
     const savedAccident = await newAccident.save();

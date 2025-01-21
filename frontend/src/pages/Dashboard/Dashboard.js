@@ -15,6 +15,7 @@ const Dashboard = () => {
 
       {/* The Alert component will be displayed alongside the logs */}
       <div className="dashboard-content-container">
+        
         {/* Accident Logs */}
         <div className="dashboard-logs">
           <h3>Accident Logs</h3>

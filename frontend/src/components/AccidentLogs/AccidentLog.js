@@ -32,7 +32,7 @@ const AccidentLog = () => {
               key={index}
               className={selectedRowIndex === index ? 'highlighted' : ''}
               onClick={() => handleRowClick(index)} // Highlight row on click
-              onDoubleClick={() => handleRowDoubleClick(index, log)} // Trigger action on double click
+              onDoubleClick={() => handleRowDoubleClick(log)} // Trigger action on double click
             >
               <td>
                 <a href={log.videoReference} target="_blank" rel="noopener noreferrer">
