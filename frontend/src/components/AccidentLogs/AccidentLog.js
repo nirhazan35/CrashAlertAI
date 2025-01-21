@@ -11,6 +11,10 @@ const AccidentLog = () => {
     setSelectedRowIndex(index);
   };
 
+  const markAsAssigned = (index) => {
+    selectedRowIndex(index);
+  };
+
   return (
     <div className="accident-log-container">
       <table className="accident-log-table">
@@ -48,9 +52,9 @@ const AccidentLog = () => {
               <td>
                 <button
                   className="mark-as-handled"
-                  onClick={() => handleMarkAsHandled(index)} // Call context function
+                  onClick={() => markAsAssigned(index)} // Call context function
                 >
-                  Mark as Handled
+                  Assign To Me
                 </button>
               </td>
             </tr>

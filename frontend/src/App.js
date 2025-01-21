@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './authentication/ProtectedRoute';
 import AdminPage from './pages/AdminPage/AdminPage';
@@ -14,19 +14,10 @@ import AccidentHistoryPage from "./pages/AccidentHistory/AccidentHistory";
 import LiveCameraPage from "./pages/LiveCameraPage/LiveCameraPage";
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
-import { subscribeToAccidents } from './services/websocket';
 
 function App() {
   const { user } = useAuth(); 
-  const [accidents, setAccidents] = useState([]);
-
-  useEffect(() => {
-    subscribeToAccidents((accidentData) => {
-      console.log("Received accident data frontend:", accidentData);
-      setAccidents((prevAccidents) => [...prevAccidents, accidentData]);
-      console.log("New accident:", accidentData);
-    });
-  }, []);
+  const [accidents] = useState([]);
 
   return (
     <Router>
