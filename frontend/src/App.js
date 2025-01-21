@@ -22,6 +22,7 @@ function App() {
 
   useEffect(() => {
     subscribeToAccidents((accidentData) => {
+      console.log("Received accident data frontend:", accidentData);
       setAccidents((prevAccidents) => [...prevAccidents, accidentData]);
       console.log("New accident:", accidentData);
     });
