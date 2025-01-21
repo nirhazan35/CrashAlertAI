@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { subscribeToAccidents } from '../services/websocket'; // WebSocket service
 import { useAuth } from "../authentication/AuthProvider";
-
+import playBeep from "../util/generateSound";
 // Create context
 const AccidentLogsContext = createContext();
 // Init accidents
@@ -70,6 +70,7 @@ export const AccidentLogsProvider = ({ children }) => {
 
       // Handle new accidents from WebSocket
       const handleNewAccident = (accident) => {
+        playBeep();
         setAccidentLogs((prevAccidentLogs) => {
           const updatedLogs = [accident, ...prevAccidentLogs];
           return updatedLogs;
