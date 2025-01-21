@@ -1,0 +1,25 @@
+.accident-history {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .accident-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .accident-table th, .accident-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .accident-table th {
+    background-color: #f4f4f4;
+  }
+  
+  .accident-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
