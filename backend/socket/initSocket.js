@@ -29,18 +29,32 @@ const socket = (app) => {
     };
 
     // Simulated real-time alert for accidents (replace this with ML model integration)
-    setInterval(() => {
-        const fakeAccident = {
-            cameraId: `accident_${Math.floor(Math.random() * 1000)}`,
-            location: "Highway 1",
-            date: new Date().toISOString(),
-            severity: "high",
-            video: "fake-video-url",
+    setInterval(async () => {
+      const fakeAccident = {
+        cameraId: `accident_${Math.floor(Math.random() * 1000)}`,
+        location: "Highway 1",
+        date: new Date().toISOString(),
+        severity: "high",
+        video: "fake-video-url",
+      };
+      // Broadcast the fake accident to connected clients
+      broadcastAccident(fakeAccident);
+      // Save the fake accident using the saveNewAccident controller
+      try {
+        // Simulating the req and res objects for the controller
+        const req = {
+          body: fakeAccident,
         };
-        console.log("Broadcasting fake accident:", fakeAccident);
-        broadcastAccident(fakeAccident);
-        saveAccident(fakeAccident);
-        }, 10000); // Simulate every 15 seconds
+        const res = {
+          status: (statusCode) => ({
+            json: (data) => console.log(`Response: ${statusCode}`, data),
+          }),
+        };
+        await saveNewAccident(req, res);
+      } catch (error) {
+        console.error("Error saving fake accident:", error);
+      }
+    }, 10000); // Simulate every 10 seconds
 
     return server;
 }
