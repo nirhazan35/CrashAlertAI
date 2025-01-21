@@ -5,32 +5,69 @@ const jwt = require("jsonwebtoken");
 
 
 // Save Accident
-const saveAccident = async (accident) => {
-    try {
-      const { cameraId, location, date, severity, video } = accident;
-    //   const authLog = new authLogs();
-    //   await authLog.initializeAndSave(adminUsername, "Register"); // Initialize and save the log
-  
-      const newAccident = new Accident({
-        cameraId,
-        location,
-        date,
-        severity,
-        video,
+const saveNewAccident = async (req, res) => {
+  try {
+    const { cameraId, location, date, severity, video } = req.body;
+    // Validate required fields
+    if (!cameraId || !location || !severity) {
+      return res.status(400).json({
+        success: false,
+        message: "cameraId, location, and severity are required.",
       });
-      console.log("New Accident:", newAccident);
-  
-      const savedAccident = await newAccident.save();
-      console.log("Accident saved:", savedAccident);
-    //   await authLog.updateResult("Success"); // Update the log result to "Success"
-    return savedAccident;
-    } catch (error) {
-        return false;
     }
-  };
+    // Create a new Accident document
+    const newAccident = new Accident({
+      cameraId,
+      location,
+      date: date || new Date(), // Use provided date or default to current date
+      severity,
+      video,
+    });
+    // Save the new accident to the database
+    const savedAccident = await newAccident.save();
+    // Respond with success and the saved accident data
+    res.status(201).json({
+      success: true,
+      message: "New accident saved successfully.",
+      data: savedAccident,
+    });
+  } catch (error) {
+    console.error("Error saving accident:", error);
+    // Respond with an error message
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while saving the accident.",
+      error: error.message,
+    });
+  }
+};
+
+const getActiveAccidents = async (req, res) => {
+  try {
+    // Query the database to find accidents with status "active"
+    const activeAccidents = await Accident.find({ status: "active" });
+
+    // Send success response with the active accidents
+    res.status(200).json({
+      success: true,
+      message: "Active accidents retrieved successfully.",
+      data: activeAccidents,
+    });
+  } catch (error) {
+    console.error("Error fetching active accidents:", error);
+
+    // Send error response
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while retrieving active accidents.",
+      error: error.message,
+    });
+  }
+};
 
 // Export the handlers using module.exports
 module.exports = {
-    saveAccident,
+    saveNewAccident,
+    getActiveAccidents
   };
   
