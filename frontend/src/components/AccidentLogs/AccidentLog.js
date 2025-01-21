@@ -11,7 +11,6 @@ const AccidentLog = () => {
     setSelectedRowIndex(index);
   };
 
-
   return (
     <div className="accident-log-container">
       <table className="accident-log-table">
@@ -21,8 +20,9 @@ const AccidentLog = () => {
             <th>Location</th>
             <th>Date</th>
             <th>Severity</th>
-            <th>Vehicles Involved</th>
+            <th>Status</th>
             <th>Description</th>
+            <th>Assigned To</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -35,15 +35,16 @@ const AccidentLog = () => {
               onDoubleClick={() => handleRowDoubleClick(log)} // Trigger action on double click
             >
               <td>
-                <a href={log.videoReference} target="_blank" rel="noopener noreferrer">
+                <a href={log.video} target="_blank" rel="noopener noreferrer">
                   View Video
                 </a>
               </td>
-              <td>{log.Location}</td>
-              <td>{log.Date}</td>
-              <td>{log.Severity}</td>
-              <td>{log.VehiclesInvolved}</td>
-              <td>{log.Description}</td>
+              <td>{log.location}</td>
+              <td>{log.displayDate}</td>
+              <td>{log.severity}</td>
+              <td>{log.status}</td>
+              <td>{log.description}</td>
+              <td>{log.assignedTo}</td>
               <td>
                 <button
                   className="mark-as-handled"
