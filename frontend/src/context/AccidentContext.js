@@ -1,13 +1,13 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useAuth } from "../authentication/AuthProvider";
-import { onNewAccident, onAccidentUpdate } from "../services/socket"; // Import Socket.IO listeners
+import { onNewAccident, onAccidentUpdate } from "../services/socket";
 import playBeep from "../util/generateSound";
 
 const AccidentLogsContext = createContext();
 
 export const AccidentLogsProvider = ({ children }) => {
-  const [accidentLogs, setAccidentLogs] = useState([]); // State for accident logs
-  const [selectedAlert, setSelectedAlert] = useState(null); // State for selected alert
+  const [accidentLogs, setAccidentLogs] = useState([]);
+  const [selectedAlert, setSelectedAlert] = useState(null);
   const { user } = useAuth();
 
   // Fetch active accidents from the server
@@ -17,10 +17,9 @@ export const AccidentLogsProvider = ({ children }) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
       });
-
       const data = await response.json();
       if (data.success) {
         setAccidentLogs(data.data);
@@ -28,53 +27,46 @@ export const AccidentLogsProvider = ({ children }) => {
         console.error("Error fetching accidents:", data.message);
       }
     } catch (error) {
-      console.error("Error fetching accidents:", error);
+      console.error("Error fetching accidents:", error.message);
     }
   };
 
-  // Mark an accident as handled
-  const handleMarkAsHandled = async (index) => {
-    const { _id } = accidentLogs[index];
+  const handleAccidentStatusChange = async (id, status) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/mark-as-handled`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
-        body: JSON.stringify({ id: _id, status: "handled" }),
+        body: JSON.stringify({ id, status }),
       });
-
+  
       if (response.ok) {
         const updatedAccident = await response.json();
         setAccidentLogs((prevLogs) =>
           prevLogs.map((log) => (log._id === updatedAccident._id ? updatedAccident : log))
         );
       } else {
-        console.error("Failed to mark accident as handled");
+        console.error("Failed to update accident status");
       }
     } catch (error) {
-      console.error("Error handling accident:", error);
+      console.error("Error updating accident status:", error.message);
     }
   };
-
-  // Handle row double-click
-  const handleRowDoubleClick = (log) => {
-    setSelectedAlert(log);
-  };
+  
 
   useEffect(() => {
     if (user?.isLoggedIn) {
-      // Fetch active accidents on login
       fetchAccidents();
 
-      // Handle new accidents from Socket.IO
+      // Subscribe to new accidents
       onNewAccident((accident) => {
         playBeep();
         setAccidentLogs((prevLogs) => [accident, ...prevLogs]);
       });
 
-      // Handle updates to existing accidents from Socket.IO
+      // Subscribe to accident updates
       onAccidentUpdate((update) => {
         setAccidentLogs((prevLogs) =>
           prevLogs.map((log) => (log._id === update._id ? { ...log, ...update } : log))
@@ -89,8 +81,7 @@ export const AccidentLogsProvider = ({ children }) => {
         accidentLogs,
         selectedAlert,
         setSelectedAlert,
-        handleMarkAsHandled,
-        handleRowDoubleClick,
+        handleAccidentStatusChange,
       }}
     >
       {children}
