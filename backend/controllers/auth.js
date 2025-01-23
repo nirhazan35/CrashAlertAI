@@ -135,7 +135,7 @@ const refreshToken = async (req, res) => {
       { expiresIn: "15m" }
     );
 
-    res.json({ accessToken });
+    res.json({ accessToken, username: user.username });
   } catch (error) {
     res.status(403).json({ message: "Invalid or expired Refresh Token", error: error.message });
   }
