@@ -18,21 +18,22 @@ export const AuthProvider = ({ children }) => {
 
         if (response.ok) {
           const data = await response.json();
-          const { accessToken } = data;
+          const { accessToken, username } = data;
           const decoded = jwtDecode(accessToken);
           setUser({
             isLoggedIn: true,
             role: decoded.role,
             token: accessToken,
+            username: username,
           });
           connectSocket(accessToken); // Connect to socket after fetching token
         } else {
           console.error("Failed to fetch access token:", response.status);
-          setUser({ isLoggedIn: false, role: null, token: null });
+          setUser({ isLoggedIn: false, role: null, token: null, username: null });
         }
       } catch (error) {
         console.error("Error during token refresh:", error.message);
-        setUser({ isLoggedIn: false, role: null, token: null });
+        setUser({ isLoggedIn: false, role: null, token: null, username: null });
       } finally {
         setLoading(false); // Set loading to false
       }
@@ -47,6 +48,7 @@ export const AuthProvider = ({ children }) => {
       isLoggedIn: true,
       role: decoded.role,
       token: accessToken,
+      username: "",
     });
     connectSocket(accessToken); // Connect to Socket.IO server
   };
@@ -58,7 +60,7 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
       });
       if (response.ok) {
-        setUser({ isLoggedIn: false, role: null, token: null });
+        setUser({ isLoggedIn: false, role: null, token: null, username: null });
       } else {
         console.error("Logout failed:", response.status);
       }

@@ -31,7 +31,7 @@ export const AccidentLogsProvider = ({ children }) => {
     }
   };
 
-  const handleAccidentStatusChange = async (id, status) => {
+  const handleAccidentStatusChange = async (accident_id, status) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/mark-as-handled`, {
         method: "POST",
@@ -39,7 +39,7 @@ export const AccidentLogsProvider = ({ children }) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${user?.token}`,
         },
-        body: JSON.stringify({ id, status }),
+        body: JSON.stringify({ accident_id, status }),
       });
   
       if (response.ok) {

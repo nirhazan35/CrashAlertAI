@@ -1,6 +1,7 @@
 const Accident = require("../models/Accident");
 const formatDate = require("../util/DateFormatting")
 const { emitAccidentUpdate } = require("../services/socketService");
+const User = require("../models/User");
 
 // Save Accident
 const saveNewAccident = async (accident) => {
@@ -73,26 +74,24 @@ const getActiveAccidents = async (req, res) => {
 
 const changeAccidentStatus = async (req, res) => {
   try {
-    const { id, status } = req.body;
-    const assignedTo = status === "assigned" ? req.user.username : null;
+    const { accident_id, status } = req.body;
+    const username = (await User.findById(req.user.id)).get('username');
+    const assignedTo = status === "assigned" ? username : null;
 
     if (!["active", "assigned", "handled"].includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
     }
-
     const updatedAccident = await Accident.findByIdAndUpdate(
-      id,
+      accident_id,
       { status, assignedTo },
       { new: true }
     );
-
     if (!updatedAccident) {
       return res.status(404).json({ message: "Accident not found" });
     }
 
     // Notify clients
     emitAccidentUpdate(updatedAccident);
-
     res.status(200).json(updatedAccident);
   } catch (error) {
     console.error("Error updating accident status:", error);
