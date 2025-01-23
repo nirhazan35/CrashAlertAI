@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import {jwtDecode} from "jwt-decode";
+import { connectSocket } from "../services/socket";
 
 
 const AuthContext = createContext();
@@ -47,6 +48,8 @@ export const AuthProvider = ({ children }) => {
       role: decoded.role,
       token: accessToken,
     });
+    // Connect to Socket.IO server
+    connectSocket(accessToken);
   };
 
 

@@ -2,14 +2,18 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./src/db');
 const cookieParser = require('cookie-parser');
-const { socket } = require('./socket/websocket');
 const { startFakeAccidentSimulation } = require("./services/MLmodel");
+const http = require("http");
+const { initSocket } = require("./socket");
 require('dotenv').config();
-
 
 const app = express();
 const port = 3001;
-const server = socket(app);
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize Socket.IO
+initSocket(server);
 
 // Middleware
 app.use(cors({
