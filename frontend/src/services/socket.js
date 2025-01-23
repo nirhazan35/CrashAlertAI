@@ -21,13 +21,16 @@ export const connectSocket = (token) => {
   });
 };
 
+// Helper to ensure socket is initialized
+const ensureSocketInitialized = () => {
+  if (!socket) {
+    throw new Error("Socket not initialized. Call connectSocket first.");
+  }
+};
+
 // Listen for new accidents
 export const onNewAccident = (callback) => {
-  if (!socket) {
-    console.error("Socket not initialized. Call connectSocket first.");
-    return;
-  }
-
+  ensureSocketInitialized();
   socket.on("new_accident", (data) => {
     callback(data);
   });
@@ -35,11 +38,7 @@ export const onNewAccident = (callback) => {
 
 // Listen for accident updates
 export const onAccidentUpdate = (callback) => {
-  if (!socket) {
-    console.error("Socket not initialized. Call connectSocket first.");
-    return;
-  }
-
+  ensureSocketInitialized();
   socket.on("accident_update", (data) => {
     callback(data);
   });

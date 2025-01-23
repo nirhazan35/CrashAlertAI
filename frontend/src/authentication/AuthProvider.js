@@ -1,23 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { connectSocket } from "../services/socket";
-
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null); // User state
   const [loading, setLoading] = useState(true); // Track loading state
-  const [user, setUser] = useState();
-
 
   useEffect(() => {
-    async function fetchAccessToken() {
+    const fetchAccessToken = async () => {
       try {
         const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/authMe`, {
-            method: "GET",
-            credentials: "include",
-          });
-          
+          method: "GET",
+          credentials: "include",
+        });
+
         if (response.ok) {
           const data = await response.json();
           const { accessToken } = data;
@@ -27,6 +25,7 @@ export const AuthProvider = ({ children }) => {
             role: decoded.role,
             token: accessToken,
           });
+          connectSocket(accessToken); // Connect to socket after fetching token
         } else {
           console.error("Failed to fetch access token:", response.status);
           setUser({ isLoggedIn: false, role: null, token: null });
@@ -35,11 +34,12 @@ export const AuthProvider = ({ children }) => {
         console.error("Error during token refresh:", error.message);
         setUser({ isLoggedIn: false, role: null, token: null });
       } finally {
-        setLoading(false); // Set loading to false after fetching
+        setLoading(false); // Set loading to false
       }
-    }
+    };
+
     fetchAccessToken();
-  }, []); // Run on component mount
+  }, []);
 
   const login = (accessToken) => {
     const decoded = jwtDecode(accessToken);
@@ -48,25 +48,23 @@ export const AuthProvider = ({ children }) => {
       role: decoded.role,
       token: accessToken,
     });
-    // Connect to Socket.IO server
-    connectSocket(accessToken);
+    connectSocket(accessToken); // Connect to Socket.IO server
   };
 
-
   const logout = async () => {
-     try {
-       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/logout`, {
-            method: "POST",
-            credentials: "include", // Send HTTP-only refresh token cookie
-          });
-        if (response.ok) {
-          setUser({ isLoggedIn: false, role: null, token: null });
-        } else {
-          console.error("Logout failed:", response.status);
-        }
-     } catch (error) {
-       console.error("Logout failed:", error.message);
-     }
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (response.ok) {
+        setUser({ isLoggedIn: false, role: null, token: null });
+      } else {
+        console.error("Logout failed:", response.status);
+      }
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
   };
 
   return (
