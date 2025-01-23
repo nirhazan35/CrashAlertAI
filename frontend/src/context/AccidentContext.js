@@ -1,101 +1,87 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { subscribeToAccidents } from '../services/websocket'; // WebSocket service
+import React, { createContext, useState, useEffect, useContext } from "react";
 import { useAuth } from "../authentication/AuthProvider";
+import { onNewAccident, onAccidentUpdate } from "../services/socket"; // Import Socket.IO listeners
 import playBeep from "../util/generateSound";
-// Create context
+
 const AccidentLogsContext = createContext();
-// Init accidents
-const FetchAccidents = async (user) => {
-      try {
-            const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/active-accidents`, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${user.token}`,
-              },
-            });
-            const data = await response.json();
-        if (data.success) {
-          return data.data;
-        } else {
-          console.error("Error fetching accidents:", data.message);
-          return [];
-        }
-      } catch (error) {
-        console.error("Error fetching accidents:", error);
-      }
-    };
 
-const HandleSubmit = async (user, accident_id) => {
-  try {
-    // Prepare the request body and headers
-    const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/mark-as-handled`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.token}`,
-      },
-      body: JSON.stringify({
-        id: accident_id,
-        status: "handled", // Set the new status to "handled"
-      }),
-    });
-    const data = await response.json();
-    console.log(data.message);
-    if (response.ok) {
-      return true;
-    } else {
-      return false;
-    }
-  } catch (error) {
-    return false;
-  }
-};
-
-// Context provider
 export const AccidentLogsProvider = ({ children }) => {
   const [accidentLogs, setAccidentLogs] = useState([]); // State for accident logs
   const [selectedAlert, setSelectedAlert] = useState(null); // State for selected alert
   const { user } = useAuth();
-  // Fetch accidents on component mount and update state
-    useEffect(() => {
-      const loadAccidents = async () => {
-        const initialAccidents = await FetchAccidents(user);
-        if (initialAccidents)
-            setAccidentLogs(initialAccidents); // Set initial accidents into state
-      };
 
-      loadAccidents();
+  // Fetch active accidents from the server
+  const fetchAccidents = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/active-accidents`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
 
-      // Handle new accidents from WebSocket
-      const handleNewAccident = (accident) => {
-        playBeep();
-        setAccidentLogs((prevAccidentLogs) => {
-          const updatedLogs = [accident, ...prevAccidentLogs];
-          return updatedLogs;
-        });
-      };
-
-    subscribeToAccidents(handleNewAccident);
-
-    return () => {
-      console.log("Unsubscribed from accident updates");
-    };
-  }, [user]);
-
-  // Mark an accident as handled
-  const handleMarkAsHandled = (index) => {
-    const { _id } = accidentLogs[index];
-    if (HandleSubmit(user,  _id)){
-        setAccidentLogs((prevLogs) => prevLogs.filter((_, i) => i !== index));
+      const data = await response.json();
+      if (data.success) {
+        setAccidentLogs(data.data);
+      } else {
+        console.error("Error fetching accidents:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching accidents:", error);
     }
-    else console.log("Failed to delete the alert");
   };
 
-  // Handle double-click on a log
+  // Mark an accident as handled
+  const handleMarkAsHandled = async (index) => {
+    const { _id } = accidentLogs[index];
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/mark-as-handled`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ id: _id, status: "handled" }),
+      });
+
+      if (response.ok) {
+        const updatedAccident = await response.json();
+        setAccidentLogs((prevLogs) =>
+          prevLogs.map((log) => (log._id === updatedAccident._id ? updatedAccident : log))
+        );
+      } else {
+        console.error("Failed to mark accident as handled");
+      }
+    } catch (error) {
+      console.error("Error handling accident:", error);
+    }
+  };
+
+  // Handle row double-click
   const handleRowDoubleClick = (log) => {
     setSelectedAlert(log);
   };
+
+  useEffect(() => {
+    if (user?.isLoggedIn) {
+      // Fetch active accidents on login
+      fetchAccidents();
+
+      // Handle new accidents from Socket.IO
+      onNewAccident((accident) => {
+        playBeep();
+        setAccidentLogs((prevLogs) => [accident, ...prevLogs]);
+      });
+
+      // Handle updates to existing accidents from Socket.IO
+      onAccidentUpdate((update) => {
+        setAccidentLogs((prevLogs) =>
+          prevLogs.map((log) => (log._id === update._id ? { ...log, ...update } : log))
+        );
+      });
+    }
+  }, [user]);
 
   return (
     <AccidentLogsContext.Provider
@@ -112,5 +98,4 @@ export const AccidentLogsProvider = ({ children }) => {
   );
 };
 
-// Custom hook for using the context
 export const useAccidentLogs = () => useContext(AccidentLogsContext);

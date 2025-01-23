@@ -86,8 +86,8 @@ const login = async (req, res) => {
 
 // Logout
 const logout = async (req, res) => {
-  const authLog = new authLogs();
-  await authLog.initializeAndSave(username, "Logout");
+  // const authLog = new authLogs();
+  // await authLog.initializeAndSave( req.user.username, "Logout");
   try {
     const cookies = req.cookies;
     if (!cookies?.jwt) {
