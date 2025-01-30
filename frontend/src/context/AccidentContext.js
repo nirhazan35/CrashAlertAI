@@ -33,7 +33,7 @@ export const AccidentLogsProvider = ({ children }) => {
 
   const handleAccidentStatusChange = async (accident_id, status) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/mark-as-handled`, {
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/accident-status-update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

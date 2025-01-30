@@ -89,15 +89,18 @@ const logout = async (req, res) => {
   // const authLog = new authLogs();
   // await authLog.initializeAndSave( req.user.username, "Logout");
   try {
+    console.log("Logging out...");
     const cookies = req.cookies;
     if (!cookies?.jwt) {
       return res.status(204).send(); // No content
     }
-
+    console.log("Cookies:", cookies);
     const refreshToken = cookies.jwt;
-    
+
+    console.log("Refresh Token:", refreshToken);
     // Find the user by refresh token and clear it
     const user = await User.findOne({ refreshToken });
+    console.log("User:", user);
     if (!user) {
       res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
       return res.status(204).send(); // No content
@@ -105,6 +108,7 @@ const logout = async (req, res) => {
     
     user.refreshToken = null;
     await user.save();
+    console.log("User updated:", user);
 
     // Clear the refresh token cookie
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });

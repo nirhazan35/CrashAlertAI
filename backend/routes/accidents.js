@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get("/active-accidents" , verifyToken, getActiveAccidents);
 router.post("/handle-accident", verifyToken, saveNewAccident);
-router.post("/mark-as-handled", verifyToken, changeAccidentStatus)
+router.post("/accident-status-update", verifyToken, changeAccidentStatus)
 router.get("/handled-accidents", verifyToken, getHandledAccidents);
 
 
