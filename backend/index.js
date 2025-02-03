@@ -17,9 +17,11 @@ initSocket(server);
 
 // Middleware
 app.use(cors({
-  origin: process.env.REACT_APP_URL_FRONTEND,
+  origin: process.env.NODE_ENV === "production" 
+    ? process.env.REACT_APP_URL_FRONTEND_PROD 
+    : process.env.REACT_APP_URL_FRONTEND,
   credentials: true,
-  allowedHeaders: ['Authorization', 'Content-Type'], 
+  llowedHeaders: ['Authorization', 'Content-Type'],
 }));
 app.use(express.json());
 app.use(cookieParser());
