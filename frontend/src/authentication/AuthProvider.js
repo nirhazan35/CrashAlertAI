@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const fetchAccessToken = async () => {
       try {
+        setLoading(true);
         const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/authMe`, {
           method: "GET",
           credentials: "include",
@@ -50,6 +51,7 @@ export const AuthProvider = ({ children }) => {
       token: accessToken,
       username: decoded.username,
     });
+    connectSocket(accessToken);
   };
 
   const logout = async () => {
