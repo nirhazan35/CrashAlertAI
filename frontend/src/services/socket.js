@@ -32,7 +32,7 @@ const ensureSocketInitialized = () => {
 export const onNewAccident = (callback) => {
   ensureSocketInitialized();
   socket.on("new_accident", (data) => {
-    callback(data);
+    callback(data.data);
   });
 };
 

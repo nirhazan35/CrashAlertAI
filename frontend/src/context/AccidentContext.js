@@ -54,6 +54,11 @@ export const AccidentLogsProvider = ({ children }) => {
       console.error("Error updating accident status:", error.message);
     }
   };
+
+    // Handle double-click on a log
+    const handleRowDoubleClick = (log) => {
+      setSelectedAlert(log);
+    };
   
 
   useEffect(() => {
@@ -62,7 +67,8 @@ export const AccidentLogsProvider = ({ children }) => {
 
       // Subscribe to new accidents
       onNewAccident((accident) => {
-        playBeep();
+        // playBeep();
+        console.log("New accident received:", accident);
         setAccidentLogs((prevLogs) => [accident, ...prevLogs]);
       });
 
@@ -82,6 +88,7 @@ export const AccidentLogsProvider = ({ children }) => {
         selectedAlert,
         setSelectedAlert,
         handleAccidentStatusChange,
+        handleRowDoubleClick,
       }}
     >
       {children}

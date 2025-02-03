@@ -4,7 +4,7 @@ import { useAccidentLogs } from "../../context/AccidentContext"; // Import the c
 import { useAuth } from "../../authentication/AuthProvider"; // Import auth context
 
 const AccidentLog = () => {
-  const { accidentLogs, handleAccidentStatusChange } = useAccidentLogs(); // Use context
+  const { accidentLogs, handleAccidentStatusChange, handleRowDoubleClick } = useAccidentLogs(); // Use context
   const { user } = useAuth(); // Get the logged-in user info
   const [selectedRowIndex, setSelectedRowIndex] = useState(null); // Track the clicked row index
 
@@ -34,6 +34,7 @@ const AccidentLog = () => {
               key={index}
               className={selectedRowIndex === index ? "highlighted" : ""}
               onClick={() => handleRowClick(index)} // Highlight row on click
+              onDoubleClick={() => handleRowDoubleClick(log)} // Double click to view details
             >
               <td>
                 <a href={log.video} target="_blank" rel="noopener noreferrer">
