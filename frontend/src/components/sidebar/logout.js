@@ -1,13 +1,21 @@
 import { useAuth } from "../../authentication/AuthProvider";
 
-const Logout = async () => {
-    const { logout } = useAuth();
+const Logout = () => {
+  const { logout } = useAuth();
 
+  const handleLogout = async () => {
     try {
-        await logout();
+      await logout();
     } catch (error) {
-        console.error('Logout failed:', error.message);
+      console.error('Logout failed:', error.message);
     }
-    }
+  };
+
+  return (
+    <button onClick={handleLogout}>
+      Logout
+    </button>
+  );
+};
 
 export default Logout;

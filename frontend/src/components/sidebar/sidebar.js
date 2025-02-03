@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './sidebar.css';
-import {useAuth} from "../../authentication/AuthProvider";
+import { useAuth } from "../../authentication/AuthProvider";
+import Logout from './logout';
 
 const Sidebar = () => {
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   return (
     <div className="sidebar">
@@ -28,7 +29,7 @@ const Sidebar = () => {
           </li>
         )}
         <li>
-          <Link to="/logout">Logout</Link>
+        <Logout />
         </li>
       </ul>
     </div>

@@ -6,7 +6,6 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import Unauthorized from './pages/Unauthorized/Unauthorized';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
-import Logout from './components/sidebar/logout';
 import { useAuth } from './authentication/AuthProvider';
 import { Navigate } from "react-router-dom";
 import StatisticsPage from "./pages/StatisticsPage/StatisticsPage";
@@ -25,7 +24,6 @@ function App() {
         {/* Public routes */}
         <Route path="/login" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <Login />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
-        <Route path="/logout" element={<Logout />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Protected routes */}
