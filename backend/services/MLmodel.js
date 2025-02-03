@@ -23,7 +23,7 @@ const startFakeAccidentSimulation = () => {
     } catch (error) {
       console.error("Error during fake accident simulation:", error);
     }
-  }, 1000); // Simulate every 5 seconds
+  }, 3000); // Simulate every 5 seconds
 };
 
 module.exports = { startFakeAccidentSimulation };
