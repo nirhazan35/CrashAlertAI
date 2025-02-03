@@ -1,22 +1,22 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import {jwtDecode} from "jwt-decode";
-
+import { jwtDecode } from "jwt-decode";
+import { connectSocket } from "../services/socket";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null); // User state
   const [loading, setLoading] = useState(true); // Track loading state
-  const [user, setUser] = useState();
-
 
   useEffect(() => {
-    async function fetchAccessToken() {
+    const fetchAccessToken = async () => {
       try {
+        setLoading(true);
         const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/authMe`, {
-            method: "GET",
-            credentials: "include",
-          });
-          
+          method: "GET",
+          credentials: "include",
+        });
+
         if (response.ok) {
           const data = await response.json();
           const { accessToken } = data;
@@ -25,45 +25,53 @@ export const AuthProvider = ({ children }) => {
             isLoggedIn: true,
             role: decoded.role,
             token: accessToken,
+            username: decoded.username,
           });
+          connectSocket(accessToken); // Connect to socket after fetching token
         } else {
           console.error("Failed to fetch access token:", response.status);
-          setUser({ isLoggedIn: false, role: null, token: null });
+          setUser({ isLoggedIn: false, role: null, token: null, username: null });
         }
       } catch (error) {
         console.error("Error during token refresh:", error.message);
-        setUser({ isLoggedIn: false, role: null, token: null });
+        setUser({ isLoggedIn: false, role: null, token: null, username: null });
       } finally {
-        setLoading(false); // Set loading to false after fetching
+        setLoading(false); // Set loading to false
       }
-    }
-    fetchAccessToken();
-  }, []); // Run on component mount
+    };
 
-  const login = (accessToken) => {
+      fetchAccessToken();
+  }, []);
+
+  const login = async (accessToken) => {
     const decoded = jwtDecode(accessToken);
     setUser({
       isLoggedIn: true,
       role: decoded.role,
       token: accessToken,
+      username: decoded.username,
     });
+    connectSocket(accessToken);
   };
 
-
   const logout = async () => {
-     try {
-       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/logout`, {
-            method: "POST",
-            credentials: "include", // Send HTTP-only refresh token cookie
-          });
-        if (response.ok) {
-          setUser({ isLoggedIn: false, role: null, token: null });
-        } else {
-          console.error("Logout failed:", response.status);
-        }
-     } catch (error) {
-       console.error("Logout failed:", error.message);
-     }
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: user.username }),
+        credentials: "include",
+      });
+      if (response.ok) {
+        setUser({ isLoggedIn: false, role: null, token: null, username: null });
+      } else {
+        console.error("Logout failed:", response.status);
+      }
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
   };
 
   return (

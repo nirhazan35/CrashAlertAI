@@ -1,4 +1,4 @@
-const { broadcastAccident } = require("../socket/websocket");
+const { emitNewAccident } = require("./socketService");
 const { saveNewAccident } = require("../controllers/accidents");
 
 const startFakeAccidentSimulation = () => {
@@ -18,12 +18,12 @@ const startFakeAccidentSimulation = () => {
       // Save the fake accident using the saveNewAccident controller
       const savedAccident = await saveNewAccident(fakeAccident);
 
-      // Broadcast the fake accident to WebSocket clients
-      broadcastAccident(savedAccident.data);
+      // Emit the accident to clients
+    emitNewAccident(savedAccident);
     } catch (error) {
       console.error("Error during fake accident simulation:", error);
     }
-  }, 5000); // Simulate every 5 seconds
+  }, 3000); // Simulate every 5 seconds
 };
 
 module.exports = { startFakeAccidentSimulation };

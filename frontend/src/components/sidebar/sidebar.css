@@ -22,7 +22,19 @@
   margin: 10px 0;
 }
 
-.sidebar a {
+.sidebar-menu button {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  padding: 10px 15px;
+}
+
+.sidebar a, 
+.sidebar button {
   color: white;
   text-decoration: none;
   font-size: 16px;
@@ -32,10 +44,12 @@
   transition: background-color 0.3s ease;
 }
 
-.sidebar a.active {
+.sidebar a.active,
+.sidebar button.active {
   background-color: #3498db;
 }
 
-.sidebar a:hover {
+.sidebar a:hover,
+.sidebar button:hover {
   background-color: #2980b9;
 }

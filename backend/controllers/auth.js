@@ -2,12 +2,12 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const authLogs = require("../models/AuthLogs");
+const { use } = require("../routes/auth");
 
 
 // Register
 const register = async (req, res) => {
   try {
-    console.log("Registering user...");
     const adminUsername = (await User.findById( req.user.id )).get('username');
     const authLog = new authLogs();
     await authLog.initializeAndSave(adminUsername, "Register"); // Initialize and save the log
@@ -56,7 +56,7 @@ const login = async (req, res) => {
         }
         // Create Access Token
         const accessToken = jwt.sign(
-            { id: user.id, role: user.role },
+            { id: user.id, role: user.role, username: user.username },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '15m' }
         );
@@ -86,16 +86,16 @@ const login = async (req, res) => {
 
 // Logout
 const logout = async (req, res) => {
+  const { username } = req.body;
   const authLog = new authLogs();
-  await authLog.initializeAndSave(username, "Logout");
+  await authLog.initializeAndSave( username, "Logout");
   try {
     const cookies = req.cookies;
     if (!cookies?.jwt) {
       return res.status(204).send(); // No content
     }
-
     const refreshToken = cookies.jwt;
-    
+
     // Find the user by refresh token and clear it
     const user = await User.findOne({ refreshToken });
     if (!user) {
@@ -130,7 +130,7 @@ const refreshToken = async (req, res) => {
     }
     // Generate a new Access Token
     const accessToken = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user.id, role: user.role, username: user.username },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
     );

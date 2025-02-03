@@ -21,7 +21,7 @@ const Alert = ({ alert }) => {
     <div className="alert-container">
       <video className="alert-video" controls autoPlay>
         {/* If no video reference, leave the source empty for a black screen */}
-        <source src={video || ''} type="video/mp4" />
+        <source src={video || '1'} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 

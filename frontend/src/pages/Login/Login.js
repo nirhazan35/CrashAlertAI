@@ -30,7 +30,7 @@ const Login = () => {
       setError(null);
       const data = await response.json();
       const {accessToken} =  data;
-      login(accessToken);
+      await login(accessToken);
       // Redirect
       navigate('/dashboard');
     } catch (err) {
