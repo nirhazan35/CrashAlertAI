@@ -18,13 +18,13 @@ export const AuthProvider = ({ children }) => {
 
         if (response.ok) {
           const data = await response.json();
-          const { accessToken, username } = data;
+          const { accessToken } = data;
           const decoded = jwtDecode(accessToken);
           setUser({
             isLoggedIn: true,
             role: decoded.role,
             token: accessToken,
-            username: username,
+            username: decoded.username,
           });
           connectSocket(accessToken); // Connect to socket after fetching token
         } else {
@@ -39,24 +39,27 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    fetchAccessToken();
+      fetchAccessToken();
   }, []);
 
-  const login = (accessToken) => {
+  const login = async (accessToken) => {
     const decoded = jwtDecode(accessToken);
     setUser({
       isLoggedIn: true,
       role: decoded.role,
       token: accessToken,
-      username: "",
+      username: decoded.username,
     });
-    connectSocket(accessToken); // Connect to Socket.IO server
   };
 
   const logout = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/logout`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: user.username }),
         credentials: "include",
       });
       if (response.ok) {
