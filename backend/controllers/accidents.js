@@ -1,5 +1,7 @@
 const Accident = require("../models/Accident");
 const formatDate = require("../util/DateFormatting")
+const { emitAccidentUpdate } = require("../services/socketService");
+const User = require("../models/User");
 
 // Save Accident
 const saveNewAccident = async (accident) => {
@@ -50,7 +52,7 @@ const saveNewAccident = async (accident) => {
 const getActiveAccidents = async (req, res) => {
   try {
     // Query the database to find accidents with status "active"
-    const activeAccidents = await Accident.find({ status: "active" });
+    const activeAccidents = await Accident.find({ status: { $in: ["active", "assigned"] } });
 
     // Send success response with the active accidents
     res.status(200).json({
@@ -72,20 +74,32 @@ const getActiveAccidents = async (req, res) => {
 
 const changeAccidentStatus = async (req, res) => {
   try {
-    const { id, status } = req.body;
-    if (status !== "active" && status !== "assigned" && status !== "handled") {
-      res.status(400).json({ message: "Invalid status value" });
+    const { accident_id, status } = req.body;
+    const username = (await User.findById(req.user.id)).get('username');
+    const assignedTo = status === "assigned" ? username : null;
+
+    if (!["active", "assigned", "handled"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
     }
-    const updatedAccident = await Accident.findByIdAndUpdate(id, { status }, { new: true });
+    const updatedAccident = await Accident.findByIdAndUpdate(
+      accident_id,
+      { status, assignedTo },
+      { new: true }
+    );
     if (!updatedAccident) {
-       res.status(404).json({ message: "Accident not found" });
+      return res.status(404).json({ message: "Accident not found" });
     }
-     res.status(200).json({ message: "Accident status updated successfully" });
+
+    // Notify clients
+    emitAccidentUpdate(updatedAccident);
+    res.status(200).json(updatedAccident);
   } catch (error) {
     console.error("Error updating accident status:", error);
     res.status(500).json({ message: "An error occurred while updating accident status" });
   }
 };
+
+
 
 // Function to get handled accident logs
 const getHandledAccidents = async (req, res) => {
