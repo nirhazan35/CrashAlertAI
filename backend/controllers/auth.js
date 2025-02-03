@@ -2,12 +2,12 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const authLogs = require("../models/AuthLogs");
+const { use } = require("../routes/auth");
 
 
 // Register
 const register = async (req, res) => {
   try {
-    console.log("Registering user...");
     const adminUsername = (await User.findById( req.user.id )).get('username');
     const authLog = new authLogs();
     await authLog.initializeAndSave(adminUsername, "Register"); // Initialize and save the log
@@ -56,7 +56,7 @@ const login = async (req, res) => {
         }
         // Create Access Token
         const accessToken = jwt.sign(
-            { id: user.id, role: user.role },
+            { id: user.id, role: user.role, username: user.username },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: '15m' }
         );
@@ -86,21 +86,18 @@ const login = async (req, res) => {
 
 // Logout
 const logout = async (req, res) => {
-  // const authLog = new authLogs();
-  // await authLog.initializeAndSave( req.user.username, "Logout");
+  const { username } = req.body;
+  const authLog = new authLogs();
+  await authLog.initializeAndSave( username, "Logout");
   try {
-    console.log("Logging out...");
     const cookies = req.cookies;
     if (!cookies?.jwt) {
       return res.status(204).send(); // No content
     }
-    console.log("Cookies:", cookies);
     const refreshToken = cookies.jwt;
 
-    console.log("Refresh Token:", refreshToken);
     // Find the user by refresh token and clear it
     const user = await User.findOne({ refreshToken });
-    console.log("User:", user);
     if (!user) {
       res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
       return res.status(204).send(); // No content
@@ -108,7 +105,6 @@ const logout = async (req, res) => {
     
     user.refreshToken = null;
     await user.save();
-    console.log("User updated:", user);
 
     // Clear the refresh token cookie
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
@@ -134,12 +130,12 @@ const refreshToken = async (req, res) => {
     }
     // Generate a new Access Token
     const accessToken = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user.id, role: user.role, username: user.username },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
     );
 
-    res.json({ accessToken, username: user.username });
+    res.json({ accessToken });
   } catch (error) {
     res.status(403).json({ message: "Invalid or expired Refresh Token", error: error.message });
   }
