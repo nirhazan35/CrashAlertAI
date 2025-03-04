@@ -8,9 +8,9 @@ const startFakeAccidentSimulation = () => {
   setInterval(async () => {
     const fakeAccident = {
       cameraId: `accident_${Math.floor(Math.random() * 1000)}`,
-      location: "Highway 1",
+      location: "Israel",
       date: new Date().toISOString(),
-      severity: "high",
+      severity: "low",
       video: "fake-video-url",
     };
 
@@ -23,7 +23,7 @@ const startFakeAccidentSimulation = () => {
     } catch (error) {
       console.error("Error during fake accident simulation:", error);
     }
-  }, 3000); // Simulate every 5 seconds
+  }, 3000); // Simulate every 3 seconds
 };
 
 module.exports = { startFakeAccidentSimulation };
