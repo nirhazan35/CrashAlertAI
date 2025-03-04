@@ -4,12 +4,18 @@ const { saveNewAccident } = require("../controllers/accidents");
 const startFakeAccidentSimulation = () => {
   console.log("Starting fake accident simulation...");
   
+const oneDayInMs = 24 * 60 * 60 * 1000; // one day
+const twoDaysInMs = 2 * oneDayInMs; // two days
+const oneDayBefore = new Date(Date.now() - oneDayInMs);
+const twoDaysBefore = new Date(Date.now() - twoDaysInMs);
+
   // Simulated real-time alert for accidents (replace this with ML model integration)
   setInterval(async () => {
     const fakeAccident = {
       cameraId: `accident_${Math.floor(Math.random() * 1000)}`,
       location: "Highway 1",
-      date: new Date().toISOString(),
+      date: twoDaysBefore.toISOString(),
+      // date: new Date().toISOString(),
       severity: "high",
       video: "fake-video-url",
     };
@@ -23,7 +29,7 @@ const startFakeAccidentSimulation = () => {
     } catch (error) {
       console.error("Error during fake accident simulation:", error);
     }
-  }, 3000); // Simulate every 5 seconds
+  }, 3000); // Simulate every 3 seconds
 };
 
 module.exports = { startFakeAccidentSimulation };

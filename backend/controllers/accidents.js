@@ -1,5 +1,5 @@
 const Accident = require("../models/Accident");
-const formatDate = require("../util/DateFormatting")
+const formatDateTime = require("../util/DateFormatting");
 const { emitAccidentUpdate } = require("../services/socketService");
 const {clients } = require("../socket/index")
 const User = require("../models/User");
@@ -25,8 +25,11 @@ const saveNewAccident = async (accident) => {
       severity,
       video,
     });
-    
-    newAccident.displayDate = formatDate(newAccident.date);
+
+    // Format and split date into displayDate and displayTime
+    const { displayDate, displayTime } = formatDateTime(newAccident.date);
+    newAccident.displayDate = displayDate;
+    newAccident.displayTime = displayTime;
 
     // Save the new accident to the database
     const savedAccident = await newAccident.save();
@@ -50,16 +53,14 @@ const saveNewAccident = async (accident) => {
 };
 
 
-
 const getActiveAccidents = async (req, res) => {
   try {
-    // Query the database to find accidents with status "active"
+    // Query the database to find accidents with status "active" or "assigned"
     const activeAccidents = await Accident.find({ status: { $in: ["active", "assigned"] } });
 
     // Filter accidents to only include those with cameras assigned to the user
     const filteredAccidents = filterAccidentsByUser(req.user, activeAccidents);
 
-    // Send success response with the active accidents
     res.status(200).json({
       success: true,
       message: "Active accidents retrieved successfully.",
@@ -68,7 +69,6 @@ const getActiveAccidents = async (req, res) => {
   } catch (error) {
     console.error("Error fetching active accidents:", error);
 
-    // Send error response
     res.status(500).json({
       success: false,
       message: "An error occurred while retrieving active accidents.",
@@ -103,13 +103,11 @@ const changeAccidentStatus = async (req, res) => {
   }
 };
 
-
-
-// Function to get handled accident logs
 const getHandledAccidents = async (req, res) => {
   try {
     // Query the database for accidents with status 'handled'
     const handledAccidents = await Accident.find({ status: 'handled' });
+
     // Respond with the data
     res.status(200).json({ success: true, data: handledAccidents });
   } catch (error) {
@@ -129,12 +127,9 @@ const filterAccidentsByUser = (user, accidents) => {
   return accidents.filter(accident => assignedCameraIds.includes(accident.cameraId.toString()));
 };
 
-
-// Export the handlers using module.exports
 module.exports = {
-    saveNewAccident,
-    getActiveAccidents,
-    changeAccidentStatus,
-    getHandledAccidents,
-  };
-  
+  saveNewAccident,
+  getActiveAccidents,
+  changeAccidentStatus,
+  getHandledAccidents,
+};

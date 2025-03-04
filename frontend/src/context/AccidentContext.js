@@ -67,7 +67,7 @@ export const AccidentLogsProvider = ({ children }) => {
 
       // Subscribe to new accidents
       onNewAccident((accident) => {
-        playBeep();
+        // playBeep();
         console.log("New accident received:", accident);
         setAccidentLogs((prevLogs) => [accident, ...prevLogs]);
       });
