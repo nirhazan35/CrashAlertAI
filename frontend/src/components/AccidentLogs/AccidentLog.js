@@ -29,10 +29,13 @@ const AccidentLog = () => {
           </tr>
         </thead>
         <tbody>
-          {accidentLogs.map((log, index) => (
+          {accidentLogs
+           .slice() // Avoid mutating the original array
+           .sort((a, b) => new Date(b.displayDate) - new Date(a.displayDate)) // sorting from new to old
+           .map((log, index) => (
             <tr
               key={index}
-              className={selectedRowIndex === index ? "highlighted" : ""}
+              className={`${selectedRowIndex === index ? "highlighted" : ""} ${log.status}`}
               onClick={() => handleRowClick(index)} // Highlight row on click
               onDoubleClick={() => handleRowDoubleClick(log)} // Double click to view details
             >
@@ -49,12 +52,12 @@ const AccidentLog = () => {
               <td>{log.assignedTo || "N/A"}</td>
               <td>
                 {log.status === "assigned" && log.assignedTo !== user?.username ? (
-                  <button className="mark-as-handled" disabled>
+                  <button className="assigned" disabled>
                     Assigned to {log.assignedTo}
                   </button>
-                ) : (
+                ) :  log.status !== "handled" && (
                   <button
-                    className="mark-as-handled"
+                    className="assign"
                     onClick={() =>
                       handleAccidentStatusChange(
                         log._id,
@@ -63,10 +66,23 @@ const AccidentLog = () => {
                     }
                   >
                     {log.status === "assigned" && log.assignedTo === user?.username
-                      ? "Unassign Accident"
-                      : "Assign to Me"}
+                      ? "Unassign"
+                      : "Assign"}
                   </button>
                 )}
+                {log.status === "assigned" && log.assignedTo === user?.username &&
+                <button
+                    className="mark-as-handled"
+                    onClick={() =>
+                        handleAccidentStatusChange(
+                            log._id,
+                            "handled"
+                        )
+                    }
+                >
+                  Mark as handled
+                </button>
+                }
               </td>
             </tr>
           ))}
