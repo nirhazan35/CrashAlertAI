@@ -1,6 +1,7 @@
 const Accident = require("../models/Accident");
 const formatDate = require("../util/DateFormatting")
 const { emitAccidentUpdate } = require("../services/socketService");
+const {clients } = require("../socket/index")
 const User = require("../models/User");
 
 // Save Accident
@@ -49,10 +50,14 @@ const saveNewAccident = async (accident) => {
 };
 
 
+
 const getActiveAccidents = async (req, res) => {
   try {
     // Query the database to find accidents with status "active"
     const activeAccidents = await Accident.find({ status: { $in: ["active", "assigned"] } });
+
+    // Filter accidents to only include those with cameras assigned to the user
+    const filteredAccidents = filterAccidentsByUser(req.user, activeAccidents);
 
     // Send success response with the active accidents
     res.status(200).json({
@@ -89,7 +94,6 @@ const changeAccidentStatus = async (req, res) => {
     if (!updatedAccident) {
       return res.status(404).json({ message: "Accident not found" });
     }
-
     // Notify clients
     emitAccidentUpdate(updatedAccident);
     res.status(200).json(updatedAccident);
@@ -106,13 +110,23 @@ const getHandledAccidents = async (req, res) => {
   try {
     // Query the database for accidents with status 'handled'
     const handledAccidents = await Accident.find({ status: 'handled' });
-
     // Respond with the data
     res.status(200).json({ success: true, data: handledAccidents });
   } catch (error) {
     console.error('Error fetching handled accidents:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
+};
+
+const filterAccidentsByUser = (user, accidents) => {
+  if (!user || !user.assignedCameras) {
+    console.warn("User or assignedCameras not found.");
+    return [];
+  }
+
+  const assignedCameraIds = user.assignedCameras.map(cam => cam.toString()); // Convert to strings for comparison
+
+  return accidents.filter(accident => assignedCameraIds.includes(accident.cameraId.toString()));
 };
 
 
