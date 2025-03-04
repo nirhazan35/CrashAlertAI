@@ -18,6 +18,10 @@ const accidentSchema = new Schema({
     type: String,
     default: null,
   },
+  displayTime: {
+    type: String,
+    default: null,
+  },
   severity: {
     type: String,
     enum: ['low', 'medium', 'high'],

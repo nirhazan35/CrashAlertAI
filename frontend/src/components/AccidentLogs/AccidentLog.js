@@ -1,38 +1,71 @@
+// frontend/src/components/AccidentLogs/AccidentLog.js
 import React, { useState } from "react";
 import "./AccidentLog.css";
-import { useAccidentLogs } from "../../context/AccidentContext"; // Use context for accident logs
-import { useAuth } from "../../authentication/AuthProvider"; // Get logged-in user info
+import { useAccidentLogs } from "../../context/AccidentContext";
+import { useAuth } from "../../authentication/AuthProvider";
+
+// Generate time options for each hour (e.g., 00:00, 01:00, ... 23:00)
+const timeOptions = Array.from({ length: 24 }, (_, i) => {
+  const hour = i.toString().padStart(2, "0");
+  return `${hour}:00`;
+});
 
 const AccidentLog = () => {
   const { accidentLogs, handleAccidentStatusChange, handleRowDoubleClick } = useAccidentLogs();
   const { user } = useAuth();
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
 
-  // Filter states
+  // Filter state including new time filters
   const [filters, setFilters] = useState({
     cameraId: "",
     location: "",
     date: "",
     severity: "",
+    startTime: "",
+    endTime: "",
   });
 
-  // Update filter state when an input changes
+  // Handler for filter changes
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Filter accident logs based on filter criteria
+  // Clear all filters
+  const handleClearFilters = () => {
+    setFilters({
+      cameraId: "",
+      location: "",
+      date: "",
+      severity: "",
+      startTime: "",
+      endTime: "",
+    });
+  };
+
+  // Filter accident logs based on the filter criteria
   const filteredLogs = accidentLogs.filter((log) => {
-    return (
-      (filters.cameraId === "" || log.cameraId.toLowerCase() === filters.cameraId.toLowerCase()) &&
-      (filters.location === "" || log.location.toLowerCase() === filters.location.toLowerCase()) &&
-      (filters.date === "" || (log.displayDate && log.displayDate.includes(filters.date))) &&
-      (filters.severity === "" || log.severity.toLowerCase() === filters.severity.toLowerCase())
-    );
+    const matchesCameraId =
+      filters.cameraId === "" || log.cameraId.toLowerCase() === filters.cameraId.toLowerCase();
+    const matchesLocation =
+      filters.location === "" || log.location.toLowerCase() === filters.location.toLowerCase();
+    const matchesDate =
+      filters.date === "" ||
+      (log.displayDate &&
+        log.displayDate === new Date(filters.date).toLocaleDateString("en-GB"));
+    const matchesSeverity =
+      filters.severity === "" || log.severity.toLowerCase() === filters.severity.toLowerCase();
+    // Time filter: check if log.displayTime is within the selected range (if provided)
+    let matchesTime = true;
+    if (filters.startTime) {
+      matchesTime = matchesTime && (log.displayTime >= filters.startTime + ":00");
+    }
+    if (filters.endTime) {
+      matchesTime = matchesTime && (log.displayTime <= filters.endTime + ":00");
+    }
+    return matchesCameraId && matchesLocation && matchesDate && matchesSeverity && matchesTime;
   });
 
-  // Handle row click: highlight the clicked row
   const handleRowClick = (index) => {
     setSelectedRowIndex(index);
   };
@@ -67,6 +100,27 @@ const AccidentLog = () => {
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
+
+        {/* Time filters as dropdowns */}
+        <select name="startTime" value={filters.startTime} onChange={handleFilterChange}>
+          <option value="">From Time</option>
+          {timeOptions.map((time) => (
+            <option key={`start-${time}`} value={time}>
+              {time}
+            </option>
+          ))}
+        </select>
+
+        <select name="endTime" value={filters.endTime} onChange={handleFilterChange}>
+          <option value="">To Time</option>
+          {timeOptions.map((time) => (
+            <option key={`end-${time}`} value={time}>
+              {time}
+            </option>
+          ))}
+        </select>
+
+        <button onClick={handleClearFilters}>Clear Filters</button>
       </div>
 
       <div className="accident-log-container">
@@ -76,6 +130,7 @@ const AccidentLog = () => {
               <th>Video</th>
               <th>Location</th>
               <th>Date</th>
+              <th>Time</th>
               <th>Severity</th>
               <th>Description</th>
               <th>Action</th>
@@ -83,8 +138,8 @@ const AccidentLog = () => {
           </thead>
           <tbody>
             {filteredLogs
-              .slice() // Avoid mutating the original array
-              .sort((a, b) => new Date(b.displayDate) - new Date(a.displayDate)) // Sorting from new to old
+              .slice()
+              .sort((a, b) => new Date(a.date) - new Date(b.date))
               .map((log, index) => (
                 <tr
                   key={index}
@@ -99,6 +154,7 @@ const AccidentLog = () => {
                   </td>
                   <td>{log.location}</td>
                   <td>{log.displayDate}</td>
+                  <td>{log.displayTime}</td>
                   <td>{log.severity}</td>
                   <td>{log.description}</td>
                   <td>
