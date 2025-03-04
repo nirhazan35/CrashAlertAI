@@ -23,8 +23,50 @@
   background-color: #f4f4f4;
 }
 
-.mark-as-handled {
+.active {
+  background-color: transparent;
+  animation: flicker 0.8s infinite alternate;
+}
+
+/* Flickering Effect */
+@keyframes flicker {
+  0% {
+    background-color: rgba(255, 0, 0, 1); /* Bright Red */
+  }
+  25% {
+    background-color: rgba(255, 0, 0, 0.7); /* Faded Red */
+  }
+  50% {
+    background-color: rgba(255, 0, 0, 0.3); /* Faded Red */
+  }
+  75% {
+    background-color: rgba(255, 0, 0, 0.7); /* Faded Red */
+  }
+  100% {
+    background-color: rgba(255, 0, 0, 1); /* Bright Red */
+  }
+}
+
+
+.assign {
   background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+.assign:hover {
+  background-color: #555555;
+}
+
+
+
+
+.mark-as-handled {
+  background-color: #e74c3c;
   color: white;
   border: none;
   padding: 5px 10px;
@@ -33,7 +75,7 @@
 }
 
 .mark-as-handled:hover {
-  background-color: #0056b3;
+  background-color: #ff0000;
 }
 
 
