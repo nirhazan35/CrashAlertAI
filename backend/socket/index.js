@@ -2,6 +2,7 @@ const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 
 let io; // Exported for use in other files
+const clients = {}
 
 // Initialize Socket.IO
 const initSocket = (server) => {
@@ -22,6 +23,7 @@ const initSocket = (server) => {
     try {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       socket.user = decoded; // Attach user data to socket
+      clients[socket.user.id] = socket
       next();
     } catch (err) {
       next(new Error("Authentication error: Invalid token"));
@@ -30,10 +32,10 @@ const initSocket = (server) => {
 
   // Define connection event
   io.on("connection", (socket) => {
-    console.log(`User connected: ${socket.user.id}`);
+    console.log(`User connected: ${socket.user.username}`);
 
     socket.on("disconnect", () => {
-      console.log(`User disconnected: ${socket.user.id}`);
+      console.log(`User disconnected: ${socket.user.username}`);
     });
   });
 
@@ -50,4 +52,4 @@ const broadcastAccidentUpdate = (updateData) => {
   io.emit("accident_update", updateData);
 };
 
-module.exports = { initSocket, broadcastNewAccident, broadcastAccidentUpdate };
+module.exports = { initSocket, broadcastNewAccident, broadcastAccidentUpdate, clients };
