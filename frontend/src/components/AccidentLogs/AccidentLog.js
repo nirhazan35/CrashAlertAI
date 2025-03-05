@@ -4,14 +4,14 @@ import "./AccidentLog.css";
 import { useAccidentLogs } from "../../context/AccidentContext";
 import { useAuth } from "../../authentication/AuthProvider";
 
-// Generate time options for each hour (e.g., 00:00, 01:00, ... 23:00)
+// Generate time options for each hour of the day
 const timeOptions = Array.from({ length: 24 }, (_, i) => {
   const hour = i.toString().padStart(2, "0");
   return `${hour}:00`;
 });
 
 const AccidentLog = () => {
-  const { accidentLogs, handleAccidentStatusChange, handleRowDoubleClick } = useAccidentLogs();
+  const { accidentLogs, updateAccidentStatus, handleRowDoubleClick } = useAccidentLogs();
   const { user } = useAuth();
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
 
@@ -55,7 +55,7 @@ const AccidentLog = () => {
         log.displayDate === new Date(filters.date).toLocaleDateString("en-GB"));
     const matchesSeverity =
       filters.severity === "" || log.severity.toLowerCase() === filters.severity.toLowerCase();
-    // Time filter: check if log.displayTime is within the selected range (if provided)
+    // Time filter: check if log.displayTime is within the selected range
     let matchesTime = true;
     if (filters.startTime) {
       matchesTime = matchesTime && (log.displayTime >= filters.startTime + ":00");
@@ -143,7 +143,9 @@ const AccidentLog = () => {
               .map((log, index) => (
                 <tr
                   key={index}
-                  className={`${selectedRowIndex === index ? "highlighted" : ""} ${log.status}`}
+                  className={`${selectedRowIndex === index ? "highlighted" : ""} ${
+                    log.status === "assigned" ? "assigned-row" : ""
+                  }`}
                   onClick={() => handleRowClick(index)}
                   onDoubleClick={() => handleRowDoubleClick(log)}
                 >
@@ -162,11 +164,11 @@ const AccidentLog = () => {
                       <button className="assigned" disabled>
                         Assigned to {log.assignedTo}
                       </button>
-                    ) : log.status !== "handled" && (
+                    ) : (
                       <button
                         className="assign"
                         onClick={() =>
-                          handleAccidentStatusChange(
+                          updateAccidentStatus(
                             log._id,
                             log.status === "assigned" ? "active" : "assigned"
                           )
@@ -175,14 +177,6 @@ const AccidentLog = () => {
                         {log.status === "assigned" && log.assignedTo === user?.username
                           ? "Unassign"
                           : "Assign"}
-                      </button>
-                    )}
-                    {log.status === "assigned" && log.assignedTo === user?.username && (
-                      <button
-                        className="mark-as-handled"
-                        onClick={() => handleAccidentStatusChange(log._id, "handled")}
-                      >
-                        Mark as handled
                       </button>
                     )}
                   </td>

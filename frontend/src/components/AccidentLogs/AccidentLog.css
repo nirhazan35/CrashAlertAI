@@ -1,45 +1,48 @@
-/* frontend/src/components/AccidentLogs/AccidentLog.css */
+/* Updated styling for AccidentLog */
 
-/* Container for the filter options */
 .filter-container {
   margin-bottom: 20px;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
+  background: #f7f7f7;
+  padding: 10px;
+  border-radius: 5px;
 }
 
 .filter-container select,
 .filter-container input {
-  padding: 5px 8px;
+  padding: 6px 10px;
   font-size: 14px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 3px;
+  background: #fff;
 }
 
 .filter-container button {
-  padding: 5px 15px;
+  padding: 6px 12px;
   font-size: 14px;
   border: none;
   background-color: #28a745;
   color: #fff;
-  border-radius: 4px;
+  border-radius: 3px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease;
 }
 
 .filter-container button:hover {
   background-color: #218838;
 }
 
-/* Accident log container and table styling */
 .accident-log-container {
-  max-height: 200px;
-  overflow-y: auto;
   margin-top: 20px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #fff;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  overflow: auto;
+  max-height: 400px;
 }
 
 .accident-log-table {
@@ -49,75 +52,55 @@
 
 .accident-log-table th,
 .accident-log-table td {
-  padding: 10px;
+  padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #eaeaea;
 }
 
 .accident-log-table th {
-  background-color: #f4f4f4;
+  background-color: #f2f2f2;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.active {
-  background-color: transparent;
-  animation: flicker 0.8s infinite alternate;
+.accident-log-table tr:hover {
+  background-color: #e2e2e2;
 }
 
-/* Flickering Effect */
-@keyframes flicker {
-  0% {
-    background-color: rgba(255, 0, 0, 1); /* Bright Red */
-  }
-  25% {
-    background-color: rgba(255, 0, 0, 0.7); /* Faded Red */
-  }
-  50% {
-    background-color: rgba(255, 0, 0, 0.3); /* Faded Red */
-  }
-  75% {
-    background-color: rgba(255, 0, 0, 0.7); /* Faded Red */
-  }
-  100% {
-    background-color: rgba(255, 0, 0, 1); /* Bright Red */
-  }
+.highlighted {
+  background-color: #e6f7ff !important;
 }
 
-.assign {
-  background-color: #007bff;
-  color: white;
+/* New style: assigned rows get a grayer background */
+.assigned-row {
+  background-color: #c7c7c7;
+}
+
+.assign,
+.assigned {
+  padding: 6px 10px;
   border: none;
-  padding: 5px 10px;
   border-radius: 3px;
+  font-size: 13px;
   cursor: pointer;
   margin-right: 4px;
 }
 
+.assign {
+  background-color: #007bff;
+  color: #fff;
+}
+
 .assign:hover {
-  background-color: #555555;
+  background-color: #0056b3;
 }
 
-.mark-as-handled {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 3px;
-  cursor: pointer;
+.assigned {
+  background-color: #6c757d;
+  color: #fff;
+  cursor: default;
 }
 
-.mark-as-handled:hover {
-  background-color: #ff0000;
-}
-
-.highlighted {
-  background-color: rgba(0, 123, 255, 0.1);
-}
-
-.accident-log-table tr {
-  cursor: pointer;
-}
-
-.accident-log-table td {
-  padding: 10px;
-  border: 1px solid #ddd;
+.assigned:hover {
+  background-color: #6c757d;
 }

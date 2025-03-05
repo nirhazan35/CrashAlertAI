@@ -1,42 +1,128 @@
-.dashboard-main-content {
-  flex-grow: 1;
+/* Updated styling for AccidentView (Alert) to keep a consistent side-by-side layout */
+
+.alert-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
   padding: 20px;
+  background: #fdfdfd;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
 }
 
-.alert-container p {
-  font-size: 1.2rem;
-  color: #333;
-  margin-top: 10px;
+/* Ensure both video and details containers have a consistent minimum width */
+.alert-video,
+.alert-details-container {
+  flex: 1 1 45%;
+  min-width: 300px;
 }
 
 .alert-video {
-  width: 48%;
-  max-height: 100%;
-  object-fit: contain;
-  margin-right: 20px;
+  max-height: 70vh;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.alert-details-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #eaeaea;
+  /* Force the same height as the video container for consistency */
+  min-height: 300px;
 }
 
 .alert-details {
-  width: 48%;
-  font-size: 1rem;
-  overflow-y: auto;
-}
-
-.dashboard-logs {
-  margin-top: 20px;
-  border-top: 2px solid #ddd;
-  padding-top: 20px;
-  overflow-y: auto;
-}
-
-.alert-container {
-  position: relative;
-  width: 100%;
-  height: 70vh;
-  max-width: 900px;
-  margin: 20px;
-  padding: 3px;
   display: flex;
-  justify-content: flex-start;
-  overflow: hidden;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  flex: 0 0 120px;
+  font-weight: 600;
+  color: #555;
+}
+
+.detail-value {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.alert-details select,
+.alert-details textarea {
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.alert-details button {
+  padding: 5px 10px;
+  margin-left: 10px;
+  font-size: 13px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: #fff;
+  transition: background-color 0.2s ease;
+}
+
+.alert-details button:hover {
+  background-color: #0056b3;
+}
+
+.alert-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+}
+
+.alert-actions button {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.alert-actions button:first-of-type {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.alert-actions button:first-of-type:hover {
+  background-color: #e0a800;
+}
+
+.alert-actions button:last-of-type {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+.alert-actions button:last-of-type:hover {
+  background-color: #c0392b;
 }
