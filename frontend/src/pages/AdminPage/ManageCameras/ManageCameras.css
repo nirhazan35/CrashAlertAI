@@ -1,0 +1,91 @@
+/* General styles for the container */
+.manage-user-cameras-container {
+  padding: 1rem;
+  background-color: #f9fafb; /* Light background */
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Heading style */
+.manage-user-cameras-container h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* Form control label styling */
+.manage-user-cameras-container .MuiInputLabel-root {
+  font-weight: 600;
+  color: #555;
+}
+
+/* Select Dropdown Style */
+.manage-user-cameras-container .MuiSelect-root {
+  font-size: 1rem;
+  padding: 0.5rem;
+}
+
+/* Camera selection grid */
+.camera-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+  margin-bottom: 2rem; /* Added margin to create space between camera selection and the button */
+}
+
+/* Style for each camera item */
+.camera-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.camera-item .camera-id {
+  font-size: 0.875rem;
+  color: #777;
+  margin-bottom: 0.5rem;
+}
+
+/* Checkbox and label styling */
+.camera-item .MuiCheckbox-root {
+  margin-right: 0.5rem;
+}
+
+.camera-item label {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Save Changes button style */
+.save-changes-btn {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.save-changes-btn:hover {
+  background-color: #45a049;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .camera-selection-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -11,7 +11,12 @@ const getAllUsers = async (req, res) => {
     if (!users) {
       return res.status(400).json({ message: "No users found" });
     }
-    res.status(200).json(cameras);
+    const users_res = users.map((user) => {
+      const userObject = user.toObject(); // Convert mongoose doc to plain object
+      delete userObject.refreshToken; // Remove refreshToken
+      return userObject;
+    });
+    res.status(200).json(users_res);
   } catch (error) {
     res.status(500).json({ error: "Failed to get users", message: error.message });
   }
@@ -137,7 +142,7 @@ const notifyPasswordChange = async (req, res) => {
 
 // Get assigned cameras of a user
 const getAssignedCameras = async (req, res) => {
-    const { userId } = req.user.id;
+    const { userId } = req.body;
     try {
         const user = await User.findById(userId).populate('assignedCameras');
         if (!user) {

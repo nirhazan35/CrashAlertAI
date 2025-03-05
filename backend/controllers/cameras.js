@@ -16,9 +16,8 @@ const getCameras = async (req, res) => {
 
 // Assign cameras to a user
 const assignCameras = async (req, res) => {
-    const userId = req.user.id;
-    const cameraIds = req.cameras;
-
+    const userId = req.body.userId;
+    const cameraIds = req.body.cameraIds;
     if (!userId || !Array.isArray(cameraIds)) {
         return res.status(400).json({ message: 'Invalid input' });
     }
@@ -37,9 +36,13 @@ const assignCameras = async (req, res) => {
 
         user.assignedCameras = cameraIds;
         await user.save();
-
-        res.json({ message: 'Cameras assigned successfully', user });
+        res.status(200).json({ message: 'Cameras assigned successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
+};
+
+module.exports = {
+  getCameras,
+  assignCameras,
 };

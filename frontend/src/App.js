@@ -13,6 +13,7 @@ import AccidentHistoryPage from "./pages/AccidentHistory/AccidentHistory";
 import LiveCameraPage from "./pages/LiveCameraPage/LiveCameraPage";
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
+import ManageCameras from './pages/AdminPage/ManageCameras/ManageCameras';
 
 function App() {
   const { user } = useAuth(); 
@@ -31,6 +32,7 @@ function App() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/manage-cameras" element={<ManageCameras />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
