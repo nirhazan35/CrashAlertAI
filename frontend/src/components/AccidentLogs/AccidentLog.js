@@ -143,7 +143,9 @@ const AccidentLog = () => {
               .map((log, index) => (
                 <tr
                   key={index}
-                  className={`${selectedRowIndex === index ? "highlighted" : ""} ${log.status}`}
+                  className={`${selectedRowIndex === index ? "highlighted" : ""} ${
+                    log.status === "assigned" ? "assigned-row" : ""
+                  }`}
                   onClick={() => handleRowClick(index)}
                   onDoubleClick={() => handleRowDoubleClick(log)}
                 >
