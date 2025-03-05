@@ -162,7 +162,7 @@ const AccidentLog = () => {
                       <button className="assigned" disabled>
                         Assigned to {log.assignedTo}
                       </button>
-                    ) : log.status !== "handled" && (
+                    ) : (
                       <button
                         className="assign"
                         onClick={() =>
@@ -175,14 +175,6 @@ const AccidentLog = () => {
                         {log.status === "assigned" && log.assignedTo === user?.username
                           ? "Unassign"
                           : "Assign"}
-                      </button>
-                    )}
-                    {log.status === "assigned" && log.assignedTo === user?.username && (
-                      <button
-                        className="mark-as-handled"
-                        onClick={() => handleAccidentStatusChange(log._id, "handled")}
-                      >
-                        Mark as handled
                       </button>
                     )}
                   </td>

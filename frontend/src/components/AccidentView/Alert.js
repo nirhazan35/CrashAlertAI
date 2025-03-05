@@ -1,11 +1,11 @@
-// frontend/src/components/AccidentView/Alert.js
 import React, { useState, useEffect } from 'react';
 import './Alert.css';
 import { useAuth } from '../../authentication/AuthProvider';
 
 const Alert = ({ alert }) => {
   const { user } = useAuth();
-  // Initialize hooks unconditionally.
+
+  // Always call hooks unconditionally.
   const [accidentDetails, setAccidentDetails] = useState(alert || null);
   const [descEditMode, setDescEditMode] = useState(false);
   const [newDescription, setNewDescription] = useState((alert && alert.description) || '');
@@ -24,7 +24,10 @@ const Alert = ({ alert }) => {
     return <div className="alert-container">No accident selected.</div>;
   }
 
-  // Helper function to update accident details in backend and update local state.
+  // Determine if the current user is assigned to this accident.
+  const isEditable = accidentDetails.assignedTo === user.username;
+
+  // Helper function to update accident details in the backend and update local state.
   const updateAccidentField = async (updateData) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/update-accident-details`, {
@@ -82,6 +85,14 @@ const Alert = ({ alert }) => {
     }
   };
 
+  // Mark the accident as handled.
+  const handleMarkAsHandled = async () => {
+    const confirmHandled = window.confirm("Are you sure you want to mark this accident as handled?");
+    if (confirmHandled) {
+      await updateAccidentField({ status: "handled" });
+    }
+  };
+
   return (
     <div className="alert-container">
       <video className="alert-video" controls autoPlay>
@@ -113,11 +124,15 @@ const Alert = ({ alert }) => {
           <div className="detail-row">
             <div className="detail-label"><strong>Severity:</strong></div>
             <div className="detail-value">
-              <select value={selectedSeverity} onChange={handleSeverityChange}>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
+              {isEditable ? (
+                <select value={selectedSeverity} onChange={handleSeverityChange}>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              ) : (
+                <span>{accidentDetails.severity}</span>
+              )}
             </div>
           </div>
           <div className="detail-row">
@@ -126,7 +141,9 @@ const Alert = ({ alert }) => {
               {!descEditMode ? (
                 <>
                   <span>{accidentDetails.description || 'No Description'}</span>
-                  <button className="edit-btn" onClick={() => setDescEditMode(true)}>Edit</button>
+                  {isEditable && (
+                    <button className="edit-btn" onClick={() => setDescEditMode(true)}>Edit</button>
+                  )}
                 </>
               ) : (
                 <>
@@ -152,11 +169,17 @@ const Alert = ({ alert }) => {
             </div>
           </div>
         </div>
-        <div className="alert-actions">
-          <button onClick={handleToggleAccidentMark}>
-            {accidentDetails.falsePositive ? "Mark As An Accident" : "Mark As Not An Accident"}
-          </button>
-        </div>
+        {isEditable && (
+          <div className="alert-actions">
+            <button onClick={handleToggleAccidentMark}>
+              {accidentDetails.falsePositive ? "Mark As An Accident" : "Mark As Not An Accident"}
+            </button>
+            {/* Show Mark as Handled button only if accident is assigned and not already handled */}
+            {accidentDetails.status !== "handled" && (
+              <button onClick={handleMarkAsHandled}>Mark As Handled</button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
