@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './sidebar.css';
+import './Sidebar.css';
 import { useAuth } from "../../authentication/AuthProvider";
-import Logout from './logout';
+import Logout from './Logout';
 
 const Sidebar = () => {
   const { user } = useAuth();

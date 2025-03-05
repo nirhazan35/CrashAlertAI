@@ -1,4 +1,3 @@
-import DashboardLayout from './SidebarLayout.js';
 import Alert from '../../components/AccidentView/Alert';
 import { useAccidentLogs } from '../../context/AccidentContext';
 import AccidentLog from '../../components/AccidentLogs/AccidentLog';
@@ -7,7 +6,7 @@ import AccidentLog from '../../components/AccidentLogs/AccidentLog';
 const Dashboard = () => {
   const { selectedAlert } = useAccidentLogs();
   return (
-    <DashboardLayout>
+    <>
       {/* The Alert component */}
       <div className="alert-container">
         <Alert alert={selectedAlert} />
@@ -22,7 +21,7 @@ const Dashboard = () => {
           <AccidentLog/>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 
