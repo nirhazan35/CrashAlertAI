@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Alert.css';
 
 // AlertDetails Component
@@ -16,11 +16,22 @@ const AlertDetails = ({ cameraId, location, date, severity, status, description 
 // Main Alert Component
 const Alert = ({ alert }) => {
   const { cameraId, video, location, displayDate, severity, description, status } = alert || {};
+  const [videoError, setVideoError] = useState(false);
+
+  const handleVideoError = () => {
+    setVideoError(true);
+  };
 
   return (
     <div className="alert-container">
-      <video className="alert-video" controls autoPlay>
-        {/* If no video reference, leave the source empty for a black screen */}
+      {/* Show error message on top of video */}
+      {videoError && (
+        <div className="video-error-message">
+          Unable to load or play the video.
+        </div>
+      )}
+
+      <video className="alert-video" controls autoPlay onError={handleVideoError}>
         <source src={video || '1'} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
