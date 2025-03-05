@@ -33,7 +33,6 @@ const emitNewAccident = async (accidentData) => {
 // Wrapper for broadcasting accident updates
 const emitAccidentUpdate = async (updateData) => {
   try {
-    console.log(updateData.cameraId)
     // Retrieve the camera associated with this accident
     const camera = await Camera.findOne({ cameraId: updateData.cameraId }).populate("users");
     if (!camera) {

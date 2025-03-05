@@ -64,8 +64,15 @@ const Alert = () => {
 
   return (
     <div className="alert-container">
-      <video className="alert-video" controls autoPlay>
-        <source src={selectedAlert.video || ""} type="video/mp4" />
+      {/* Show error message on top of video */}
+      {videoError && (
+        <div className="video-error-message">
+          Unable to load or play the video.
+        </div>
+      )}
+
+      <video className="alert-video" controls autoPlay onError={handleVideoError}>
+        <source src={video || '1'} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
       <div className="alert-details-container">

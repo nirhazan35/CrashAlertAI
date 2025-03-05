@@ -30,7 +30,9 @@ connectDB();
 // Routes
 app.use('/accidents', require('./routes/accidents'));
 app.use('/users', require('./routes/users'));
+app.use('/cameras', require('./routes/cameras'));
 app.use('/auth', require('./routes/auth'));
+
 
 app.get('/', (req, res) => {
   res.send('CrashAlertAI Backend is running!');
