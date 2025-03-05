@@ -12,10 +12,11 @@ const twoDaysBefore = new Date(Date.now() - twoDaysInMs);
   // Simulated real-time alert for accidents (replace this with ML model integration)
   setInterval(async () => {
     const fakeAccident = {
-      cameraId: `accident_${Math.floor(Math.random() * 1000)}`,
+      // cameraId: `accident_${Math.floor(Math.random() * 1000)}`,
+      cameraId: `accident_94`,
       location: "Highway 1",
-      date: twoDaysBefore.toISOString(),
-      // date: new Date().toISOString(),
+      // date: twoDaysBefore.toISOString(),
+      date: new Date().toISOString(),
       severity: "high",
       video: "fake-video-url",
     };
@@ -25,7 +26,11 @@ const twoDaysBefore = new Date(Date.now() - twoDaysInMs);
       const savedAccident = await saveNewAccident(fakeAccident);
 
       // Emit the accident to clients
-    emitNewAccident(savedAccident);
+      console.log("Emitting new accident:", savedAccident.data);
+      if (savedAccident.data)
+        emitNewAccident(savedAccident.data);
+      else
+        throw new Error("Error saving fake accident");
     } catch (error) {
       console.error("Error during fake accident simulation:", error);
     }

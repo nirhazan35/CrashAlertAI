@@ -1,7 +1,7 @@
 const Accident = require("../models/Accident");
 const formatDateTime = require("../util/DateFormatting");
 const { emitAccidentUpdate } = require("../services/socketService");
-const { clients } = require("../socket/index")
+const { clients } = require("../socket/index");
 const User = require("../models/User");
 
 // Save Accident
@@ -51,7 +51,6 @@ const saveNewAccident = async (accident) => {
     };
   }
 };
-
 
 const getActiveAccidents = async (req, res) => {
   try {
@@ -127,9 +126,38 @@ const filterAccidentsByUser = (user, accidents) => {
   return accidents.filter(accident => assignedCameraIds.includes(accident.cameraId.toString()));
 };
 
+// NEW: Update accident details (severity, description, falsePositive)
+const updateAccidentDetails = async (req, res) => {
+  try {
+    const { accident_id, severity, description, falsePositive } = req.body;
+
+    // Validate severity if provided
+    if (severity && !['low', 'medium', 'high'].includes(severity.toLowerCase())) {
+      return res.status(400).json({ message: "Invalid severity value" });
+    }
+
+    const updateData = {};
+    if (severity) updateData.severity = severity.toLowerCase();
+    if (description !== undefined) updateData.description = description;
+    if (typeof falsePositive === 'boolean') updateData.falsePositive = falsePositive;
+
+    const updatedAccident = await Accident.findByIdAndUpdate(accident_id, updateData, { new: true });
+    if (!updatedAccident) {
+      return res.status(404).json({ message: "Accident not found" });
+    }
+    // Emit update to clients
+    emitAccidentUpdate(updatedAccident);
+    res.status(200).json(updatedAccident);
+  } catch (error) {
+    console.error("Error updating accident details:", error);
+    res.status(500).json({ message: "Error updating accident details", error: error.message });
+  }
+};
+
 module.exports = {
   saveNewAccident,
   getActiveAccidents,
   changeAccidentStatus,
   getHandledAccidents,
+  updateAccidentDetails,
 };
