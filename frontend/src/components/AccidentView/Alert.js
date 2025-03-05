@@ -1,125 +1,94 @@
-import React, { useState, useEffect } from 'react';
-import './Alert.css';
-import { useAuth } from '../../authentication/AuthProvider';
+import React, { useState, useEffect } from "react";
+import "./Alert.css";
+import { useAuth } from "../../authentication/AuthProvider";
+import { useAccidentLogs } from "../../context/AccidentContext";
 
-const Alert = ({ alert }) => {
+const Alert = () => {
   const { user } = useAuth();
-
-  // Always call hooks unconditionally.
-  const [accidentDetails, setAccidentDetails] = useState(alert || null);
+  const {
+    selectedAlert,
+    updateAccidentDetails,
+    updateAccidentStatus,
+    clearSelectedAlert,
+  } = useAccidentLogs();
   const [descEditMode, setDescEditMode] = useState(false);
-  const [newDescription, setNewDescription] = useState((alert && alert.description) || '');
-  const [selectedSeverity, setSelectedSeverity] = useState((alert && alert.severity) || 'low');
+  const [newDescription, setNewDescription] = useState("");
+  const [selectedSeverity, setSelectedSeverity] = useState("low");
 
-  // Update local state if the alert prop changes.
   useEffect(() => {
-    if (alert) {
-      setAccidentDetails(alert);
-      setSelectedSeverity(alert.severity || 'low');
-      setNewDescription(alert.description || '');
+    if (selectedAlert) {
+      setNewDescription(selectedAlert.description || "");
+      setSelectedSeverity(selectedAlert.severity || "low");
     }
-  }, [alert]);
+  }, [selectedAlert]);
 
-  if (!accidentDetails) {
+  if (!selectedAlert) {
     return <div className="alert-container">No accident selected.</div>;
   }
 
-  // Determine if the current user is assigned to this accident.
-  const isEditable = accidentDetails.assignedTo === user.username;
+  const isEditable = selectedAlert.assignedTo === user.username;
 
-  // Helper function to update accident details in the backend and update local state.
-  const updateAccidentField = async (updateData) => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/update-accident-details`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.token}`,
-        },
-        body: JSON.stringify({
-          accident_id: accidentDetails._id,
-          ...updateData,
-        }),
-      });
-      if (response.ok) {
-        const updatedAccident = await response.json();
-        setAccidentDetails(updatedAccident);
-        window.alert("Accident updated successfully!");
-      } else {
-        const errorData = await response.json();
-        window.alert(`Update failed: ${errorData.message}`);
-      }
-    } catch (error) {
-      window.alert("Error updating accident.");
-      console.error("Update error:", error);
-    }
-  };
-
-  // Handle severity change with confirmation.
   const handleSeverityChange = async (e) => {
-    const newSeverity = e.target.value;
-    if (newSeverity === selectedSeverity) return;
-    const confirmChange = window.confirm(`Are you sure you want to change severity from ${selectedSeverity} to ${newSeverity}?`);
-    if (confirmChange) {
-      setSelectedSeverity(newSeverity);
-      await updateAccidentField({ severity: newSeverity });
+    const newVal = e.target.value;
+    if (newVal === selectedSeverity) return;
+    if (window.confirm(`Change severity from ${selectedSeverity} to ${newVal}?`)) {
+      await updateAccidentDetails({ accident_id: selectedAlert._id, severity: newVal });
+      setSelectedSeverity(newVal);
     }
   };
 
-  // Save the new description after editing.
   const handleDescriptionSave = async () => {
-    await updateAccidentField({ description: newDescription });
+    await updateAccidentDetails({ accident_id: selectedAlert._id, description: newDescription });
     setDescEditMode(false);
   };
 
-  // Toggle the falsePositive value with confirmation.
   const handleToggleAccidentMark = async () => {
-    const currentMark = accidentDetails.falsePositive;
-    const confirmToggle = window.confirm(
-      currentMark 
-        ? "Are you sure you want to mark this as an accident?" 
-        : "Are you sure you want to mark this as not an accident?"
-    );
-    if (confirmToggle) {
-      await updateAccidentField({ falsePositive: !currentMark });
+    if (window.confirm(
+      selectedAlert.falsePositive
+        ? "Mark as an accident?"
+        : "Mark as not an accident?"
+    )) {
+      await updateAccidentDetails({
+        accident_id: selectedAlert._id,
+        falsePositive: !selectedAlert.falsePositive,
+      });
     }
   };
 
-  // Mark the accident as handled.
   const handleMarkAsHandled = async () => {
-    const confirmHandled = window.confirm("Are you sure you want to mark this accident as handled?");
-    if (confirmHandled) {
-      await updateAccidentField({ status: "handled" });
+    if (window.confirm("Mark this accident as handled?")) {
+      await updateAccidentStatus(selectedAlert._id, "handled");
+      clearSelectedAlert();
     }
   };
 
   return (
     <div className="alert-container">
       <video className="alert-video" controls autoPlay>
-        <source src={accidentDetails.video || ''} type="video/mp4" />
+        <source src={selectedAlert.video || ""} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
       <div className="alert-details-container">
         <div className="alert-details">
           <div className="detail-row">
             <div className="detail-label"><strong>Status:</strong></div>
-            <div className="detail-value">{accidentDetails.status || 'N/A'}</div>
+            <div className="detail-value">{selectedAlert.status}</div>
           </div>
           <div className="detail-row">
             <div className="detail-label"><strong>Camera ID:</strong></div>
-            <div className="detail-value">{accidentDetails.cameraId || 'N/A'}</div>
+            <div className="detail-value">{selectedAlert.cameraId}</div>
           </div>
           <div className="detail-row">
             <div className="detail-label"><strong>Location:</strong></div>
-            <div className="detail-value">{accidentDetails.location || 'N/A'}</div>
+            <div className="detail-value">{selectedAlert.location}</div>
           </div>
           <div className="detail-row">
             <div className="detail-label"><strong>Date:</strong></div>
-            <div className="detail-value">{accidentDetails.displayDate || 'N/A'}</div>
+            <div className="detail-value">{selectedAlert.displayDate}</div>
           </div>
           <div className="detail-row">
             <div className="detail-label"><strong>Time:</strong></div>
-            <div className="detail-value">{accidentDetails.displayTime || '00:00'}</div>
+            <div className="detail-value">{selectedAlert.displayTime}</div>
           </div>
           <div className="detail-row">
             <div className="detail-label"><strong>Severity:</strong></div>
@@ -131,7 +100,7 @@ const Alert = ({ alert }) => {
                   <option value="high">High</option>
                 </select>
               ) : (
-                <span>{accidentDetails.severity}</span>
+                <span>{selectedAlert.severity}</span>
               )}
             </div>
           </div>
@@ -140,9 +109,9 @@ const Alert = ({ alert }) => {
             <div className="detail-value">
               {!descEditMode ? (
                 <>
-                  <span>{accidentDetails.description || 'No Description'}</span>
+                  <span>{selectedAlert.description || "No Description"}</span>
                   {isEditable && (
-                    <button className="edit-btn" onClick={() => setDescEditMode(true)}>Edit</button>
+                    <button onClick={() => setDescEditMode(true)}>Edit</button>
                   )}
                 </>
               ) : (
@@ -152,8 +121,8 @@ const Alert = ({ alert }) => {
                     onChange={(e) => setNewDescription(e.target.value)}
                     rows="2"
                   />
-                  <button className="save-btn" onClick={handleDescriptionSave}>Save</button>
-                  <button className="cancel-btn" onClick={() => { setDescEditMode(false); setNewDescription(accidentDetails.description || ''); }}>Cancel</button>
+                  <button onClick={handleDescriptionSave}>Save</button>
+                  <button onClick={() => setDescEditMode(false)}>Cancel</button>
                 </>
               )}
             </div>
@@ -161,8 +130,8 @@ const Alert = ({ alert }) => {
           <div className="detail-row">
             <div className="detail-label"><strong>Accident Mark:</strong></div>
             <div className="detail-value">
-              {accidentDetails.falsePositive ? (
-                <span style={{ color: 'red' }}>Not an Accident</span>
+              {selectedAlert.falsePositive ? (
+                <span style={{ color: "red" }}>Not an Accident</span>
               ) : (
                 <span>Accident</span>
               )}
@@ -172,10 +141,9 @@ const Alert = ({ alert }) => {
         {isEditable && (
           <div className="alert-actions">
             <button onClick={handleToggleAccidentMark}>
-              {accidentDetails.falsePositive ? "Mark As An Accident" : "Mark As Not An Accident"}
+              {selectedAlert.falsePositive ? "Mark As An Accident" : "Mark As Not An Accident"}
             </button>
-            {/* Show Mark as Handled button only if accident is assigned and not already handled */}
-            {accidentDetails.status !== "handled" && (
+            {selectedAlert.status !== "handled" && (
               <button onClick={handleMarkAsHandled}>Mark As Handled</button>
             )}
           </div>
