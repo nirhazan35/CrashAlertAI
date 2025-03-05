@@ -4,6 +4,19 @@ const authLogs = require("../models/AuthLogs");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../services/emailService");
 
+// Get all users
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    if (!users) {
+      return res.status(400).json({ message: "No users found" });
+    }
+    res.status(200).json(cameras);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get users", message: error.message });
+  }
+};
+
 // get user
 const getUser = async (req, res) => {
   try {
@@ -122,13 +135,29 @@ const notifyPasswordChange = async (req, res) => {
   }
 };
 
+// Get assigned cameras of a user
+const getAssignedCameras = async (req, res) => {
+    const { userId } = req.user.id;
+    try {
+        const user = await User.findById(userId).populate('assignedCameras');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ assignedCameras: user.assignedCameras });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to get assigned cameras", error: error.message });
+    }
+};
+
 // Export the handlers using module.exports
 module.exports = {
+    getAllUsers,
     getUser,
     getRole,
     deleteUser,
     changePassword,
     requestPasswordChange,
-    notifyPasswordChange
+    notifyPasswordChange,
+    getAssignedCameras,
   };
   

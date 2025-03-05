@@ -1,7 +1,7 @@
 const Accident = require("../models/Accident");
 const formatDateTime = require("../util/DateFormatting");
 const { emitAccidentUpdate } = require("../services/socketService");
-const {clients } = require("../socket/index")
+const { clients } = require("../socket/index")
 const User = require("../models/User");
 
 // Save Accident
