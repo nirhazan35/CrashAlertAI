@@ -43,6 +43,10 @@ const accidentSchema = new Schema({
     enum: ['active', 'assigned', 'handled'],
     default: 'active',
   },
+  falsePositive: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Accident = model("Accident", accidentSchema);
