@@ -4,7 +4,7 @@ const {
     changeAccidentStatus,
     getHandledAccidents,
     updateAccidentDetails,
-  } = require("../../controllers/accidents");
+  } = require("../../src/controllers/accidents");
   const Accident = require("../../models/Accident");
   const User = require("../../models/User");
   
