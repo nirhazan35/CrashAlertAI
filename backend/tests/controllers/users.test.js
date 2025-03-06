@@ -25,9 +25,6 @@ describe("Users Controller", () => {
     jest.clearAllMocks();
   });
 
-  // ----------------------
-  // Tests for getAllUsers
-  // ----------------------
   describe("getAllUsers", () => {
     test("should return all users without refreshToken", async () => {
       const req = {};
@@ -76,9 +73,6 @@ describe("Users Controller", () => {
     });
   });
 
-  // ----------------------
-  // Tests for getRole
-  // ----------------------
   describe("getRole", () => {
     test("should return the role of the user", async () => {
       const req = { user: { id: "u1" } };
@@ -120,9 +114,7 @@ describe("Users Controller", () => {
     });
   });
 
-  // ----------------------
-  // Tests for deleteUser
-  // ----------------------
+
   describe("deleteUser", () => {
     test("should delete the user successfully", async () => {
       const req = { user: { id: "u1" } };
@@ -150,9 +142,6 @@ describe("Users Controller", () => {
     });
   });
 
-  // ----------------------
-  // Tests for changePassword
-  // ----------------------
   describe("changePassword", () => {
     test("should update password successfully", async () => {
       const req = { body: { token: "validtoken", newPassword: "newpass" } };
@@ -207,9 +196,7 @@ describe("Users Controller", () => {
     });
   });
 
-  // ----------------------
-  // Tests for requestPasswordChange
-  // ----------------------
+
   describe("requestPasswordChange", () => {
     test("should send password reset request successfully", async () => {
       const req = { body: { username: "user1", email: "user1@example.com" } };
@@ -283,9 +270,6 @@ describe("Users Controller", () => {
     });
   });
 
-  // ----------------------
-  // Tests for notifyPasswordChange
-  // ----------------------
   describe("notifyPasswordChange", () => {
     test("should send password change notification successfully", async () => {
       const req = { body: { token: "validtoken", newPassword: "newpass" } };
@@ -329,9 +313,6 @@ describe("Users Controller", () => {
     });
   });
 
-  // ----------------------
-  // Tests for getAssignedCameras
-  // ----------------------
   describe("getAssignedCameras", () => {
     test("should return assigned cameras for a user", async () => {
       const req = { body: { userId: "u1" } };

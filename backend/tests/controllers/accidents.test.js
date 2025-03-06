@@ -24,9 +24,6 @@ const {
         jest.clearAllMocks();
     });
   
-    // ----------------------
-    // Tests for saveNewAccident
-    // ----------------------
     describe("saveNewAccident", () => {
       test("should save a new accident when valid input is provided", async () => {
         const accidentData = { cameraId: "cam_1", location: "Highway 1", severity: "high" };
@@ -57,10 +54,7 @@ const {
         expect(result.error).toBe("DB error");
       });
     });
-  
-    // ----------------------
-    // Tests for getActiveAccidents
-    // ----------------------
+
     describe("getActiveAccidents", () => {
       test("should return active accidents", async () => {
         const req = { user: { assignedCameras: ["cam_1"] } };
@@ -89,10 +83,7 @@ const {
         );
       });
     });
-  
-    // ----------------------
-    // Tests for changeAccidentStatus
-    // ----------------------
+
     describe("changeAccidentStatus", () => {
       test("should change accident status successfully", async () => {
         const req = {
@@ -160,10 +151,7 @@ const {
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringMatching(/An error occurred/) }));
       });
     });
-  
-    // ----------------------
-    // Tests for getHandledAccidents
-    // ----------------------
+
     describe("getHandledAccidents", () => {
       test("should return handled accidents", async () => {
         const req = {}; // no special properties needed
@@ -190,9 +178,6 @@ const {
       });
     });
   
-    // ----------------------
-    // Tests for updateAccidentDetails
-    // ----------------------
     describe("updateAccidentDetails", () => {
       test("should update accident details successfully", async () => {
         const req = { body: { accident_id: "acc123", severity: "high", description: "Updated", falsePositive: false } };

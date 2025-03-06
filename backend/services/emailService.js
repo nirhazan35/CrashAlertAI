@@ -1,33 +1,58 @@
+// services/emailService.js
 const nodemailer = require("nodemailer");
+const sanitizeHtml = require("sanitize-html");
 
-// Create a transporter object
-const transporter = nodemailer.createTransport({
-  service: "Gmail",
-  auth: {
-    user: process.env.EMAIL_ADDRESS, 
-    pass: process.env.EMAIL_PASS, 
-  },
-});
+const validateEmail = (email) => 
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-// Function to send an email
-const sendEmail = async (data) => {
-  try {
-    const mail = {
-        from: `"CrashAlertAI" <${process.env.EMAIL_USER}>`,
-      to : data.to,
-      subject: data.subject,
-      text : data.text,
-      html : data.html, 
-    };
-
-    // Send the email
-    await transporter.sendMail(mail);
-  } catch (error) {
-    console.error("Error sending email:", error);
-    throw error; // Throw error to handle it in calling functions
+const validateInput = (data) => {
+  if (!data.to || !data.subject || (!data.text && !data.html)) {
+    throw new Error(
+      "Missing required fields: to, subject, and text/html content"
+    );
+  }
+  
+  if (!validateEmail(data.to)) {
+    throw new Error("Invalid recipient email address");
   }
 };
 
-module.exports = {
-  sendEmail,
+const sanitizeContent = (data) => ({
+  ...data,
+  html: data.html ? sanitizeHtml(data.html) : undefined
+});
+
+const sendEmail = async (data) => {
+  try {
+    validateInput(data);
+    const sanitizedData = sanitizeContent(data);
+
+    const mail = {
+      from: `"CrashAlertAI" <${process.env.EMAIL_USER}>`,
+      to: sanitizedData.to,
+      subject: sanitizedData.subject,
+      text: sanitizedData.text,
+      html: sanitizedData.html,
+      headers: {
+        'X-Content-Type-Options': 'nosniff',
+        'X-XSS-Protection': '1; mode=block',
+        'X-Mailer': 'CrashAlertAI'
+      }
+    };
+
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_ADDRESS,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    await transporter.sendMail(mail);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
 };
+
+module.exports = { sendEmail };
