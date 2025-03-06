@@ -12,27 +12,13 @@ const getAllUsers = async (req, res) => {
       return res.status(400).json({ message: "No users found" });
     }
     const users_res = users.map((user) => {
-      const userObject = user.toObject(); // Convert mongoose doc to plain object
-      delete userObject.refreshToken; // Remove refreshToken
+      const userObject = user.toObject();
+      delete userObject.refreshToken;
       return userObject;
     });
     res.status(200).json(users_res);
   } catch (error) {
     res.status(500).json({ error: "Failed to get users", message: error.message });
-  }
-};
-
-// get user
-const getUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(400).json({ message: "User not found" });
-    }
-
-    res.status(200).json({ role: userRole });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to get user", message: error.message });
   }
 };
 
@@ -157,7 +143,6 @@ const getAssignedCameras = async (req, res) => {
 // Export the handlers using module.exports
 module.exports = {
     getAllUsers,
-    getUser,
     getRole,
     deleteUser,
     changePassword,
