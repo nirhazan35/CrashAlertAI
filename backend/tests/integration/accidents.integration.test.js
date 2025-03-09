@@ -1,24 +1,29 @@
 const request = require("supertest");
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
 const app = require("../../index");
 const Accident = require("../../src/models/Accident");
 const User = require("../../src/models/User");
 
 describe("Accidents Integration", () => {
-  let testUser;
-
-  // Create a test user that will be used for authentication and filtering accidents.
-  beforeAll(async () => {
-    // Create a user with a valid ObjectId.
-    testUser = new User({
-      _id: new mongoose.Types.ObjectId(),
-      username: "testUser",
-      email: "test@example.com",
-      password: "hashed", // dummy value; not used for auth in integration tests
-      assignedCameras: ["cam_1"],
+    let testUser;
+    let validToken; 
+  
+    beforeAll(async () => {
+      // Create a user with a valid ObjectId.
+      testUser = new User({
+        _id: new mongoose.Types.ObjectId(),
+        username: "testUser",
+        email: "test@example.com",
+        password: "hashed",
+        assignedCameras: ["cam_1"],
+      });
+      await testUser.save();
+      validToken = jwt.sign(
+        { id: testUser._id, role: testUser.role, username: testUser.username },
+        process.env.ACCESS_TOKEN_SECRET
+      );
     });
-    await testUser.save();
-  });
 
   // Clear the Accident collection after each test.
   afterEach(async () => {
@@ -42,7 +47,7 @@ describe("Accidents Integration", () => {
 
       const response = await request(app)
         .post("/accidents/handle-accident")
-        .set("Authorization", "Bearer validtoken") // In real tests, you might bypass auth or simulate a valid token.
+        .set("Authorization", `Bearer ${validToken}`) 
         .send(accidentData)
         .timeout({ deadline: 10000 });
 
@@ -61,7 +66,7 @@ describe("Accidents Integration", () => {
 
       const response = await request(app)
         .post("/accidents/handle-accident")
-        .set("Authorization", "Bearer validtoken")
+        .set("Authorization", `Bearer ${validToken}`)
         .send(accidentData)
         .timeout({ deadline: 10000 });
 
@@ -85,7 +90,7 @@ describe("Accidents Integration", () => {
 
       const response = await request(app)
         .get("/accidents/active-accidents")
-        .set("Authorization", "Bearer validtoken")
+        .set("Authorization", `Bearer ${validToken}`)
         .timeout({ deadline: 10000 });
 
       expect(response.statusCode).toBe(200);
@@ -107,7 +112,7 @@ describe("Accidents Integration", () => {
 
       const response = await request(app)
         .post("/accidents/accident-status-update")
-        .set("Authorization", "Bearer validtoken")
+        .set("Authorization", `Bearer ${validToken}`)
         .send({ accident_id: accident._id.toString(), status: "handled" })
         .timeout({ deadline: 10000 });
 
@@ -126,7 +131,7 @@ describe("Accidents Integration", () => {
 
       const response = await request(app)
         .post("/accidents/accident-status-update")
-        .set("Authorization", "Bearer validtoken")
+        .set("Authorization", `Bearer ${validToken}`)
         .send({ accident_id: accident._id.toString(), status: "invalid" })
         .timeout({ deadline: 10000 });
 
@@ -139,7 +144,7 @@ describe("Accidents Integration", () => {
 
       const response = await request(app)
         .post("/accidents/accident-status-update")
-        .set("Authorization", "Bearer validtoken")
+        .set("Authorization", `Bearer ${validToken}`)
         .send({ accident_id: fakeId, status: "handled" })
         .timeout({ deadline: 10000 });
 
@@ -160,7 +165,7 @@ describe("Accidents Integration", () => {
 
       const response = await request(app)
         .get("/accidents/handled-accidents")
-        .set("Authorization", "Bearer validtoken")
+        .set("Authorization", `Bearer ${validToken}`)
         .timeout({ deadline: 10000 });
 
       expect(response.statusCode).toBe(200);
@@ -183,7 +188,7 @@ describe("Accidents Integration", () => {
 
       const response = await request(app)
         .post("/accidents/update-accident-details")
-        .set("Authorization", "Bearer validtoken")
+        .set("Authorization", `Bearer ${validToken}`)
         .send({
           accident_id: accident._id.toString(),
           severity: "medium",
@@ -209,7 +214,7 @@ describe("Accidents Integration", () => {
 
       const response = await request(app)
         .post("/accidents/update-accident-details")
-        .set("Authorization", "Bearer validtoken")
+        .set("Authorization", `Bearer ${validToken}`)
         .send({
           accident_id: accident._id.toString(),
           severity: "extreme"
@@ -225,7 +230,7 @@ describe("Accidents Integration", () => {
 
       const response = await request(app)
         .post("/accidents/update-accident-details")
-        .set("Authorization", "Bearer validtoken")
+        .set("Authorization", `Bearer ${validToken}`)
         .send({
           accident_id: fakeId,
           severity: "low"
@@ -240,7 +245,7 @@ describe("Accidents Integration", () => {
       // Send an invalid accident_id to simulate a cast error
       const response = await request(app)
         .post("/accidents/update-accident-details")
-        .set("Authorization", "Bearer validtoken")
+        .set("Authorization", `Bearer ${validToken}`)
         .send({
           accident_id: "invalid_id",
           severity: "low"
