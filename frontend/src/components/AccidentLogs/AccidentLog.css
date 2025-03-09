@@ -104,3 +104,15 @@
 .assigned:hover {
   background-color: #6c757d;
 }
+
+@keyframes flicker {
+  0% { background-color: red; }
+  50% { background-color: transparent; }
+  100% { background-color: red; }
+}
+
+/* adding flicker effect to unassigned rows*/
+tr:not(.assigned-row) {
+  animation: flicker 1s infinite;
+}
+

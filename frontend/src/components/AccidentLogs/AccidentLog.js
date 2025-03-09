@@ -1,5 +1,4 @@
-// frontend/src/components/AccidentLogs/AccidentLog.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./AccidentLog.css";
 import { useAccidentLogs } from "../../context/AccidentContext";
 import { useAuth } from "../../authentication/AuthProvider";
@@ -24,6 +23,37 @@ const AccidentLog = () => {
     startTime: "",
     endTime: "",
   });
+
+  // State for camera IDs and locations
+  const [cameraData, setCameraData] = useState({ cameras: [], locations: [] });
+
+  // Fetch all cameras id and location from backend
+  useEffect(() => {
+    const fetchCameraData = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/cameras/get-id_location`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setCameraData({
+            cameras: data.map((item) => item.cameraId) || [],
+            locations: data.map((item) => item.location) || [],
+          });
+        } else {
+          console.error("Error fetching camera data:", data);
+        }
+      } catch (error) {
+        console.error("Error fetching camera data:", error);
+      }
+    };
+
+    fetchCameraData();
+  }, []);
 
   // Handler for filter changes
   const handleFilterChange = (e) => {
@@ -76,14 +106,28 @@ const AccidentLog = () => {
       <div className="filter-container">
         <select name="cameraId" value={filters.cameraId} onChange={handleFilterChange}>
           <option value="">All Camera IDs</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
+          {cameraData.cameras.length > 0 ? (
+            cameraData.cameras.map((camera) => (
+              <option key={camera} value={camera}>
+                {camera}
+              </option>
+            ))
+          ) : (
+            <option disabled>No cameras available</option>
+          )}
         </select>
 
         <select name="location" value={filters.location} onChange={handleFilterChange}>
           <option value="">All Locations</option>
-          <option value="Highway 1">Highway 1</option>
-          <option value="Highway 2">Highway 2</option>
+          {cameraData.locations.length > 0 ? (
+            cameraData.locations.map((location) => (
+              <option key={location} value={location}>
+                {location}
+              </option>
+            ))
+          ) : (
+            <option disabled>No locations available</option>
+          )}
         </select>
 
         <input

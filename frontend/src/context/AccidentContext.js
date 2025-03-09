@@ -113,7 +113,7 @@ export const AccidentLogsProvider = ({ children }) => {
         },
         body: JSON.stringify({ accident_id, status }),
       });
-  
+
       if (response.ok) {
         const updatedAccident = await response.json();
         setAccidentLogs((prevLogs) =>
@@ -139,7 +139,7 @@ export const AccidentLogsProvider = ({ children }) => {
         selectedAlert,
         setSelectedAlert,
         updateAccidentDetails,
-        clearSelectedAlert,   
+        clearSelectedAlert,
         updateAccidentStatus,
         handleRowDoubleClick,
       }}

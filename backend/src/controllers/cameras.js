@@ -14,6 +14,23 @@ const getCameras = async (req, res) => {
   }
 };
 
+// Get (cameraId,location) of all cameras
+const getLocations = async (req, res) => {
+    try {
+        // Fetch only the cameraId and location fields from the Camera model
+        const cameras = await Camera.find().select('cameraId location');
+
+        if (!cameras || cameras.length === 0) {
+          return res.status(400).json({ message: "No cameras found" });
+        }
+
+        // Return the list of cameraId and location
+        res.status(200).json(cameras);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to fetch camera locations", message: error.message });
+      }
+}
+
 // Assign cameras to a user
 const assignCameras = async (req, res) => {
     const userId = req.body.userId;
@@ -44,5 +61,6 @@ const assignCameras = async (req, res) => {
 
 module.exports = {
   getCameras,
+  getLocations,
   assignCameras,
 };
