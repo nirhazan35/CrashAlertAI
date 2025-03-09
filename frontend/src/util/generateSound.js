@@ -1,5 +1,4 @@
 const playBeep = () => {
-  console.log("GENERATING");
   const audioContext = new (window.AudioContext || window.webkitAudioContext)();
   const oscillator = audioContext.createOscillator();
   oscillator.type = 'sine'; // Options: 'sine', 'square', 'sawtooth', 'triangle'
