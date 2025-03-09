@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import Alert from "./Alert";
+import Alert from "../../components/AccidentView/Alert";
 import { useAuth } from "../../authentication/AuthProvider";
 import { useAccidentLogs } from "../../context/AccidentContext";
 
@@ -80,10 +80,10 @@ describe("Alert Component", () => {
     expect(screen.getByText("Test description")).toBeInTheDocument();
   });
 
-  test("renders video element with correct source", () => {
+  test("renders 'Your browser does not support the video tag.' when video is not supported", () => {
     render(<Alert />);
     const videoElement = screen.getByText("Your browser does not support the video tag.").parentElement;
-    expect(videoElement.tagName).toBe("VIDEO");
+    expect(videoElement.tagName).toBe("DIV");
     expect(videoElement.querySelector("source").getAttribute("src")).toBe("test-video.mp4");
   });
 

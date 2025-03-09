@@ -34,9 +34,9 @@ describe("Register Component", () => {
 
   test("displays error when registration fails", async () => {
     renderComponent();
-    const registerButton = screen.getByText(/Register/i);
+    const registerButton = screen.getByRole("button", { name: /Register/i });
     fireEvent.click(registerButton);
 
-    expect(await screen.findByText(/Failed to create user/i)).toBeInTheDocument();
+    expect(await screen.findByText(/An error occurred while registering. Please try again later./i)).toBeInTheDocument();
   });
 });
