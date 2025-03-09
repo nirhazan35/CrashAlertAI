@@ -1,4 +1,4 @@
-const formatDateTime = require("../../src/util/DateFormatting");
+const formatDateTime = require("../../../src/util/DateFormatting");
 
 describe("DateFormatting Utility", () => {
   test("should format a Date object correctly", () => {

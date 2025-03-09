@@ -1,9 +1,9 @@
-const { getCameras, assignCameras } = require("../../src/controllers/cameras");
-const Camera = require("../../src/models/Camera");
-const User = require("../../src/models/User");
+const { getCameras, assignCameras } = require("../../../src/controllers/cameras");
+const Camera = require("../../../src/models/Camera");
+const User = require("../../../src/models/User");
 
-jest.mock("../../src/models/Camera");
-jest.mock("../../src/models/User");
+jest.mock("../../../src/models/Camera");
+jest.mock("../../../src/models/User");
 
 describe("Cameras Controller", () => {
   afterEach(() => {

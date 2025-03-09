@@ -5,52 +5,96 @@ const { clients } = require("../socket/index");
 const User = require("../models/User");
 
 // Save Accident
-const saveNewAccident = async (accident) => {
+// const saveNewAccident = async (accident) => {
+//   try {
+//     const { cameraId, location, date, severity, video } = accident;
+
+//     // Validate required fields
+//     if (!cameraId || !location || !severity) {
+//       return {
+//         success: false,
+//         message: "cameraId, location, and severity are required.",
+//       };
+//     }
+
+//     // Create a new Accident document
+//     const newAccident = new Accident({
+//       cameraId,
+//       location,
+//       date: date || new Date(), // Use provided date or default to current date
+//       severity,
+//       video,
+//     });
+
+//     // Format and split date into displayDate and displayTime
+//     const { displayDate, displayTime } = formatDateTime(newAccident.date);
+//     newAccident.displayDate = displayDate;
+//     newAccident.displayTime = displayTime;
+
+//     // Save the new accident to the database
+//     const savedAccident = await newAccident.save();
+
+//     // Return success response with the saved accident
+//     return {
+//       success: true,
+//       message: "New accident saved successfully.",
+//       data: savedAccident,
+//     };
+//   } catch (error) {
+//     console.error("Error saving accident:", error);
+
+//     // Return error response
+//     return {
+//       success: false,
+//       message: "An error occurred while saving the accident.",
+//       error: error.message,
+//     };
+//   }
+// };
+
+const saveNewAccident = async (req, res) => {
   try {
-    const { cameraId, location, date, severity, video } = accident;
+    const { cameraId, location, date, severity, video } = req.body;
 
     // Validate required fields
     if (!cameraId || !location || !severity) {
-      return {
+      return res.status(200).json({
         success: false,
         message: "cameraId, location, and severity are required.",
-      };
+      });
     }
 
     // Create a new Accident document
     const newAccident = new Accident({
       cameraId,
       location,
-      date: date || new Date(), // Use provided date or default to current date
+      date: date || new Date(),
       severity,
       video,
     });
 
-    // Format and split date into displayDate and displayTime
+    // Format date & time using DateFormatting util
     const { displayDate, displayTime } = formatDateTime(newAccident.date);
     newAccident.displayDate = displayDate;
     newAccident.displayTime = displayTime;
 
-    // Save the new accident to the database
+    // Save the accident and send a response
     const savedAccident = await newAccident.save();
-
-    // Return success response with the saved accident
-    return {
+    return res.status(200).json({
       success: true,
       message: "New accident saved successfully.",
       data: savedAccident,
-    };
+    });
   } catch (error) {
     console.error("Error saving accident:", error);
-
-    // Return error response
-    return {
+    return res.status(500).json({
       success: false,
       message: "An error occurred while saving the accident.",
       error: error.message,
-    };
+    });
   }
 };
+
 
 const getActiveAccidents = async (req, res) => {
   try {

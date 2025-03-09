@@ -25,7 +25,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Connect to MongoDB
-connectDB();
+if (process.env.NODE_ENV !== "test") {
+  connectDB();
+}
 
 // Routes
 app.use('/accidents', require('./src/routes/accidents'));
@@ -41,6 +43,9 @@ app.get('/', (req, res) => {
 // startFakeAccidentSimulation();
 
 // Start server
-server.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  server.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
+}
+module.exports = app;
