@@ -1,10 +1,10 @@
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./src/db');
+const connectDB = require('./src/util/db');
 const cookieParser = require('cookie-parser');
-const { startFakeAccidentSimulation } = require("./services/MLmodel");
+const { startFakeAccidentSimulation } = require("./src/services/MLmodel");
 const http = require("http");
-const { initSocket } = require("./socket");
+const { initSocket } = require("./src/socket");
 require('dotenv').config();
 
 const app = express();
@@ -28,10 +28,10 @@ app.use(cookieParser());
 connectDB();
 
 // Routes
-app.use('/accidents', require('./routes/accidents'));
-app.use('/users', require('./routes/users'));
-app.use('/cameras', require('./routes/cameras'));
-app.use('/auth', require('./routes/auth'));
+app.use('/accidents', require('./src/routes/accidents'));
+app.use('/users', require('./src/routes/users'));
+app.use('/cameras', require('./src/routes/cameras'));
+app.use('/auth', require('./src/routes/auth'));
 
 
 app.get('/', (req, res) => {

@@ -160,4 +160,5 @@ module.exports = {
   changeAccidentStatus,
   getHandledAccidents,
   updateAccidentDetails,
+  filterAccidentsByUser,
 };
