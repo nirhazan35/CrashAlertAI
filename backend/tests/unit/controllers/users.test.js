@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const User = require("../../src/models/User");
-const { sendEmail } = require("../../src/services/emailService");
+const User = require("../../../src/models/User");
+const { sendEmail } = require("../../../src/services/emailService");
 
 // Controllers to test
 const {
@@ -12,11 +12,11 @@ const {
   requestPasswordChange,
   notifyPasswordChange,
   getAssignedCameras,
-} = require("../../src/controllers/users");
+} = require("../../../src/controllers/users");
 
 // Mock dependencies
-jest.mock("../../src/models/User");
-jest.mock("../../src/services/emailService");
+jest.mock("../../../src/models/User");
+jest.mock("../../../src/services/emailService");
 jest.mock("bcryptjs");
 jest.mock("jsonwebtoken");
 

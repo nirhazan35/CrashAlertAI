@@ -4,16 +4,16 @@ const {
     changeAccidentStatus,
     getHandledAccidents,
     updateAccidentDetails,
-  } = require("../../src/controllers/accidents");
-  const Accident = require("../../src/models/Accident");
-  const User = require("../../src/models/User");
+  } = require("../../../src/controllers/accidents");
+  const Accident = require("../../../src/models/Accident");
+  const User = require("../../../src/models/User");
   
   // Prevent socketService from running real logic during tests
-  jest.mock("../../src/services/socketService", () => ({
+  jest.mock("../../../src/services/socketService", () => ({
     emitAccidentUpdate: jest.fn(),
   }));
-  jest.mock("../../src/models/Accident");
-  jest.mock("../../src/models/User");
+  jest.mock("../../../src/models/Accident");
+  jest.mock("../../../src/models/User");
   
   describe("Accidents Controller", () => {
     beforeEach(() => {
