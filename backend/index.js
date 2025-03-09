@@ -25,7 +25,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Connect to MongoDB
-connectDB();
+if (process.env.NODE_ENV !== "test") {
+  connectDB();
+}
 
 // Routes
 app.use('/accidents', require('./src/routes/accidents'));
