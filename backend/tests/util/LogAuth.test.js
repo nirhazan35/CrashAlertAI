@@ -1,7 +1,7 @@
-const logAuth = require("../../util/LogAuth");
-const AuthLogs = require("../../models/AuthLogs");
+const logAuth = require("../../src/util/LogAuth");
+const AuthLogs = require("../../src/models/AuthLogs");
 
-jest.mock("../../models/AuthLogs");
+jest.mock("../../src/models/AuthLogs");
 
 describe("LogAuth Utility", () => {
   beforeEach(() => {

@@ -1,15 +1,15 @@
 // Force a dummy export for routes so that controllers/auth.js doesn't break.
-jest.mock("../../routes/auth", () => ({ use: jest.fn() }));
+jest.mock("../../src/routes/auth", () => ({ use: jest.fn() }));
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const User = require("../../models/User");
-const authLogs = require("../../models/AuthLogs");
-const { register, login, logout, refreshToken } = require("../../controllers/auth");
+const User = require("../../src/models/User");
+const authLogs = require("../../src/models/AuthLogs");
+const { register, login, logout, refreshToken } = require("../../src/controllers/auth");
 
 // Mock dependencies
-jest.mock("../../models/User");
-jest.mock("../../models/AuthLogs");
+jest.mock("../../src/models/User");
+jest.mock("../../src/models/AuthLogs");
 jest.mock("bcryptjs");
 jest.mock("jsonwebtoken");
 

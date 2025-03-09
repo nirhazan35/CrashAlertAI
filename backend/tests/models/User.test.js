@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const User = require("../../models/User");
+const User = require("../../src/models/User");
 
 describe("User Model", () => {
   // Clean up the User collection after each test (using the in-memory DB from setup.js)

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Camera = require("../../models/Camera");
+const Camera = require("../../src/models/Camera");
 
 describe("Camera Model", () => {
   test("should validate a valid camera instance and set default date", () => {

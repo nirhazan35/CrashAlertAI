@@ -29,7 +29,7 @@ describe("Email Service", () => {
     process.env.EMAIL_USER = "test@example.com";
 
     // Re-import the email service after our mocks are set up
-    sendEmail = require("../../services/emailService").sendEmail;
+    sendEmail = require("../../src/services/emailService").sendEmail;
     
     // Spy on console.error to suppress logs during testing
     jest.spyOn(console, "error").mockImplementation(() => {});
