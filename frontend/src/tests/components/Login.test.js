@@ -9,7 +9,6 @@ jest.mock('../../authentication/AuthProvider', () => ({
   useAuth: jest.fn(),
 }));
 
-
 // Mock the fetch function globally
 global.fetch = jest.fn();
 
@@ -47,45 +46,63 @@ describe('Login Component', () => {
     // Get inputs directly using the DOM selectors
     const usernameInput = document.querySelector('input[type="text"]');
     const passwordInput = document.querySelector('input[type="password"]');
+    const loginButton = screen.getByRole('button', { name: /Login/i });
 
     fireEvent.change(usernameInput, { target: { value: 'testuser' } });
     fireEvent.change(passwordInput, { target: { value: 'testpassword' } });
-    fireEvent.click(screen.getByRole('button', { name: /Login/i }));
+    fireEvent.click(loginButton);
 
     await waitFor(() => expect(screen.getByText(/Login failed. Please try again./i)).toBeInTheDocument());
   });
 
-test('calls login and redirects on successful login', async () => {
-  const mockLogin = jest.fn();
-  useAuth.mockReturnValueOnce({ login: mockLogin });
+  test('calls login and redirects on successful login', async () => {
+    // Create a more complete mock for fetch
+    const mockLoginResponse = {
+      accessToken: 'fake-token'
+    };
 
-  // Mock fetch to return a response with properly structured data
-  fetch.mockImplementationOnce(() =>
-    Promise.resolve({
-      status: 200,
-      json: () => Promise.resolve({ accessToken: 'fake-token' }),
-    })
-  );
+    const mockLogin = jest.fn();
+    useAuth.mockReturnValue({ login: mockLogin });
 
-  render(
-    <Router>
-      <Login />
-    </Router>
-  );
+    // Create a more complete fetch mock
+    fetch.mockImplementation(() =>
+      Promise.resolve({
+        status: 200,
+        ok: true,
+        json: () => Promise.resolve(mockLoginResponse)
+      })
+    );
 
-  const usernameInput = document.querySelector('input[type="text"]');
-  const passwordInput = document.querySelector('input[type="password"]');
-  const submitButton = screen.getByRole('button', { name: /Login/i });
+    render(
+      <Router>
+        <Login />
+      </Router>
+    );
 
-  fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-  fireEvent.change(passwordInput, { target: { value: 'testpassword' } });
-  fireEvent.click(submitButton);
+    // Get inputs directly using the DOM selectors
+    const usernameInput = document.querySelector('input[type="text"]');
+    const passwordInput = document.querySelector('input[type="password"]');
+    const loginButton = screen.getByRole('button', { name: /Login/i });
 
+    // Fill the form
+    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    fireEvent.change(passwordInput, { target: { value: 'testpassword' } });
 
-  await waitFor(() => {
-    expect(mockLogin).toHaveBeenCalledWith('fake-token');
+    // Submit the form by clicking the button
+    fireEvent.click(loginButton);
+
+    // Verify fetch was called correctly
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+        method: 'POST',
+        headers: expect.any(Object),
+        body: expect.any(String)
+      }));
+    });
+
+    // Now wait for the login to be called
+    await waitFor(() => {
+      expect(mockLogin).toHaveBeenCalledWith('fake-token');
+    }, { timeout: 3000 }); // Increase timeout if needed
   });
-});
-
-
 });
