@@ -1,4 +1,4 @@
-const Accident = require("../../models/Accident");
+const Accident = require("../../src/models/Accident");
 
 describe("Accident Model", () => {
   test("should validate a valid accident instance", () => {
