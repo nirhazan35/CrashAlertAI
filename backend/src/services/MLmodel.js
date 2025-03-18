@@ -3,34 +3,40 @@ const { saveNewAccident } = require("../controllers/accidents");
 
 const startFakeAccidentSimulation = () => {
   console.log("Starting fake accident simulation...");
-  
-const oneDayInMs = 24 * 60 * 60 * 1000; // one day
-const twoDaysInMs = 2 * oneDayInMs; // two days
-const oneDayBefore = new Date(Date.now() - oneDayInMs);
-const twoDaysBefore = new Date(Date.now() - twoDaysInMs);
 
   // Simulated real-time alert for accidents (replace this with ML model integration)
   setInterval(async () => {
     const fakeAccident = {
-      // cameraId: `accident_${Math.floor(Math.random() * 1000)}`,
       cameraId: `accident_94`,
       location: "Highway 1",
-      // date: twoDaysBefore.toISOString(),
       date: new Date().toISOString(),
       severity: "high",
-      video: "fake-video-url",
+      video: "https://drive.google.com/file/d/1PrdFv0D57EKBeGtslIJjlQGJGjQszRfE/view",
+    };
+
+    // Create a fake req object with the accident data as req.body
+    const fakeReq = { body: fakeAccident };
+
+    // Create a minimal fake res object with chained status and json methods
+    const fakeRes = {
+      status(code) {
+        this.statusCode = code;
+        return this;
+      },
+      json(data) {
+        return data;
+      },
     };
 
     try {
-      // Save the fake accident using the saveNewAccident controller
-      const savedAccident = await saveNewAccident(fakeAccident);
+      // Pass the fake request and response objects to the saveNewAccident controller
+      const savedAccident = await saveNewAccident(fakeReq, fakeRes);
 
-      // Emit the accident to clients
-      console.log("Emitting new accident:", savedAccident.data);
-      if (savedAccident.data)
+      if (savedAccident.success) {
         emitNewAccident(savedAccident.data);
-      else
-        throw new Error("Error saving fake accident");
+      } else {
+        throw new Error("Error saving fake accident: " + savedAccident.message);
+      }
     } catch (error) {
       console.error("Error during fake accident simulation:", error);
     }
