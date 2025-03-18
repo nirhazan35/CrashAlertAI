@@ -15,6 +15,17 @@ const initSocket = (server) => {
   return io;
 };
 
+// Function to disconnect a specific user
+const disconnectUser = (userId) => {
+  if (clients[userId]) {
+    console.log(`Forcing disconnect for user ID: ${userId}`);
+    clients[userId].close();
+    delete clients[userId];
+    return true;
+  }
+  return false;
+};
+
 const initUserSocket = () => {
   // Middleware for authentication
   io.use((socket, next) => {
@@ -40,9 +51,8 @@ const initUserSocket = () => {
 
     socket.on("disconnect", () => {
       console.log(`User disconnected: ${socket.user.username}`);
-      delete clients[socket.user.id];
     });
   });
 };
 
-module.exports = { initSocket, clients, initUserSocket };
+module.exports = { initSocket, clients, initUserSocket, disconnectUser };
