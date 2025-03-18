@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const authLogs = require("../models/AuthLogs");
+const { clients, initUserSocket } = require("../socket");
 
 
 
@@ -67,15 +68,18 @@ const login = async (req, res) => {
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '1d' }
         );
+
         // Save Refresh Token in the database
         user.refreshToken = refreshToken;
         await user.save();
+
         // Set the Refresh Token in an HTTP-only cookie
         res.cookie('jwt', refreshToken, {
             httpOnly: true,
             sameSite: 'None',
             secure: true,
         });
+
         await authLog.updateResult("Success");
         res.status(200).json({ "accessToken" : accessToken });
     } catch (error) {
@@ -105,6 +109,9 @@ const logout = async (req, res) => {
     
     user.refreshToken = null;
     await user.save();
+
+    // Disconnect the user's socket connection
+    clients[user.id].disconnect();
 
     // Clear the refresh token cookie
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });

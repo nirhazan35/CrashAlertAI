@@ -3,6 +3,18 @@ import "./Alert.css";
 import { useAuth } from "../../authentication/AuthProvider";
 import { useAccidentLogs } from "../../context/AccidentContext";
 
+// Helper function to convert a standard Google Drive URL to an embeddable URL
+const getEmbedUrl = (url) => {
+  if (!url) return "";
+  // Extract the file ID from a URL of the form:
+  // https://drive.google.com/file/d/FILE_ID/view
+  const match = url.match(/\/d\/([^\/]+)\//);
+  if (match && match[1]) {
+    return `https://drive.google.com/file/d/${match[1]}/preview`;
+  }
+  return url;
+};
+
 const Alert = () => {
   const { user } = useAuth();
   const {
@@ -64,10 +76,19 @@ const Alert = () => {
 
   return (
     <div className="alert-container">
-      <video className="alert-video" controls autoPlay>
-        <source src={selectedAlert.video || ""} type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
+      {selectedAlert.video && (
+        <div className="video-container">
+          <iframe
+            src={getEmbedUrl(selectedAlert.video)}
+            width="640"
+            height="480"
+            frameBorder="0"
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+            title="Accident Video"
+          ></iframe>
+        </div>
+      )}
       <div className="alert-details-container">
         <div className="alert-details">
           <div className="detail-row">

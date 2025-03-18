@@ -12,7 +12,10 @@ const initSocket = (server) => {
       credentials: true,
     },
   });
+  return io;
+};
 
+const initUserSocket = () => {
   // Middleware for authentication
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
@@ -23,6 +26,7 @@ const initSocket = (server) => {
     try {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       socket.user = decoded; // Attach user data to socket
+      console.log(`User authenticated: ${socket.user.username}`);
       clients[socket.user.id] = socket
       next();
     } catch (err) {
@@ -31,25 +35,14 @@ const initSocket = (server) => {
   });
 
   // Define connection event
-  io.on("connection", (socket) => {
+  io.on("connection", (socket) => { 
     console.log(`User connected: ${socket.user.username}`);
 
     socket.on("disconnect", () => {
       console.log(`User disconnected: ${socket.user.username}`);
+      delete clients[socket.user.id];
     });
   });
-
-  return io;
 };
 
-// Function to broadcast new accidents
-const broadcastNewAccident = (accidentData) => {
-  io.emit("new_accident", accidentData);
-};
-
-// Function to broadcast accident updates
-const broadcastAccidentUpdate = (updateData) => {
-  io.emit("accident_update", updateData);
-};
-
-module.exports = { initSocket, broadcastNewAccident, broadcastAccidentUpdate, clients };
+module.exports = { initSocket, clients, initUserSocket };

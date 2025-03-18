@@ -3,54 +3,7 @@ const formatDateTime = require("../util/DateFormatting");
 const { emitAccidentUpdate } = require("../services/socketService");
 const { clients } = require("../socket/index");
 const User = require("../models/User");
-
-// Save Accident
-// const saveNewAccident = async (accident) => {
-//   try {
-//     const { cameraId, location, date, severity, video } = accident;
-
-//     // Validate required fields
-//     if (!cameraId || !location || !severity) {
-//       return {
-//         success: false,
-//         message: "cameraId, location, and severity are required.",
-//       };
-//     }
-
-//     // Create a new Accident document
-//     const newAccident = new Accident({
-//       cameraId,
-//       location,
-//       date: date || new Date(), // Use provided date or default to current date
-//       severity,
-//       video,
-//     });
-
-//     // Format and split date into displayDate and displayTime
-//     const { displayDate, displayTime } = formatDateTime(newAccident.date);
-//     newAccident.displayDate = displayDate;
-//     newAccident.displayTime = displayTime;
-
-//     // Save the new accident to the database
-//     const savedAccident = await newAccident.save();
-
-//     // Return success response with the saved accident
-//     return {
-//       success: true,
-//       message: "New accident saved successfully.",
-//       data: savedAccident,
-//     };
-//   } catch (error) {
-//     console.error("Error saving accident:", error);
-
-//     // Return error response
-//     return {
-//       success: false,
-//       message: "An error occurred while saving the accident.",
-//       error: error.message,
-//     };
-//   }
-// };
+const { find, findById } = require("../models/Camera");
 
 const saveNewAccident = async (req, res) => {
   try {
@@ -102,12 +55,12 @@ const getActiveAccidents = async (req, res) => {
     const activeAccidents = await Accident.find({ status: { $in: ["active", "assigned"] } });
 
     // Filter accidents to only include those with cameras assigned to the user
-    const filteredAccidents = filterAccidentsByUser(req.user, activeAccidents);
+    const filteredAccidents = await filterAccidentsByUser(req.user, activeAccidents);
 
     res.status(200).json({
       success: true,
       message: "Active accidents retrieved successfully.",
-      data: activeAccidents,
+      data: filteredAccidents,
     });
   } catch (error) {
     console.error("Error fetching active accidents:", error);
@@ -159,14 +112,13 @@ const getHandledAccidents = async (req, res) => {
   }
 };
 
-const filterAccidentsByUser = (user, accidents) => {
+const filterAccidentsByUser = async(tokenUser, accidents) => {
+  const user = await User.findById(tokenUser.id);
   if (!user || !user.assignedCameras) {
     console.warn("User or assignedCameras not found.");
     return [];
   }
-
   const assignedCameraIds = user.assignedCameras.map(cam => cam.toString()); // Convert to strings for comparison
-
   return accidents.filter(accident => assignedCameraIds.includes(accident.cameraId.toString()));
 };
 
