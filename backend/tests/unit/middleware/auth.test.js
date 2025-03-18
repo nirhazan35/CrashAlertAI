@@ -1,10 +1,10 @@
 const jwt = require("jsonwebtoken");
-const User = require("../../src/models/User");
-const { verifyToken, hasPermission } = require("../../src/middleware/auth");
+const User = require("../../../src/models/User");
+const { verifyToken, hasPermission } = require("../../../src/middleware/auth");
 
 // Mock dependencies
 jest.mock("jsonwebtoken");
-jest.mock("../../src/models/User");
+jest.mock("../../../src/models/User");
 
 describe("Auth Middleware", () => {
   afterEach(() => {

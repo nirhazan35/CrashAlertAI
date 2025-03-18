@@ -1,11 +1,11 @@
-const { emitNewAccident, emitAccidentUpdate } = require("../../src/services/socketService");
-const Camera = require("../../src/models/Camera");
+const { emitNewAccident, emitAccidentUpdate } = require("../../../src/services/socketService");
+const Camera = require("../../../src/models/Camera");
 
 // Retrieve the clients object from the socket module (a plain object)
-const { clients } = require("../../src/socket");
+const { clients } = require("../../../src/socket");
 
-jest.mock("../../src/models/Camera");
-jest.mock("../../src/socket", () => ({
+jest.mock("../../../src/models/Camera");
+jest.mock("../../../src/socket", () => ({
   clients: {}
 }));
 

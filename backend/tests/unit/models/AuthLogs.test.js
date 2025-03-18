@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const AuthLogs = require("../../src/models/AuthLogs");
+const AuthLogs = require("../../../src/models/AuthLogs");
 
 describe("AuthLogs Model", () => {
   // Clear the AuthLogs collection after each test (using the in-memory DB from setup.js)
