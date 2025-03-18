@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const authLogs = require("../models/AuthLogs");
-const { clients, initUserSocket, disconnectUser } = require("../socket");
+const { clients, disconnectUser } = require("../socket");
 
 
 
@@ -110,12 +110,11 @@ const logout = async (req, res) => {
     user.refreshToken = null;
     await user.save();
 
-    // Disconnect the user's socket connection
-    console.log("before all clients keys", Object.keys(clients));
-    if (clients[user.id]) {
+     // Disconnect the user's socket connection if it exists
+     if (clients[user.id]) {
       clients[user.id].disconnect();
+      delete clients[user.id]; // Make sure to remove from clients object
     }
-    console.log("after all clients keys", Object.keys(clients));
 
     // Clear the refresh token cookie
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });

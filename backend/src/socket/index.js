@@ -1,8 +1,9 @@
+// In socket/index.js
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 
-let io; // Exported for use in other files
-const clients = {}
+let io;
+const clients = {};
 
 // Initialize Socket.IO
 const initSocket = (server) => {
@@ -12,22 +13,8 @@ const initSocket = (server) => {
       credentials: true,
     },
   });
-  return io;
-};
-
-// Function to disconnect a specific user
-const disconnectUser = (userId) => {
-  if (clients[userId]) {
-    console.log(`Forcing disconnect for user ID: ${userId}`);
-    clients[userId].close();
-    delete clients[userId];
-    return true;
-  }
-  return false;
-};
-
-const initUserSocket = () => {
-  // Middleware for authentication
+  
+  // Move authentication middleware here
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) {
@@ -37,22 +24,28 @@ const initUserSocket = () => {
     try {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       socket.user = decoded; // Attach user data to socket
-      console.log(`User authenticated: ${socket.user.username}`);
-      clients[socket.user.id] = socket
       next();
     } catch (err) {
-      next(new Error("Authentication error: Invalid token"));
+      return next(new Error("Authentication error: Invalid token"));
     }
   });
 
   // Define connection event
-  io.on("connection", (socket) => { 
-    console.log(`User connected: ${socket.user.username}`);
-
-    socket.on("disconnect", () => {
-      console.log(`User disconnected: ${socket.user.username}`);
-    });
+  io.on("connection", (socket) => {
+    if (socket.user) {
+      console.log(`User connected: ${socket.user.username}`);
+      clients[socket.user.id] = socket;
+      
+      socket.on("disconnect", () => {
+        console.log(`User disconnected: ${socket.user.username}`);
+        delete clients[socket.user.id];
+      });
+    }
   });
+  
+  return io;
 };
 
-module.exports = { initSocket, clients, initUserSocket, disconnectUser };
+// Remove the separate initUserSocket function since it's now integrated
+
+module.exports = { initSocket, clients };

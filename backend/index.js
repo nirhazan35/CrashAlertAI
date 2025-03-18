@@ -4,7 +4,7 @@ const connectDB = require('./src/util/db');
 const cookieParser = require('cookie-parser');
 const { startFakeAccidentSimulation } = require("./src/services/MLmodel");
 const http = require("http");
-const { initSocket, initUserSocket } = require("./src/socket");
+const { initSocket } = require("./src/socket");
 require('dotenv').config();
 
 const app = express();
@@ -14,7 +14,6 @@ const server = http.createServer(app);
 
 // Initialize Socket.IO
 initSocket(server);
-initUserSocket(); // Initialize user authentication
 
 // Middleware
 app.use(cors({

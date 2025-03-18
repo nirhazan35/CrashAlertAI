@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
-import { connectSocket } from "../services/socket";
+import { connectSocket, disconnectSocket } from "../services/socket";
 
 const AuthContext = createContext();
 
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
       token: accessToken,
       username: decoded.username,
     });
-    connectSocket(accessToken);
+    connectSocket(accessToken); // Connect to socket after login
   };
 
   const logout = async () => {
@@ -65,6 +65,7 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
       });
       if (response.ok) {
+        disconnectSocket(); // Disconnect socket on logout
         setUser({ isLoggedIn: false, role: null, token: null, username: null });
       } else {
         console.error("Logout failed:", response.status);
