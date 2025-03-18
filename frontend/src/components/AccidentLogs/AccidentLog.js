@@ -13,6 +13,7 @@ const AccidentLog = () => {
   const { accidentLogs, updateAccidentStatus, handleRowDoubleClick } = useAccidentLogs();
   const { user } = useAuth();
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
+  const [cameraData, setCameraData] = useState({ cameras: [], locations: [] });
 
   // Filter state including new time filters
   const [filters, setFilters] = useState({
@@ -23,9 +24,6 @@ const AccidentLog = () => {
     startTime: "",
     endTime: "",
   });
-
-  // State for camera IDs and locations
-  const [cameraData, setCameraData] = useState({ cameras: [], locations: [] });
 
   // Fetch all cameras id and location from backend
   useEffect(() => {

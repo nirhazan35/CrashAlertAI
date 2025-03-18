@@ -1,11 +1,23 @@
 import { io } from "socket.io-client";
 
-let socket; // Declare the socket variable globally
+let socket;
 
 // Initialize Socket.IO connection
 export const connectSocket = (token) => {
+  // Disconnect any existing connection first
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
+  
+  // Only connect if we have a valid token
+  if (!token) {
+    console.error("Cannot connect socket: No authentication token provided");
+    return;
+  }
+  
   socket = io(process.env.REACT_APP_URL_BACKEND, {
-    auth: { token }, // Pass token for authentication
+    auth: { token },
   });
 
   socket.on("connect", () => {
@@ -19,6 +31,14 @@ export const connectSocket = (token) => {
   socket.on("disconnect", () => {
     console.log("Disconnected from Socket.IO server");
   });
+};
+
+export const disconnectSocket = () => {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+    console.log("Socket manually disconnected");
+  }
 };
 
 // Helper to ensure socket is initialized

@@ -1,4 +1,4 @@
-const { broadcastNewAccident, broadcastAccidentUpdate, clients } = require("../socket");
+const { clients } = require("../socket");
 const Camera = require("../models/Camera");
 
 
@@ -9,7 +9,7 @@ const emitNewAccident = async (accidentData) => {
     const camera = await Camera.findOne({ cameraId: accidentData.cameraId }).populate("users");
 
     if (!camera) {
-      console.error(`Camera with ID ${accidentData.cameraId} not found`);
+      console.error(`No users are associated with camera ID ${accidentData.cameraId}`);
       return;
     }
 
@@ -36,7 +36,7 @@ const emitAccidentUpdate = async (updateData) => {
     // Retrieve the camera associated with this accident
     const camera = await Camera.findOne({ cameraId: updateData.cameraId }).populate("users");
     if (!camera) {
-      console.error(`Camera with ID ${updateData.cameraId} not found`);
+      console.error(`No users are associated with camera ID ${accidentData.cameraId}`);
       return;
     }
 

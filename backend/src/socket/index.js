@@ -1,8 +1,9 @@
+// In socket/index.js
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 
-let io; // Exported for use in other files
-const clients = {}
+let io;
+const clients = {};
 
 // Initialize Socket.IO
 const initSocket = (server) => {
@@ -12,8 +13,8 @@ const initSocket = (server) => {
       credentials: true,
     },
   });
-
-  // Middleware for authentication
+  
+  // Move authentication middleware here
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) {
@@ -23,33 +24,28 @@ const initSocket = (server) => {
     try {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       socket.user = decoded; // Attach user data to socket
-      clients[socket.user.id] = socket
       next();
     } catch (err) {
-      next(new Error("Authentication error: Invalid token"));
+      return next(new Error("Authentication error: Invalid token"));
     }
   });
 
   // Define connection event
   io.on("connection", (socket) => {
-    console.log(`User connected: ${socket.user.username}`);
-
-    socket.on("disconnect", () => {
-      console.log(`User disconnected: ${socket.user.username}`);
-    });
+    if (socket.user) {
+      console.log(`User connected: ${socket.user.username}`);
+      clients[socket.user.id] = socket;
+      
+      socket.on("disconnect", () => {
+        console.log(`User disconnected: ${socket.user.username}`);
+        delete clients[socket.user.id];
+      });
+    }
   });
-
+  
   return io;
 };
 
-// Function to broadcast new accidents
-const broadcastNewAccident = (accidentData) => {
-  io.emit("new_accident", accidentData);
-};
+// Remove the separate initUserSocket function since it's now integrated
 
-// Function to broadcast accident updates
-const broadcastAccidentUpdate = (updateData) => {
-  io.emit("accident_update", updateData);
-};
-
-module.exports = { initSocket, broadcastNewAccident, broadcastAccidentUpdate, clients };
+module.exports = { initSocket, clients };
