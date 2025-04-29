@@ -111,8 +111,8 @@
   100% { background-color: red; }
 }
 
-/* adding flicker effect to unassigned rows*/
-tr:not(.assigned-row) {
+/* adding flicker effect to unassigned rows in accident log table only */
+.accident-log-table tr:not(.assigned-row) {
   animation: flicker 1s infinite;
 }
 
