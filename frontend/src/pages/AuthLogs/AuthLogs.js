@@ -38,7 +38,17 @@ const AuthLogs = () => {
       
       // Add filters to query params if they exist
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value);
+        if (value) {
+          // Special handling for "Unknown" values to include null/undefined values
+          if (value === 'Unknown' && 
+             (key === 'browser' || key === 'operatingSystem' || key === 'ipAddress')) {
+            queryParams.append(key, 'Unknown');
+            // Add parameter to indicate we want to include null/undefined values
+            queryParams.append(`${key}IncludeNull`, 'true');
+          } else {
+            queryParams.append(key, value);
+          }
+        }
       });
       
       const response = await fetch(
@@ -86,13 +96,12 @@ const AuthLogs = () => {
       ...prev,
       [name]: value
     }));
-  };
-
-  // Apply filters
-  const handleApplyFilters = (e) => {
-    e.preventDefault();
-    setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page when applying filters
-    fetchLogs();
+    
+    // Reset to first page when filter changes
+    setPagination(prev => ({ ...prev, page: 1 }));
+    
+    // Auto-apply filter change
+    setTimeout(fetchLogs, 0);
   };
 
   // Reset filters
@@ -134,101 +143,98 @@ const AuthLogs = () => {
       
       {/* Filter Form */}
       <div className="logs-filter-container">
-        <form onSubmit={handleApplyFilters}>
-          <div className="filter-grid">
-            <div className="filter-group">
-              <label>Username</label>
-              <input 
-                type="text" 
-                name="username" 
-                value={filters.username} 
-                onChange={handleFilterChange} 
-                placeholder="Filter by username"
-              />
-            </div>
-            
-            <div className="filter-group">
-              <label>Action Type</label>
-              <select name="type" value={filters.type} onChange={handleFilterChange}>
-                <option value="">All Types</option>
-                <option value="Login">Login</option>
-                <option value="Logout">Logout</option>
-                <option value="Register">Register</option>
-              </select>
-            </div>
-            
-            <div className="filter-group">
-              <label>Result</label>
-              <select name="result" value={filters.result} onChange={handleFilterChange}>
-                <option value="">All Results</option>
-                <option value="Success">Success</option>
-                <option value="Failure">Failure</option>
-              </select>
-            </div>
-            
-            <div className="filter-group">
-              <label>IP Address</label>
-              <input 
-                type="text" 
-                name="ipAddress" 
-                value={filters.ipAddress} 
-                onChange={handleFilterChange} 
-                placeholder="Filter by IP"
-              />
-            </div>
-            
-            <div className="filter-group">
-              <label>Browser</label>
-              <select name="browser" value={filters.browser} onChange={handleFilterChange}>
-                <option value="">All Browsers</option>
-                <option value="Chrome">Chrome</option>
-                <option value="Firefox">Firefox</option>
-                <option value="Safari">Safari</option>
-                <option value="Edge">Edge</option>
-                <option value="Internet Explorer">Internet Explorer</option>
-                <option value="Unknown">Unknown</option>
-              </select>
-            </div>
-            
-            <div className="filter-group">
-              <label>Operating System</label>
-              <select name="operatingSystem" value={filters.operatingSystem} onChange={handleFilterChange}>
-                <option value="">All OS</option>
-                <option value="Windows">Windows</option>
-                <option value="MacOS">MacOS</option>
-                <option value="Linux">Linux</option>
-                <option value="Android">Android</option>
-                <option value="iOS">iOS</option>
-                <option value="Unknown">Unknown</option>
-              </select>
-            </div>
-            
-            <div className="filter-group">
-              <label>Start Date</label>
-              <input 
-                type="date" 
-                name="startDate" 
-                value={filters.startDate} 
-                onChange={handleFilterChange}
-              />
-            </div>
-            
-            <div className="filter-group">
-              <label>End Date</label>
-              <input 
-                type="date" 
-                name="endDate" 
-                value={filters.endDate} 
-                onChange={handleFilterChange}
-              />
-            </div>
+        <div className="filter-grid">
+          <div className="filter-group">
+            <label>Username</label>
+            <input 
+              type="text" 
+              name="username" 
+              value={filters.username} 
+              onChange={handleFilterChange} 
+              placeholder="Filter by username"
+            />
           </div>
           
-          <div className="filter-actions">
-            <button type="submit" className="btn-apply">Apply Filters</button>
-            <button type="button" className="btn-reset" onClick={handleResetFilters}>Reset Filters</button>
+          <div className="filter-group">
+            <label>Action Type</label>
+            <select name="type" value={filters.type} onChange={handleFilterChange}>
+              <option value="">All Types</option>
+              <option value="Login">Login</option>
+              <option value="Logout">Logout</option>
+              <option value="Register">Register</option>
+            </select>
           </div>
-        </form>
+          
+          <div className="filter-group">
+            <label>Result</label>
+            <select name="result" value={filters.result} onChange={handleFilterChange}>
+              <option value="">All Results</option>
+              <option value="Success">Success</option>
+              <option value="Failure">Failure</option>
+            </select>
+          </div>
+          
+          <div className="filter-group">
+            <label>IP Address</label>
+            <input 
+              type="text" 
+              name="ipAddress" 
+              value={filters.ipAddress} 
+              onChange={handleFilterChange} 
+              placeholder="Filter by IP"
+            />
+          </div>
+          
+          <div className="filter-group">
+            <label>Browser</label>
+            <select name="browser" value={filters.browser} onChange={handleFilterChange}>
+              <option value="">All Browsers</option>
+              <option value="Chrome">Chrome</option>
+              <option value="Firefox">Firefox</option>
+              <option value="Safari">Safari</option>
+              <option value="Edge">Edge</option>
+              <option value="Internet Explorer">Internet Explorer</option>
+              <option value="Unknown">Unknown</option>
+            </select>
+          </div>
+          
+          <div className="filter-group">
+            <label>Operating System</label>
+            <select name="operatingSystem" value={filters.operatingSystem} onChange={handleFilterChange}>
+              <option value="">All OS</option>
+              <option value="Windows">Windows</option>
+              <option value="MacOS">MacOS</option>
+              <option value="Linux">Linux</option>
+              <option value="Android">Android</option>
+              <option value="iOS">iOS</option>
+              <option value="Unknown">Unknown</option>
+            </select>
+          </div>
+          
+          <div className="filter-group">
+            <label>Start Date</label>
+            <input 
+              type="date" 
+              name="startDate" 
+              value={filters.startDate} 
+              onChange={handleFilterChange}
+            />
+          </div>
+          
+          <div className="filter-group">
+            <label>End Date</label>
+            <input 
+              type="date" 
+              name="endDate" 
+              value={filters.endDate} 
+              onChange={handleFilterChange}
+            />
+          </div>
+        </div>
+        
+        <div className="filter-actions">
+          <button type="button" className="btn-reset" onClick={handleResetFilters}>Reset Filters</button>
+        </div>
       </div>
       
       {/* Logs Table */}

@@ -297,7 +297,10 @@ const getAuthLogs = async (req, res) => {
       endDate, 
       ipAddress,
       browser,
-      operatingSystem
+      operatingSystem,
+      ipAddressIncludeNull,
+      browserIncludeNull,
+      operatingSystemIncludeNull
     } = req.query;
     
     // Build the filter object
@@ -307,9 +310,40 @@ const getAuthLogs = async (req, res) => {
     if (username) filter.username = new RegExp(username, 'i'); // Case-insensitive partial match
     if (type) filter.type = type;
     if (result) filter.result = result;
-    if (ipAddress) filter.ipAddress = new RegExp(ipAddress, 'i');
-    if (browser) filter.browser = browser;
-    if (operatingSystem) filter.operatingSystem = operatingSystem;
+    
+    // Special handling for fields that need to include null/undefined values
+    if (ipAddress) {
+      if (ipAddress === 'Unknown' && ipAddressIncludeNull === 'true') {
+        // Include actual "Unknown" values or null/undefined/empty values
+        filter.ipAddress = { 
+          $in: [null, 'Unknown', ''] 
+        };
+      } else {
+        filter.ipAddress = new RegExp(ipAddress, 'i');
+      }
+    }
+    
+    if (browser) {
+      if (browser === 'Unknown' && browserIncludeNull === 'true') {
+        // Include actual "Unknown" values or null/undefined/empty values
+        filter.browser = { 
+          $in: [null, 'Unknown', ''] 
+        };
+      } else {
+        filter.browser = browser;
+      }
+    }
+    
+    if (operatingSystem) {
+      if (operatingSystem === 'Unknown' && operatingSystemIncludeNull === 'true') {
+        // Include actual "Unknown" values or null/undefined/empty values
+        filter.operatingSystem = { 
+          $in: [null, 'Unknown', ''] 
+        };
+      } else {
+        filter.operatingSystem = operatingSystem;
+      }
+    }
     
     // Date range filtering
     if (startDate || endDate) {

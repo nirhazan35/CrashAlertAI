@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import './global.css';
 import App from './App';
 import { AuthProvider } from './authentication/AuthProvider';
 import { AccidentLogsProvider } from './context/AccidentContext';
