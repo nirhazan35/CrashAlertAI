@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
 
 let socket;
+let forceLogoutCallback; // Store the callback for force logout
 
 // Initialize Socket.IO connection
 export const connectSocket = (token) => {
@@ -28,8 +29,16 @@ export const connectSocket = (token) => {
     console.error("Socket.IO connection error:", err.message);
   });
 
-  socket.on("disconnect", () => {
-    console.log("Disconnected from Socket.IO server");
+  socket.on("disconnect", (reason) => {
+    console.log(`Disconnected from Socket.IO server. Reason: ${reason}`);
+  });
+  
+  // Listen for force logout events
+  socket.on("force_logout", (data) => {
+    console.log("Forced logout detected:", data.message);
+    if (forceLogoutCallback) {
+      forceLogoutCallback(data.message);
+    }
   });
 };
 
@@ -38,6 +47,19 @@ export const disconnectSocket = () => {
     socket.disconnect();
     socket = null;
     console.log("Socket manually disconnected");
+  }
+};
+
+// Register a callback for force logout events
+export const onForceLogout = (callback) => {
+  forceLogoutCallback = callback;
+  
+  // If socket already exists, register the handler immediately
+  if (socket) {
+    socket.off("force_logout"); // Remove any existing handler
+    socket.on("force_logout", (data) => {
+      callback(data.message);
+    });
   }
 };
 

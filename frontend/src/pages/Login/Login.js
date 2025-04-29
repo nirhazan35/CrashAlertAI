@@ -23,18 +23,28 @@ const Login = () => {
         body: JSON.stringify({ username, password }),
         credentials: "include",
       });
+      
       if (response.status !== 200) {
-        console.error("Login failed:", response.status);
-        throw new Error("Login failed");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
       }
+      
       setError(null);
       const data = await response.json();
-      const {accessToken} =  data;
-      await login(accessToken);
+      const { accessToken, session } = data;
+      
+      // Pass both the access token and session info to the login function
+      await login(accessToken, session);
+      
+      // If session.singleSessionOnly is true, show a message
+      if (session && session.singleSessionOnly) {
+        console.log("Note: Your account is configured for single-session only. Logging in from another device will terminate this session.");
+      }
+      
       // Redirect
       navigate('/dashboard');
     } catch (err) {
-      setError('Login failed. Please try again.');
+      setError(err.message || 'Login failed. Please try again.');
     }
   };
 

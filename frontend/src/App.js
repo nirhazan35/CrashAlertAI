@@ -14,6 +14,7 @@ import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 import ManageCameras from './pages/AdminPage/ManageCameras/ManageCameras';
 import SidebarLayout from './components/sidebar/SidebarLayout';
+import AuthLogs from './pages/AuthLogs/AuthLogs';
 
 function App() {
   const { user } = useAuth();
@@ -42,6 +43,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/manage-cameras" element={<ManageCameras />} />
+            <Route path="/logs" element={<AuthLogs />} />
           </Route>
         </Route>
       </Routes>

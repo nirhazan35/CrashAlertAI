@@ -24,9 +24,14 @@ const Sidebar = () => {
           <Link to="/live">Live Feed</Link>
         </li>
         {user?.role === 'admin' && (
-          <li>
-            <Link to="/admin">Admin Page</Link>
-          </li>
+          <>
+            <li>
+              <Link to="/admin">Admin Page</Link>
+            </li>
+            <li>
+              <Link to="/logs">Auth Logs</Link>
+            </li>
+          </>
         )}
         <li>
         <Logout />
