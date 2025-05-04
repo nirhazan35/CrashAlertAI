@@ -8,7 +8,6 @@ export const theme = createTheme({
     fontFamily: 'Inter, sans-serif',
     fontWeight: '600',
   },
-  // Primary colors with a blue/navy scheme for professional look
   colors: {
     brand: [
       '#EBF5FF', // 0

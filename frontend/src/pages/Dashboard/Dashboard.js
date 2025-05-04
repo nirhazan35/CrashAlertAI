@@ -1,22 +1,22 @@
 import Alert from '../../components/AccidentView/Alert';
 import { useAccidentLogs } from '../../context/AccidentContext';
 import AccidentLog from '../../components/AccidentLogs/AccidentLog';
-import { Paper, Title, useMantineTheme, Stack } from '@mantine/core';
+import { Stack } from '@mantine/core';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import './Dashboard.css';
 
 const Dashboard = () => {
   const { selectedAlert } = useAccidentLogs();
-  const theme = useMantineTheme();
   
   return (
-    <Stack spacing="md">
+    <Stack spacing="md" className="dashboard-container">
       {/* Alert container */}
-      <PageTemplate title="" paperProps={{ style: { height: '100%' } }}>
+      <PageTemplate title="" paperProps={{ className: 'alert-container' }}>
         <Alert alert={selectedAlert} />
       </PageTemplate>
 
       {/* Accident Logs */}
-      <PageTemplate title="Accident Logs">
+      <PageTemplate title="" className="accident-logs-section">
         <AccidentLog />
       </PageTemplate>
     </Stack>

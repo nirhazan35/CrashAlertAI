@@ -1,18 +1,114 @@
-/* Updated styling for AccidentView (Alert) to keep a consistent side-by-side layout */
+/* Updated styling for AccidentView (Alert) component */
 
+/* Base containers */
+.accident-details-box {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.accident-details-paper {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(248,250,252,0.9) 100%);
+  border-left: 4px solid #3b82f6;
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+/* Design elements */
+.design-circle {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.design-circle-top-right {
+  top: -60px;
+  right: -60px;
+  width: 120px;
+  height: 120px;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.design-circle-bottom-left {
+  bottom: -80px;
+  left: 100px;
+  width: 160px;
+  height: 160px;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.content-stack {
+  position: relative;
+  z-index: 1;
+}
+
+/* Typography */
+.accident-details-title {
+  font-family: 'DM Sans', sans-serif;
+}
+
+.status-badge {
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Video section */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  overflow: hidden;
+  border-radius: var(--mantine-radius-md);
+}
+
+.video-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--mantine-color-gray-3);
+  border-radius: var(--mantine-radius-md);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.no-video-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  background-color: var(--mantine-color-gray-1);
+  border-radius: var(--mantine-radius-md);
+  color: var(--mantine-color-dimmed);
+}
+
+.accident-info-stack {
+  height: 100%;
+}
+
+/* No accident selected state */
+.no-accident-selected {
+  padding: 50px 0;
+  text-align: center;
+  color: var(--mantine-color-dimmed);
+}
+
+/* Legacy styles - keeping for compatibility */
 .alert-container {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
   padding: 20px;
   background: #fdfdfd;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   margin-bottom: 20px;
 }
 
-/* Ensure both video and details containers have a consistent minimum width */
 .alert-video,
 .alert-details-container {
   flex: 1 1 45%;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Title, Paper, Stack, useMantineTheme } from '@mantine/core';
+import { Title, Paper, Stack } from '@mantine/core';
 
 /**
  * PageTemplate provides consistent styling for all pages
@@ -16,12 +16,11 @@ const PageTemplate = ({
   titleProps = {}, 
   paperProps = {} 
 }) => {
-  const theme = useMantineTheme();
   
   return (
     <Stack spacing="md">
       <Paper 
-        shadow="sm" 
+        shadow="" 
         p="md" 
         radius="md"
         {...paperProps}
