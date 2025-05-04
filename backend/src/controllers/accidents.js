@@ -11,7 +11,7 @@ const saveNewAccident = async (req, res) => {
 
     // Validate required fields
     if (!cameraId || !location || !severity) {
-      return res.status(200).json({
+      return res.status(400).json({
         success: false,
         message: "cameraId, location, and severity are required.",
       });
@@ -33,7 +33,7 @@ const saveNewAccident = async (req, res) => {
 
     // Save the accident and send a response
     const savedAccident = await newAccident.save();
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
       message: "New accident saved successfully.",
       data: savedAccident,
@@ -54,8 +54,22 @@ const getActiveAccidents = async (req, res) => {
     // Query the database to find accidents with status "active" or "assigned"
     const activeAccidents = await Accident.find({ status: { $in: ["active", "assigned"] } });
 
-    // Filter accidents to only include those with cameras assigned to the user
-    const filteredAccidents = await filterAccidentsByUser(req.user, activeAccidents);
+    // Get user with their assigned cameras in a single query
+    const user = await User.findById(req.user.id).select('assignedCameras');
+    
+    if (!user || !user.assignedCameras || user.assignedCameras.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No cameras assigned to this user.",
+        data: [],
+      });
+    }
+    
+    // Filter accidents by assigned cameras without additional DB queries
+    const assignedCameraIds = user.assignedCameras.map(cam => cam.toString());
+    const filteredAccidents = activeAccidents.filter(accident => 
+      assignedCameraIds.includes(accident.cameraId.toString())
+    );
 
     res.status(200).json({
       success: true,
@@ -112,14 +126,25 @@ const getHandledAccidents = async (req, res) => {
   }
 };
 
+// Optimized version that doesn't fetch user data every time
 const filterAccidentsByUser = async(tokenUser, accidents) => {
-  const user = await User.findById(tokenUser.id);
-  if (!user || !user.assignedCameras) {
-    console.warn("User or assignedCameras not found.");
+  try {
+    // Cache this result when possible instead of querying each time
+    const user = await User.findById(tokenUser.id).select('assignedCameras');
+    
+    if (!user || !user.assignedCameras || user.assignedCameras.length === 0) {
+      console.warn("User or assignedCameras not found.");
+      return [];
+    }
+    
+    const assignedCameraIds = user.assignedCameras.map(cam => cam.toString());
+    return accidents.filter(accident => 
+      assignedCameraIds.includes(accident.cameraId.toString())
+    );
+  } catch (error) {
+    console.error("Error filtering accidents by user:", error);
     return [];
   }
-  const assignedCameraIds = user.assignedCameras.map(cam => cam.toString()); // Convert to strings for comparison
-  return accidents.filter(accident => assignedCameraIds.includes(accident.cameraId.toString()));
 };
 
 // NEW: Update accident details (severity, description, falsePositive)

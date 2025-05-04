@@ -1,5 +1,24 @@
 const { Schema, model } = require("mongoose");
 
+const sessionSchema = new Schema({
+  refreshToken: {
+    type: String,
+    required: true
+  },
+  deviceInfo: {
+    type: String,
+    default: 'Unknown Device'
+  },
+  lastActive: {
+    type: Date,
+    default: Date.now
+  },
+  ipAddress: {
+    type: String,
+    default: 'Unknown'
+  }
+});
+
 const userSchema = new Schema({
   username: {
     type: String,
@@ -40,6 +59,13 @@ const userSchema = new Schema({
     type: [String],
     default: [],
   },
+  // Track if user should only have one active session
+  singleSessionOnly: {
+    type: Boolean,
+    default: true
+  },
+  // Active sessions array
+  activeSessions: [sessionSchema]
 });
 
 

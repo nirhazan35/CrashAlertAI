@@ -14,38 +14,44 @@ import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 import ManageCameras from './pages/AdminPage/ManageCameras/ManageCameras';
 import SidebarLayout from './components/sidebar/SidebarLayout';
+import AuthLogs from './pages/AuthLogs/AuthLogs';
+import MantineProvider from './components/MantineProvider/MantineProvider';
+import '@mantine/core/styles.css';
 
 function App() {
   const { user } = useAuth();
   const [accidents] = useState([]);
 
   return (
-    <Router>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/unauthorized" element={<Unauthorized />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+    <MantineProvider>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <Login />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* Sidebar Layout Wrapper for Protected Routes */}
-        <Route element={<SidebarLayout />}>
-          <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/dashboard" element={<Dashboard accidents={accidents} />} />
-            <Route path="/statistics" element={<StatisticsPage />} />
-            <Route path="/history" element={<AccidentHistoryPage />} />
-            <Route path="/live" element={<LiveCameraPage />} />
-          </Route>
+          {/* Sidebar Layout Wrapper for Protected Routes */}
+          <Route element={<SidebarLayout />}>
+            <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard accidents={accidents} />} />
+              <Route path="/statistics" element={<StatisticsPage />} />
+              <Route path="/history" element={<AccidentHistoryPage />} />
+              <Route path="/live" element={<LiveCameraPage />} />
+            </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/manage-cameras" element={<ManageCameras />} />
+            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+              <Route path="/admin" element={<AdminPage />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/manage-cameras" element={<ManageCameras />} />
+              <Route path="/logs" element={<AuthLogs />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </MantineProvider>
   );
 }
 
