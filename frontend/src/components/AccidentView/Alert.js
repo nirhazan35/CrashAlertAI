@@ -15,9 +15,11 @@ import {
   ActionIcon, 
   Divider, 
   useMantineTheme,
-  rgba
+  rgba,
+  Paper,
+  Avatar
 } from '@mantine/core';
-import { IconEdit, IconCheck, IconX } from '@tabler/icons-react';
+import { IconEdit, IconCheck, IconX, IconCamera, IconMapPin, IconCalendar, IconClock, IconAlertTriangle, IconCheckbox } from '@tabler/icons-react';
 
 // Helper function to convert a standard Google Drive URL to an embeddable URL
 const getEmbedUrl = (url) => {
@@ -119,11 +121,14 @@ const Alert = () => {
     <Stack spacing="md">
       {/* Title and Status Badge */}
       <Group position="apart" mb="xs">
-        <Title order={3} fw={600}>Accident Details</Title>
+        <Title order={3} fw={600} style={{ fontFamily: "'DM Sans', sans-serif" }}>Accident Details</Title>
         <Badge 
           size="lg" 
           color={getStatusColor(selectedAlert.status)}
           variant="filled"
+          radius="xl"
+          px="md"
+          style={{ fontFamily: "'Inter', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}
         >
           {selectedAlert.status}
         </Badge>
@@ -166,162 +171,288 @@ const Alert = () => {
           )}
         </Grid.Col>
         
-        {/* Details Column */}
+        {/* Details Column - REDESIGNED */}
         <Grid.Col span={{ base: 12, md: 6 }}>
-          <Grid>
-            <Grid.Col span={6}>
-              <Stack spacing="xs">
-                <DetailItem 
-                  label="Camera ID" 
-                  value={selectedAlert.cameraId} 
-                />
-                
-                <DetailItem 
-                  label="Location" 
-                  value={selectedAlert.location} 
-                />
-                
-                <DetailItem 
-                  label="Date" 
-                  value={selectedAlert.displayDate} 
-                />
-                
-                <DetailItem 
-                  label="Time" 
-                  value={selectedAlert.displayTime} 
-                />
-              </Stack>
-            </Grid.Col>
+          <Paper p="md" radius="lg" shadow="sm" style={{ 
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(248,250,252,0.9) 100%)',
+            borderLeft: '4px solid #3b82f6',
+            backdropFilter: 'blur(8px)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Visual design element */}
+            <Box style={{ 
+              position: 'absolute', 
+              top: -60, 
+              right: -60, 
+              width: 120, 
+              height: 120, 
+              borderRadius: '50%', 
+              background: 'rgba(59, 130, 246, 0.1)',
+              zIndex: 0
+            }} />
             
-            <Grid.Col span={6}>
-              <Stack spacing="xs">
-                <DetailItem 
-                  label="Severity" 
-                  value={
-                    isEditable ? (
-                      <Select
-                        value={selectedSeverity}
-                        onChange={handleSeverityChange}
-                        data={[
-                          { value: 'low', label: 'Low' },
-                          { value: 'medium', label: 'Medium' },
-                          { value: 'high', label: 'High' }
-                        ]}
+            <Stack spacing="lg" style={{ position: 'relative', zIndex: 1 }}>
+              {/* First row - Camera & Location */}
+              <Grid gutter="lg">
+                <Grid.Col span={6}>
+                  <DetailItem 
+                    icon={<IconCamera size={20} />}
+                    label="Camera ID" 
+                    value={selectedAlert.cameraId}
+                    variant="modern"
+                  />
+                </Grid.Col>
+                
+                <Grid.Col span={6}>
+                  <DetailItem 
+                    icon={<IconMapPin size={20} />}
+                    label="Location" 
+                    value={selectedAlert.location}
+                    variant="modern" 
+                  />
+                </Grid.Col>
+              </Grid>
+              
+              {/* Second row - Date & Time */}
+              <Grid gutter="lg">
+                <Grid.Col span={6}>
+                  <DetailItem 
+                    icon={<IconCalendar size={20} />}
+                    label="Date" 
+                    value={selectedAlert.displayDate}
+                    variant="modern" 
+                  />
+                </Grid.Col>
+                
+                <Grid.Col span={6}>
+                  <DetailItem 
+                    icon={<IconClock size={20} />}
+                    label="Time" 
+                    value={selectedAlert.displayTime}
+                    variant="modern" 
+                  />
+                </Grid.Col>
+              </Grid>
+              
+              <Divider my="xs" style={{ opacity: 0.5 }} />
+              
+              {/* Third row - Severity */}
+              <DetailItem 
+                icon={<IconAlertTriangle size={20} />}
+                label="Severity" 
+                value={
+                  isEditable ? (
+                    <Select
+                      value={selectedSeverity}
+                      onChange={handleSeverityChange}
+                      radius="xl"
+                      data={[
+                        { value: 'low', label: 'Low' },
+                        { value: 'medium', label: 'Medium' },
+                        { value: 'high', label: 'High' }
+                      ]}
+                      styles={{
+                        input: {
+                          border: `1px solid ${theme.colors[getSeverityColor(selectedSeverity)][5]}`,
+                          fontFamily: "'Inter', sans-serif",
+                          fontWeight: 500
+                        }
+                      }}
+                    />
+                  ) : (
+                    <Badge 
+                      color={getSeverityColor(selectedAlert.severity)} 
+                      size="lg"
+                      radius="xl"
+                      variant="filled"
+                      px="md"
+                      style={{ 
+                        fontFamily: "'Inter', sans-serif", 
+                        textTransform: 'uppercase',
+                        fontSize: '12px',
+                        letterSpacing: '0.5px'
+                      }}
+                    >
+                      {selectedAlert.severity}
+                    </Badge>
+                  )
+                }
+                variant="modern" 
+              />
+              
+              {/* Fourth row - Accident Mark */}
+              <DetailItem 
+                icon={<IconCheckbox size={20} />}
+                label="Accident Mark" 
+                value={
+                  <Badge 
+                    color={selectedAlert.falsePositive ? "red" : "success"} 
+                    variant={selectedAlert.falsePositive ? "light" : "filled"}
+                    size="lg"
+                    radius="xl"
+                    px="md"
+                    style={{ 
+                      fontFamily: "'Inter', sans-serif", 
+                      textTransform: 'uppercase',
+                      fontSize: '12px',
+                      letterSpacing: '0.5px'
+                    }}
+                  >
+                    {selectedAlert.falsePositive ? "Not an Accident" : "Accident"}
+                  </Badge>
+                }
+                variant="modern" 
+              />
+              
+              {/* Fifth row - Description */}
+              <DetailItem 
+                icon={<IconEdit size={20} />}
+                label="Description" 
+                value={
+                  !descEditMode ? (
+                    <Stack spacing="xs">
+                      <Group position="apart" noWrap>
+                        <Text style={{ fontFamily: "'Inter', sans-serif" }}>
+                          {selectedAlert.description || "No Description"}
+                        </Text>
+                        {isEditable && (
+                          <ActionIcon 
+                            onClick={() => setDescEditMode(true)}
+                            color="blue"
+                            variant="light"
+                            radius="xl"
+                          >
+                            <IconEdit size={16} />
+                          </ActionIcon>
+                        )}
+                      </Group>
+                      
+                      {/* Action Buttons */}
+                      {isEditable && (
+                        <Group position="right" mt="md">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            radius="xl"
+                            color={selectedAlert.falsePositive ? "green" : "red"}
+                            onClick={handleToggleAccidentMark}
+                            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+                          >
+                            {selectedAlert.falsePositive ? "An Accident" : "Not an Accident"}
+                          </Button>
+                          
+                          {selectedAlert.status !== "handled" && (
+                            <Button
+                              size="sm"
+                              radius="xl"
+                              color="green"
+                              onClick={handleMarkAsHandled}
+                              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+                            >
+                              Handled
+                            </Button>
+                          )}
+                        </Group>
+                      )}
+                    </Stack>
+                  ) : (
+                    <Stack spacing="xs">
+                      <Textarea
+                        value={newDescription}
+                        onChange={(e) => setNewDescription(e.target.value)}
+                        minRows={2}
+                        autosize
+                        radius="md"
                         styles={{
                           input: {
-                            border: `1px solid ${theme.colors[getSeverityColor(selectedSeverity)][5]}`,
+                            fontFamily: "'Inter', sans-serif",
                           }
                         }}
                       />
-                    ) : (
-                      <Badge color={getSeverityColor(selectedAlert.severity)} size="md">
-                        {selectedAlert.severity}
-                      </Badge>
-                    )
-                  } 
-                />
-                
-                <DetailItem 
-                  label="Accident Mark" 
-                  value={
-                    <Badge 
-                      color={selectedAlert.falsePositive ? "red" : "success"} 
-                      variant={selectedAlert.falsePositive ? "light" : "filled"}
-                      size="md"
-                    >
-                      {selectedAlert.falsePositive ? "Not an Accident" : "Accident"}
-                    </Badge>
-                  } 
-                />
-                
-                <DetailItem 
-                  label="Description" 
-                  value={
-                    !descEditMode ? (
-                      <Stack spacing="xs">
-                        <Group position="apart" noWrap>
-                          <Text>{selectedAlert.description || "No Description"}</Text>
-                          {isEditable && (
-                            <ActionIcon 
-                              onClick={() => setDescEditMode(true)}
-                              color="blue"
-                              variant="subtle"
-                            >
-                              <IconEdit size={16} />
-                            </ActionIcon>
-                          )}
-                        </Group>
-                        
-                        {/* Action Buttons */}
-                        {isEditable && (
-                          <Group position="right" mt="xs">
-                            <Button
-                              size="xs"
-                              variant="outline"
-                              color={selectedAlert.falsePositive ? "green" : "red"}
-                              onClick={handleToggleAccidentMark}
-                            >
-                              {selectedAlert.falsePositive ? "An Accident" : "Not an Accident"}
-                            </Button>
-                            
-                            {selectedAlert.status !== "handled" && (
-                              <Button
-                                size="xs"
-                                color="green"
-                                onClick={handleMarkAsHandled}
-                              >
-                                Handled
-                              </Button>
-                            )}
-                          </Group>
-                        )}
-                      </Stack>
-                    ) : (
-                      <Stack spacing="xs">
-                        <Textarea
-                          value={newDescription}
-                          onChange={(e) => setNewDescription(e.target.value)}
-                          minRows={2}
-                          autosize
-                        />
-                        <Group position="right">
-                          <Button 
-                            size="xs" 
-                            variant="subtle" 
-                            leftIcon={<IconX size={16} />}
-                            onClick={() => setDescEditMode(false)}
-                          >
-                            Cancel
-                          </Button>
-                          <Button 
-                            size="xs" 
-                            leftIcon={<IconCheck size={16} />}
-                            onClick={handleDescriptionSave}
-                          >
-                            Save
-                          </Button>
-                        </Group>
-                      </Stack>
-                    )
-                  } 
-                />
-              </Stack>
-            </Grid.Col>
-          </Grid>
+                      <Group position="right">
+                        <Button 
+                          size="sm" 
+                          variant="subtle" 
+                          radius="xl"
+                          leftIcon={<IconX size={16} />}
+                          onClick={() => setDescEditMode(false)}
+                          style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          radius="xl"
+                          leftIcon={<IconCheck size={16} />}
+                          onClick={handleDescriptionSave}
+                          style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+                        >
+                          Save
+                        </Button>
+                      </Group>
+                    </Stack>
+                  )
+                }
+                variant="modern" 
+              />
+            </Stack>
+          </Paper>
         </Grid.Col>
       </Grid>
     </Stack>
   );
 };
 
-// Helper component for detail items
-const DetailItem = ({ label, value }) => (
-  <Box mb="xs">
-    <Text fw={500} size="sm" c="dimmed">{label}</Text>
-    <Box mt={4}>
-      {typeof value === 'string' ? <Text>{value}</Text> : value}
+// Redesigned helper component for detail items
+const DetailItem = ({ label, value, icon, variant = "default" }) => {
+  if (variant === "modern") {
+    return (
+      <Box mb="xs">
+        <Group spacing="xs" mb={6}>
+          {icon && (
+            <Box style={{ color: "#3b82f6" }}>
+              {icon}
+            </Box>
+          )}
+          <Text 
+            fw={600} 
+            size="sm" 
+            style={{ 
+              fontFamily: "'DM Sans', sans-serif",
+              letterSpacing: '0.3px',
+              textTransform: 'uppercase',
+              fontSize: '11px',
+              color: '#64748b'
+            }}
+          >
+            {label}
+          </Text>
+        </Group>
+        <Box ml={icon ? 28 : 0}>
+          {typeof value === 'string' ? (
+            <Text style={{ 
+              fontFamily: "'Inter', sans-serif", 
+              fontWeight: 500,
+              fontSize: '16px'
+            }}>
+              {value}
+            </Text>
+          ) : value}
+        </Box>
+      </Box>
+    );
+  }
+  
+  // Default/original version
+  return (
+    <Box mb="xs">
+      <Text fw={500} size="sm" c="dimmed">{label}</Text>
+      <Box mt={4}>
+        {typeof value === 'string' ? <Text>{value}</Text> : value}
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};
 
 export default Alert;
