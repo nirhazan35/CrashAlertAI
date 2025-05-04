@@ -71,6 +71,11 @@ const AccidentHistory = () => {
     letterSpacing: '0.5px'
   };
 
+  // Style for table data cells
+  const tableCellStyle = {
+    textAlign: 'center'
+  };
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -117,19 +122,19 @@ const AccidentHistory = () => {
             <Table.Tbody>
               {handledAccidents.map((accident, index) => (
                 <Table.Tr key={index}>
-                  <Table.Td>
+                  <Table.Td style={tableCellStyle}>
                     <Text fw={500}>{accident.cameraId || 'N/A'}</Text>
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td style={tableCellStyle}>
                     <Text fw={500}>{accident.location || 'N/A'}</Text>
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td style={tableCellStyle}>
                     <Text>{accident.displayDate || 'N/A'}</Text>
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td style={tableCellStyle}>
                     <Text lineClamp={1}>{accident.description || 'No Description'}</Text>
                   </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>
+                  <Table.Td style={tableCellStyle}>
                     <Badge color={getSeverityColor(accident.severity)}>
                       {accident.severity || 'N/A'}
                     </Badge>

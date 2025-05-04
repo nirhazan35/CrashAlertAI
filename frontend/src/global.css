@@ -12,6 +12,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Table cell centering - global rule for all tables */
+table th, 
+table td {
+  text-align: center !important;
+}
+
+/* Mantine tables */
+.mantine-Table-root th,
+.mantine-Table-root td {
+  text-align: center !important;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

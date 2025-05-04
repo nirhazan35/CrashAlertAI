@@ -249,27 +249,29 @@ const AuthLogs = () => {
           <table className="logs-table">
             <thead>
               <tr>
-                <th>Timestamp</th>
-                <th>Username</th>
-                <th>Action</th>
-                <th>Result</th>
-                <th>IP Address</th>
-                <th>Browser</th>
-                <th>OS</th>
-                <th>Error Message</th>
+                <th style={{ textAlign: 'center' }}>Username</th>
+                <th style={{ textAlign: 'center' }}>Date & Time</th>
+                <th style={{ textAlign: 'center' }}>Action</th>
+                <th style={{ textAlign: 'center' }}>Result</th>
+                <th style={{ textAlign: 'center' }}>IP Address</th>
+                <th style={{ textAlign: 'center' }}>Browser</th>
+                <th style={{ textAlign: 'center' }}>OS</th>
               </tr>
             </thead>
             <tbody>
-              {logs.map((log) => (
-                <tr key={log._id} className={log.result === 'Failure' ? 'failure-row' : ''}>
-                  <td>{formatDate(log.timeStamp)}</td>
-                  <td>{log.username}</td>
-                  <td>{log.type}</td>
-                  <td className={`result ${log.result.toLowerCase()}`}>{log.result}</td>
-                  <td>{log.ipAddress}</td>
-                  <td>{log.browser}</td>
-                  <td>{log.operatingSystem}</td>
-                  <td>{log.errorMessage || '-'}</td>
+              {logs.map((log, index) => (
+                <tr key={index} className={log.result === 'Failure' ? 'failure-row' : ''}>
+                  <td style={{ textAlign: 'center' }}>{log.username || 'Guest'}</td>
+                  <td style={{ textAlign: 'center' }}>{formatDate(log.timestamp)}</td>
+                  <td style={{ textAlign: 'center' }}>{log.type}</td>
+                  <td style={{ textAlign: 'center' }}>
+                    <span className={`result ${log.result.toLowerCase()}`}>
+                      {log.result}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: 'center' }}>{log.ipAddress || 'Unknown'}</td>
+                  <td style={{ textAlign: 'center' }}>{log.browser || 'Unknown'}</td>
+                  <td style={{ textAlign: 'center' }}>{log.operatingSystem || 'Unknown'}</td>
                 </tr>
               ))}
             </tbody>
@@ -281,29 +283,31 @@ const AuthLogs = () => {
               onClick={() => handlePageChange(1)} 
               disabled={pagination.page === 1}
             >
-              &laquo; First
+              First
             </button>
             <button 
               onClick={() => handlePageChange(pagination.page - 1)} 
               disabled={pagination.page === 1}
             >
-              &lt; Previous
+              Previous
             </button>
+            
             <span className="page-info">
               Page {pagination.page} of {pagination.pages} 
-              ({pagination.total} total records)
+              (Total: {pagination.total} logs)
             </span>
+            
             <button 
               onClick={() => handlePageChange(pagination.page + 1)} 
               disabled={pagination.page === pagination.pages}
             >
-              Next &gt;
+              Next
             </button>
             <button 
               onClick={() => handlePageChange(pagination.pages)} 
               disabled={pagination.page === pagination.pages}
             >
-              Last &raquo;
+              Last
             </button>
           </div>
         </div>

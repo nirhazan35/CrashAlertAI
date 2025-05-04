@@ -53,7 +53,7 @@
 .accident-log-table th,
 .accident-log-table td {
   padding: 12px;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #eaeaea;
 }
 
@@ -114,5 +114,11 @@
 /* adding flicker effect to unassigned rows in accident log table only */
 .accident-log-table tr:not(.assigned-row) {
   animation: flicker 1s infinite;
+}
+
+/* Center all Mantine table content */
+.mantine-Table-root td,
+.mantine-Table-root th {
+  text-align: center !important;
 }
 
