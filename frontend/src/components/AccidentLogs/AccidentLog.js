@@ -44,7 +44,8 @@ const AccidentLog = () => {
   const [filters, setFilters] = useState({
     cameraId: "",
     location: "",
-    dateRange: [null, null],
+    startDate: null,
+    endDate: null,
     severity: "",
     startTime: "",
     endTime: "",
@@ -105,11 +106,14 @@ const AccidentLog = () => {
     setFilters({
       cameraId: "",
       location: "",
-      dateRange: [null, null],
+      startDate: null,
+      endDate: null,
       severity: "",
       startTime: "",
       endTime: "",
     });
+    // Force clear input values
+    document.querySelectorAll('input[type="date"]').forEach(input => input.value = '');
   };
 
   // Fixed filter function to handle null/undefined values safely
@@ -124,15 +128,19 @@ const AccidentLog = () => {
       (log.location && log.location.toLowerCase && 
       log.location.toLowerCase() === filters.location.toLowerCase());
     
-    // Safely handle date range comparison
+    // Safely handle date comparison
     let matchesDate = true;
-    if (filters.dateRange && filters.dateRange[0] && filters.dateRange[1]) {
+    if (filters.startDate && log.date) {
       const logDate = new Date(log.date);
-      const startDate = new Date(filters.dateRange[0]);
-      const endDate = new Date(filters.dateRange[1]);
+      const startDate = new Date(filters.startDate);
       startDate.setHours(0, 0, 0, 0);
+      matchesDate = logDate >= startDate;
+    }
+    if (filters.endDate && log.date && matchesDate) {
+      const logDate = new Date(log.date);
+      const endDate = new Date(filters.endDate);
       endDate.setHours(23, 59, 59, 999);
-      matchesDate = logDate >= startDate && logDate <= endDate;
+      matchesDate = logDate <= endDate;
     }
     
     // Safely handle severity comparison
@@ -316,7 +324,7 @@ const AccidentLog = () => {
                 />
               </Grid.Col>
               
-              <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 2 }}>
+              <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 3 }}>
                 <Group spacing="xs" mb={6}>
                   <Box style={{ color: "#3b82f6" }}>
                     <IconCalendar size={16} />
@@ -332,81 +340,101 @@ const AccidentLog = () => {
                       color: '#64748b'
                     }}
                   >
-                    Date Range
+                    Start Date
                   </Text>
                 </Group>
-                {/* Date Range Picker */}
-                <DatePickerInput
-                  type="range"
-                  placeholder="Select date range"
-                  value={filters.dateRange}
-                  onChange={(value) => handleFilterChange('dateRange', value)}
-                  clearable
-                  radius="xl"
-                  size="md"
-                  hideOutsideDates
-                  popoverProps={{
-                    withinPortal: true,
-                    zIndex: 9999,
-                    position: "bottom",
-                    shadow: "xl",
-                    transitionProps: { transition: "fade", duration: 150 },
-                    middlewares: { flip: false, shift: true },
-                    offset: 5,
-                    styles: {
-                      dropdown: {
-                        background: 'white',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '12px',
-                        padding: '10px',
-                        marginTop: '5px'
-                      }
+                <input
+                  type="date"
+                  value={filters.startDate || ''}
+                  onChange={(e) => {
+                    // Validate date range
+                    if (filters.endDate && new Date(e.target.value) > new Date(filters.endDate)) {
+                      // Reset end date if start date is later
+                      setFilters(prev => ({ ...prev, startDate: e.target.value, endDate: null }));
+                      document.querySelector('input[name="endDate"]').value = '';
+                    } else {
+                      handleFilterChange('startDate', e.target.value);
                     }
                   }}
-                  styles={{
-                    input: {
-                      fontFamily: "'Inter', sans-serif",
-                      border: '1px solid #e2e8f0',
-                      '&:focus': {
-                        borderColor: '#3b82f6',
-                        boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.15)'
-                      }
-                    },
-                    calendarHeader: {
-                      fontFamily: "'DM Sans', sans-serif"
-                    },
-                    monthsList: {
-                      fontFamily: "'Inter', sans-serif"
-                    },
-                    yearsList: {
-                      fontFamily: "'Inter', sans-serif"
-                    },
-                    day: {
-                      fontFamily: "'Inter', sans-serif",
-                      borderRadius: '6px',
-                      '&:hover': {
-                        backgroundColor: 'rgba(59, 130, 246, 0.15)'
-                      }
-                    },
-                    // Hide the previous/next buttons
-                    calendarHeaderControl: {
-                      display: 'none'
-                    },
-                    // Style for the selected date range
-                    inRange: {
-                      backgroundColor: 'rgba(59, 130, 246, 0.1)'
-                    },
-                    firstInRange: {
-                      backgroundColor: '#3b82f6 !important',
-                      color: 'white !important'
-                    },
-                    lastInRange: {
-                      backgroundColor: '#3b82f6 !important',
-                      color: 'white !important'
+                  name="startDate"
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: '0.875rem',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '100px',
+                    backgroundColor: 'white',
+                    transition: 'all 0.2s ease',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.15)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#e2e8f0';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+              </Grid.Col>
+              
+              <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 3 }}>
+                <Group spacing="xs" mb={6}>
+                  <Box style={{ color: "#3b82f6" }}>
+                    <IconCalendar size={16} />
+                  </Box>
+                  <Text 
+                    fw={600} 
+                    size="xs"
+                    style={{ 
+                      fontFamily: "'DM Sans', sans-serif",
+                      letterSpacing: '0.3px',
+                      textTransform: 'uppercase',
+                      fontSize: '11px',
+                      color: '#64748b'
+                    }}
+                  >
+                    End Date
+                  </Text>
+                </Group>
+                <input
+                  type="date"
+                  value={filters.endDate || ''}
+                  onChange={(e) => {
+                    // Validate date range
+                    if (filters.startDate && new Date(e.target.value) < new Date(filters.startDate)) {
+                      // Reset both dates if invalid range
+                      setFilters(prev => ({ 
+                        ...prev, 
+                        startDate: null,
+                        endDate: null
+                      }));
+                      document.querySelectorAll('input[type="date"]').forEach(input => input.value = '');
+                    } else {
+                      handleFilterChange('endDate', e.target.value);
                     }
                   }}
-                  dropdownType="popover"
+                  name="endDate"
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: '0.875rem',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '100px',
+                    backgroundColor: 'white',
+                    transition: 'all 0.2s ease',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.15)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#e2e8f0';
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </Grid.Col>
               
