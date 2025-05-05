@@ -21,6 +21,8 @@ const AuthLogs = () => {
     result: '',
     startDate: '',
     endDate: '',
+    startTime: '',
+    endTime: '',
     ipAddress: '',
     browser: '',
     operatingSystem: ''
@@ -112,6 +114,8 @@ const AuthLogs = () => {
       result: '',
       startDate: '',
       endDate: '',
+      startTime: '',
+      endTime: '',
       ipAddress: '',
       browser: '',
       operatingSystem: ''
@@ -129,12 +133,6 @@ const AuthLogs = () => {
     if (newPage > 0 && newPage <= pagination.pages) {
       setPagination(prev => ({ ...prev, page: newPage }));
     }
-  };
-
-  // Format date for display
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString();
   };
 
   return (
@@ -220,13 +218,33 @@ const AuthLogs = () => {
               onChange={handleFilterChange}
             />
           </div>
-          
+
           <div className="filter-group">
             <label>End Date</label>
             <input 
               type="date" 
               name="endDate" 
               value={filters.endDate} 
+              onChange={handleFilterChange}
+            />
+          </div>
+          
+          <div className="filter-group">
+            <label>Start Time</label>
+            <input 
+              type="time" 
+              name="startTime" 
+              value={filters.startTime} 
+              onChange={handleFilterChange}
+            />
+          </div>
+          
+          <div className="filter-group">
+            <label>End Time</label>
+            <input 
+              type="time" 
+              name="endTime" 
+              value={filters.endTime} 
               onChange={handleFilterChange}
             />
           </div>
@@ -250,7 +268,8 @@ const AuthLogs = () => {
             <thead>
               <tr>
                 <th style={{ textAlign: 'center' }}>Username</th>
-                <th style={{ textAlign: 'center' }}>Date & Time</th>
+                <th style={{ textAlign: 'center' }}>Date</th>
+                <th style={{ textAlign: 'center' }}>Time</th>
                 <th style={{ textAlign: 'center' }}>Action</th>
                 <th style={{ textAlign: 'center' }}>Result</th>
                 <th style={{ textAlign: 'center' }}>IP Address</th>
@@ -262,7 +281,8 @@ const AuthLogs = () => {
               {logs.map((log, index) => (
                 <tr key={index} className={log.result === 'Failure' ? 'failure-row' : ''}>
                   <td style={{ textAlign: 'center' }}>{log.username || 'Guest'}</td>
-                  <td style={{ textAlign: 'center' }}>{formatDate(log.timestamp)}</td>
+                  <td style={{ textAlign: 'center' }}>{log.displayDate || ''}</td>
+                  <td style={{ textAlign: 'center' }}>{log.displayTime || ''}</td>
                   <td style={{ textAlign: 'center' }}>{log.type}</td>
                   <td style={{ textAlign: 'center' }}>
                     <span className={`result ${log.result.toLowerCase()}`}>

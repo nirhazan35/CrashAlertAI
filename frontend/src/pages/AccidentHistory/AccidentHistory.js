@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "../../authentication/AuthProvider";
-import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import { 
   Text, 
   Table, 

@@ -112,12 +112,6 @@ const AccidentLog = () => {
     });
   };
 
-  // Format date for comparison
-  const formatDate = (date) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("en-GB");
-  };
-
   // Fixed filter function to handle null/undefined values safely
   const filteredLogs = accidentLogs.filter((log) => {
     // Safely handle cameraId comparison
@@ -242,8 +236,8 @@ const AccidentLog = () => {
                   </Text>
                 </Group>
                 <Select
-                  placeholder="All Camera IDs"
-                  data={[{ value: '', label: 'All Camera IDs' }, ...cameraOptions]}
+                  placeholder="Camera ID"
+                  data={[{ value: '', label: 'Camera ID' }, ...cameraOptions]}
                   value={filters.cameraId}
                   onChange={(value) => handleFilterChange('cameraId', value)}
                   searchable
@@ -292,8 +286,8 @@ const AccidentLog = () => {
                   </Text>
                 </Group>
                 <Select
-                  placeholder="All Locations"
-                  data={[{ value: '', label: 'All Locations' }, ...locationOptions]}
+                  placeholder="Locations"
+                  data={[{ value: '', label: 'Locations' }, ...locationOptions]}
                   value={filters.location}
                   onChange={(value) => handleFilterChange('location', value)}
                   searchable
@@ -436,9 +430,9 @@ const AccidentLog = () => {
                   </Text>
                 </Group>
                 <Select
-                  placeholder="All Severities"
+                  placeholder="Severities"
                   data={[
-                    { value: '', label: 'All Severities' },
+                    { value: '', label: 'Severities' },
                     { value: 'low', label: 'Low' },
                     { value: 'medium', label: 'Medium' },
                     { value: 'high', label: 'High' }
@@ -491,7 +485,7 @@ const AccidentLog = () => {
                 </Group>
                 <Select
                   placeholder="Start Time"
-                  data={[{ value: '', label: 'Any Time' }, ...timeOptions]}
+                  data={[{ value: '', label: 'Start Time' }, ...timeOptions]}
                   value={filters.startTime}
                   onChange={(value) => handleFilterChange('startTime', value)}
                   clearable
@@ -540,7 +534,7 @@ const AccidentLog = () => {
                 </Group>
                 <Select
                   placeholder="End Time"
-                  data={[{ value: '', label: 'Any Time' }, ...timeOptions]}
+                  data={[{ value: '', label: 'End Time' }, ...timeOptions]}
                   value={filters.endTime}
                   onChange={(value) => handleFilterChange('endTime', value)}
                   clearable
@@ -768,19 +762,6 @@ const AccidentLog = () => {
               </Table>
             </ScrollArea>
           </Paper>
-          
-          <style jsx global>{`
-            @keyframes pulse {
-              0% { background-color: transparent; }
-              50% { background-color: rgba(248, 113, 113, 0.05); }
-              100% { background-color: transparent; }
-            }
-            
-            /* Hide outer accident logs title if it exists */
-            h2:first-of-type:not([style*="font-family"]) {
-              display: none !important;
-            }
-          `}</style>
         </Box>
       </Paper>
     </Container>

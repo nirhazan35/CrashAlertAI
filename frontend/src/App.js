@@ -23,7 +23,7 @@ function App() {
   const [accidents] = useState([]);
 
   return (
-    <MantineProvider>
+    <MantineProvider withGlobalStyles withNormalizeCSS>
       <Router>
         <Routes>
           {/* Public routes */}

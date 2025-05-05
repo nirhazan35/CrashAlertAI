@@ -3,6 +3,7 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const AuthLogs = require("../models/AuthLogs");
 const { clients } = require("../socket");
+const formatDateTime = require("../util/DateFormatting");
 
 // Register
 const register = async (req, res) => {
@@ -295,6 +296,8 @@ const getAuthLogs = async (req, res) => {
       result, 
       startDate, 
       endDate, 
+      startTime,
+      endTime,
       ipAddress,
       browser,
       operatingSystem,
@@ -346,14 +349,42 @@ const getAuthLogs = async (req, res) => {
     }
     
     // Date range filtering
-    if (startDate || endDate) {
+    if (startDate || endDate || startTime || endTime) {
       filter.timeStamp = {};
-      if (startDate) filter.timeStamp.$gte = new Date(startDate);
+      
+      // Handle date filtering
+      if (startDate) {
+        const startDateTime = new Date(startDate);
+        if (startTime) {
+          // If there's also a startTime, apply it to the date
+          const [hours, minutes] = startTime.split(':').map(Number);
+          startDateTime.setHours(hours, minutes, 0, 0);
+        } else {
+          // Otherwise, start from beginning of day
+          startDateTime.setHours(0, 0, 0, 0);
+        }
+        filter.timeStamp.$gte = startDateTime;
+      } else if (startTime) {
+        // If we only have startTime but no startDate, filter by displayTime field
+        filter.displayTime = filter.displayTime || {};
+        filter.displayTime.$gte = startTime;
+      }
+      
       if (endDate) {
-        // Set the end date to the end of the day
         const endDateTime = new Date(endDate);
-        endDateTime.setHours(23, 59, 59, 999);
+        if (endTime) {
+          // If there's also an endTime, apply it to the date
+          const [hours, minutes] = endTime.split(':').map(Number);
+          endDateTime.setHours(hours, minutes, 59, 999);
+        } else {
+          // Otherwise, end at end of day
+          endDateTime.setHours(23, 59, 59, 999);
+        }
         filter.timeStamp.$lte = endDateTime;
+      } else if (endTime) {
+        // If we only have endTime but no endDate, filter by displayTime field
+        filter.displayTime = filter.displayTime || {};
+        filter.displayTime.$lte = endTime;
       }
     }
     
@@ -372,10 +403,24 @@ const getAuthLogs = async (req, res) => {
       .skip(skip)
       .limit(limit);
     
+    // Format dates for any logs that don't have displayDate/displayTime
+    const formattedLogs = logs.map(log => {
+      const logObj = log.toObject();
+      
+      // Apply date formatting if not already present
+      if (log.timeStamp && (!log.displayDate || !log.displayTime)) {
+        const { displayDate, displayTime } = formatDateTime(log.timeStamp);
+        logObj.displayDate = displayDate;
+        logObj.displayTime = displayTime;
+      }
+      
+      return logObj;
+    });
+    
     res.status(200).json({
       success: true,
       data: {
-        logs,
+        logs: formattedLogs,
         pagination: {
           total: totalLogs,
           pages: totalPages,
