@@ -1,6 +1,8 @@
 // src/components/FilterPanel.js
 import React, { useEffect } from 'react';
-import { useFilter } from '../../context/FilterContext';
+import { useAccidentLogs } from '../../context/AccidentContext';
+import { useCameraData } from '../../hooks/useCameraData';
+import { useFilterLogs } from '../../hooks/useFilterLogs';
 import {
   Button,
   Group,
@@ -22,37 +24,40 @@ import {
 } from '@tabler/icons-react';
 import './FilterPanel.css';
 
-// Generate time options for each hour
+// time options for each hour
 const timeOptions = Array.from({ length: 24 }, (_, i) => {
-  const hour = i.toString().padStart(2, '0');
-  return { value: `${hour}:00`, label: `${hour}:00` };
+  const h = i.toString().padStart(2, '0');
+  return { value: `${h}:00`, label: `${h}:00` };
 });
 
-const FilterPanel = ({ colSpan = { base: 12, sm: 6, md: 4, lg: 1.7 }, onFilteredLogsChange }) => {
+export default function FilterPanel({
+  colSpan = { base: 12, sm: 6, md: 4, lg: 1.7 },
+  onFilteredLogsChange,
+  initialLogs = [],
+}) {
   const theme = useMantineTheme();
+  const { cameras, locations } = useCameraData();
+  const { accidentLogs } = useAccidentLogs();
+  const logsToFilter = initialLogs.length > 0 ? initialLogs : accidentLogs;
+
   const {
-    cameraData,
     filters,
     setFilters,
     filteredLogs,
     applyFilters,
     clearFilters,
-  } = useFilter();
+  } = useFilterLogs(logsToFilter);
 
-  // notify parent when filteredLogs updates
+  // notify parent on change
   useEffect(() => {
-    if (onFilteredLogsChange) {
-      onFilteredLogsChange(filteredLogs);
-    }
+    onFilteredLogsChange?.(filteredLogs);
   }, [filteredLogs, onFilteredLogsChange]);
 
-  const handleChange = (name, value) => {
-    setFilters(prev => ({ ...prev, [name]: value }));
-  };
+  const handleChange = (name, value) =>
+    setFilters((prev) => ({ ...prev, [name]: value }));
 
-  // build select options
-  const cameraOptions = cameraData.cameras.map((c) => ({ value: c, label: c }));
-  const locationOptions = cameraData.locations.map((l) => ({ value: l, label: l }));
+  const cameraOptions = cameras.map((c) => ({ value: c, label: c }));
+  const locationOptions = locations.map((l) => ({ value: l, label: l }));
 
   return (
     <Paper shadow="sm" p="lg" radius="md" mb="xl" className="filter-section">
@@ -60,7 +65,7 @@ const FilterPanel = ({ colSpan = { base: 12, sm: 6, md: 4, lg: 1.7 }, onFiltered
       <div className="filter-bg-bubble-2" />
       <div className="filter-content">
         <Grid align="flex-end" gutter="md">
-          {/* Camera ID */}
+          {/* Camera */}
           <Grid.Col span={colSpan}>
             <Group spacing="xs" mb={6}>
               <Box style={{ color: theme.colors.brand[5] }}>
@@ -130,9 +135,11 @@ const FilterPanel = ({ colSpan = { base: 12, sm: 6, md: 4, lg: 1.7 }, onFiltered
             </Group>
             <input
               type="date"
-              value={filters.startDate || ''}
-              onChange={(e) => handleChange('startDate', e.target.value)}
               className="native-date-input"
+              value={filters.startDate || ''}
+              onChange={(e) =>
+                handleChange('startDate', e.target.value)
+              }
             />
           </Grid.Col>
 
@@ -146,9 +153,11 @@ const FilterPanel = ({ colSpan = { base: 12, sm: 6, md: 4, lg: 1.7 }, onFiltered
             </Group>
             <input
               type="date"
-              value={filters.endDate || ''}
-              onChange={(e) => handleChange('endDate', e.target.value)}
               className="native-date-input"
+              value={filters.endDate || ''}
+              onChange={(e) =>
+                handleChange('endDate', e.target.value)
+              }
             />
           </Grid.Col>
 
@@ -257,7 +266,7 @@ const FilterPanel = ({ colSpan = { base: 12, sm: 6, md: 4, lg: 1.7 }, onFiltered
                 <Button
                   variant="light"
                   onClick={clearFilters}
-                  leftIcon={<IconX size={16} />}
+                  leftSection={<IconX size={16} />}
                   radius="xl"
                   color="gray"
                 >
@@ -265,7 +274,7 @@ const FilterPanel = ({ colSpan = { base: 12, sm: 6, md: 4, lg: 1.7 }, onFiltered
                 </Button>
                 <Button
                   onClick={applyFilters}
-                  leftIcon={<IconFilter size={16} />}
+                  leftSection={<IconFilter size={16} />}
                   radius="xl"
                   color="blue"
                 >
@@ -278,6 +287,4 @@ const FilterPanel = ({ colSpan = { base: 12, sm: 6, md: 4, lg: 1.7 }, onFiltered
       </div>
     </Paper>
   );
-};
-
-export default FilterPanel;
+}
