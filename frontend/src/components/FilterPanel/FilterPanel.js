@@ -202,277 +202,283 @@ const FilterPanel = ({
 
   return (
     <Paper shadow="sm" p="lg" radius="md" mb="xl" className="filter-section">
-      <Grid align="flex-end" gutter="md">
-        <Grid.Col span={colSpan}>
-          <Group spacing="xs" mb={6}>
-            <Box style={{ color: theme.colors.brand[5] }}>
-              <IconCamera size={16} />
-            </Box>
-            <Text className="filter-label">
-              Camera ID
-            </Text>
-          </Group>
-          <Select
-            placeholder="Camera ID"
-            data={[{value: "", label: "All"}, ...cameraOptions]}
-            value={filters.cameraId}
-            onChange={(value) => handleFilterChange('cameraId', value)}
-            searchable
-            clearable
-            radius="xl"
-            size="md"
-            styles={(theme) => ({
-              input: {
-                border: `1px solid ${theme.colors.gray[3]}`,
-                '&:focus': {
-                  borderColor: theme.colors.brand[5],
-                  boxShadow: `0 0 0 3px rgba(59, 130, 246, 0.15)`
-                }
-              },
-              item: {
-                borderRadius: '6px',
-                '&[data-selected]': {
-                  backgroundColor: `rgba(59, 130, 246, 0.1)`,
-                  color: theme.colors.brand[5],
-                  fontWeight: 500,
-                }
-              }
-            })}
-          />
-        </Grid.Col>
-        
-        <Grid.Col span={colSpan}>
-          <Group spacing="xs" mb={6}>
-            <Box style={{ color: theme.colors.brand[5] }}>
-              <IconMapPin size={16} />
-            </Box>
-            <Text className="filter-label">
-              Location
-            </Text>
-          </Group>
-          <Select
-            placeholder="Locations"
-            data={[{value: "", label: "All"}, ...locationOptions]}
-            value={filters.location}
-            onChange={(value) => handleFilterChange('location', value)}
-            searchable
-            clearable
-            radius="xl"
-            size="md"
-            styles={(theme) => ({
-              input: {
-                border: `1px solid ${theme.colors.gray[3]}`,
-                '&:focus': {
-                  borderColor: theme.colors.brand[5],
-                  boxShadow: `0 0 0 3px rgba(59, 130, 246, 0.15)`
-                }
-              },
-              item: {
-                borderRadius: '6px',
-                '&[data-selected]': {
-                  backgroundColor: `rgba(59, 130, 246, 0.1)`,
-                  color: theme.colors.brand[5],
-                  fontWeight: 500,
-                }
-              }
-            })}
-          />
-        </Grid.Col>
-        
-        <Grid.Col span={colSpan}>
-          <Group spacing="xs" mb={6}>
-            <Box style={{ color: theme.colors.brand[5] }}>
-              <IconCalendar size={16} />
-            </Box>
-            <Text className="filter-label">
-              Start Date
-            </Text>
-          </Group>
-          <input
-            type="date"
-            value={filters.startDate || ''}
-            onChange={(e) => {
-              // Validate date range
-              if (filters.endDate && new Date(e.target.value) > new Date(filters.endDate)) {
-                // Reset end date if start date is later
-                setFilters(prev => ({ ...prev, startDate: e.target.value, endDate: null }));
-                document.querySelector('input[name="endDate"]').value = '';
-              } else {
-                handleFilterChange('startDate', e.target.value);
-              }
-            }}
-            name="startDate"
-            className="native-date-input"
-          />
-        </Grid.Col>
-        
-        <Grid.Col span={colSpan}>
-          <Group spacing="xs" mb={6}>
-            <Box style={{ color: theme.colors.brand[5] }}>
-              <IconCalendar size={16} />
-            </Box>
-            <Text className="filter-label">
-              End Date
-            </Text>
-          </Group>
-          <input
-            type="date"
-            value={filters.endDate || ''}
-            onChange={(e) => {
-              // Validate date range
-              if (filters.startDate && new Date(e.target.value) < new Date(filters.startDate)) {
-                // Reset both dates if invalid range
-                setFilters(prev => ({ 
-                  ...prev, 
-                  startDate: null,
-                  endDate: null
-                }));
-                document.querySelectorAll('input[type="date"]').forEach(input => input.value = '');
-              } else {
-                handleFilterChange('endDate', e.target.value);
-              }
-            }}
-            name="endDate"
-            className="native-date-input"
-          />
-        </Grid.Col>
-        
-        <Grid.Col span={colSpan}>
-          <Group spacing="xs" mb={6}>
-            <Box style={{ color: theme.colors.brand[5] }}>
-              <IconAlertTriangle size={16} />
-            </Box>
-            <Text className="filter-label">
-              Severity
-            </Text>
-          </Group>
-          <Select
-            placeholder="Severities"
-            data={[
-              { value: "", label: "All" },
-              { value: 'low', label: 'Low' },
-              { value: 'medium', label: 'Medium' },
-              { value: 'high', label: 'High' }
-            ]}
-            value={filters.severity}
-            onChange={(value) => handleFilterChange('severity', value)}
-            clearable
-            radius="xl"
-            size="md"
-            styles={(theme) => ({
-              input: {
-                border: `1px solid ${theme.colors.gray[3]}`,
-                '&:focus': {
-                  borderColor: theme.colors.brand[5],
-                  boxShadow: `0 0 0 3px rgba(59, 130, 246, 0.15)`
-                }
-              },
-              item: {
-                borderRadius: '6px',
-                '&[data-selected]': {
-                  backgroundColor: `rgba(59, 130, 246, 0.1)`,
-                  color: theme.colors.brand[5],
-                  fontWeight: 500,
-                }
-              }
-            })}
-          />
-        </Grid.Col>
-        
-        <Grid.Col span={colSpan}>
-          <Group spacing="xs" mb={6}>
-            <Box style={{ color: theme.colors.brand[5] }}>
-              <IconClock size={16} />
-            </Box>
-            <Text className="filter-label">
-              From Time
-            </Text>
-          </Group>
-          <Select
-            placeholder="Start Time"
-            data={[{value: "", label: "All"}, ...timeOptions]}
-            value={filters.startTime}
-            onChange={(value) => handleFilterChange('startTime', value)}
-            clearable
-            radius="xl"
-            size="md"
-            styles={(theme) => ({
-              input: {
-                border: `1px solid ${theme.colors.gray[3]}`,
-                '&:focus': {
-                  borderColor: theme.colors.brand[5],
-                  boxShadow: `0 0 0 3px rgba(59, 130, 246, 0.15)`
-                }
-              },
-              item: {
-                borderRadius: '6px',
-                '&[data-selected]': {
-                  backgroundColor: `rgba(59, 130, 246, 0.1)`,
-                  color: theme.colors.brand[5],
-                  fontWeight: 500,
-                }
-              }
-            })}
-          />
-        </Grid.Col>
-        
-        <Grid.Col span={colSpan}>
-          <Group spacing="xs" mb={6}>
-            <Box style={{ color: theme.colors.brand[5] }}>
-              <IconClock size={16} />
-            </Box>
-            <Text className="filter-label">
-              To Time
-            </Text>
-          </Group>
-          <Select
-            placeholder="End Time"
-            data={[{value: "", label: "All"}, ...timeOptions]}
-            value={filters.endTime}
-            onChange={(value) => handleFilterChange('endTime', value)}
-            clearable
-            radius="xl"
-            size="md"
-            styles={(theme) => ({
-              input: {
-                border: `1px solid ${theme.colors.gray[3]}`,
-                '&:focus': {
-                  borderColor: theme.colors.brand[5],
-                  boxShadow: `0 0 0 3px rgba(59, 130, 246, 0.15)`
-                }
-              },
-              item: {
-                borderRadius: '6px',
-                '&[data-selected]': {
-                  backgroundColor: `rgba(59, 130, 246, 0.1)`,
-                  color: theme.colors.brand[5],
-                  fontWeight: 500,
-                }
-              }
-            })}
-          />
-        </Grid.Col>
-        
-        <Grid.Col span={{ base: 12 }} mt={5}>
-          <Group position="right">
-            {filteredLogs.length > 0 && (
-              <Text c="dimmed" fz="sm" mr="auto">
-                {filteredLogs.length} accident log{filteredLogs.length !== 1 ? 's' : ''} found
+      {/* Background design elements */}
+      <div className="filter-bg-bubble-1"></div>
+      <div className="filter-bg-bubble-2"></div>
+      
+      <div className="filter-content">
+        <Grid align="flex-end" gutter="md">
+          <Grid.Col span={colSpan}>
+            <Group spacing="xs" mb={6}>
+              <Box style={{ color: theme.colors.brand[5] }}>
+                <IconCamera size={16} />
+              </Box>
+              <Text className="filter-label">
+                Camera ID
               </Text>
-            )}
-            <Button 
-              variant="light" 
-              onClick={handleClearFilters}
-              leftIcon={<IconX size={16} />}
+            </Group>
+            <Select
+              placeholder="Camera ID"
+              data={[{value: "", label: "All"}, ...cameraOptions]}
+              value={filters.cameraId}
+              onChange={(value) => handleFilterChange('cameraId', value)}
+              searchable
+              clearable
               radius="xl"
-              color="black"
-              fw={500}
-            >
-              Clear Filters
-            </Button>
-          </Group>
-        </Grid.Col>
-      </Grid>
+              size="md"
+              styles={(theme) => ({
+                input: {
+                  border: `1px solid ${theme.colors.gray[3]}`,
+                  '&:focus': {
+                    borderColor: theme.colors.brand[5],
+                    boxShadow: `0 0 0 3px rgba(59, 130, 246, 0.15)`
+                  }
+                },
+                item: {
+                  borderRadius: '6px',
+                  '&[data-selected]': {
+                    backgroundColor: `rgba(59, 130, 246, 0.1)`,
+                    color: theme.colors.brand[5],
+                    fontWeight: 500,
+                  }
+                }
+              })}
+            />
+          </Grid.Col>
+          
+          <Grid.Col span={colSpan}>
+            <Group spacing="xs" mb={6}>
+              <Box style={{ color: theme.colors.brand[5] }}>
+                <IconMapPin size={16} />
+              </Box>
+              <Text className="filter-label">
+                Location
+              </Text>
+            </Group>
+            <Select
+              placeholder="Locations"
+              data={[{value: "", label: "All"}, ...locationOptions]}
+              value={filters.location}
+              onChange={(value) => handleFilterChange('location', value)}
+              searchable
+              clearable
+              radius="xl"
+              size="md"
+              styles={(theme) => ({
+                input: {
+                  border: `1px solid ${theme.colors.gray[3]}`,
+                  '&:focus': {
+                    borderColor: theme.colors.brand[5],
+                    boxShadow: `0 0 0 3px rgba(59, 130, 246, 0.15)`
+                  }
+                },
+                item: {
+                  borderRadius: '6px',
+                  '&[data-selected]': {
+                    backgroundColor: `rgba(59, 130, 246, 0.1)`,
+                    color: theme.colors.brand[5],
+                    fontWeight: 500,
+                  }
+                }
+              })}
+            />
+          </Grid.Col>
+          
+          <Grid.Col span={colSpan}>
+            <Group spacing="xs" mb={6}>
+              <Box style={{ color: theme.colors.brand[5] }}>
+                <IconCalendar size={16} />
+              </Box>
+              <Text className="filter-label">
+                Start Date
+              </Text>
+            </Group>
+            <input
+              type="date"
+              value={filters.startDate || ''}
+              onChange={(e) => {
+                // Validate date range
+                if (filters.endDate && new Date(e.target.value) > new Date(filters.endDate)) {
+                  // Reset end date if start date is later
+                  setFilters(prev => ({ ...prev, startDate: e.target.value, endDate: null }));
+                  document.querySelector('input[name="endDate"]').value = '';
+                } else {
+                  handleFilterChange('startDate', e.target.value);
+                }
+              }}
+              name="startDate"
+              className="native-date-input"
+            />
+          </Grid.Col>
+          
+          <Grid.Col span={colSpan}>
+            <Group spacing="xs" mb={6}>
+              <Box style={{ color: theme.colors.brand[5] }}>
+                <IconCalendar size={16} />
+              </Box>
+              <Text className="filter-label">
+                End Date
+              </Text>
+            </Group>
+            <input
+              type="date"
+              value={filters.endDate || ''}
+              onChange={(e) => {
+                // Validate date range
+                if (filters.startDate && new Date(e.target.value) < new Date(filters.startDate)) {
+                  // Reset both dates if invalid range
+                  setFilters(prev => ({ 
+                    ...prev, 
+                    startDate: null,
+                    endDate: null
+                  }));
+                  document.querySelectorAll('input[type="date"]').forEach(input => input.value = '');
+                } else {
+                  handleFilterChange('endDate', e.target.value);
+                }
+              }}
+              name="endDate"
+              className="native-date-input"
+            />
+          </Grid.Col>
+          
+          <Grid.Col span={colSpan}>
+            <Group spacing="xs" mb={6}>
+              <Box style={{ color: theme.colors.brand[5] }}>
+                <IconAlertTriangle size={16} />
+              </Box>
+              <Text className="filter-label">
+                Severity
+              </Text>
+            </Group>
+            <Select
+              placeholder="Severities"
+              data={[
+                { value: "", label: "All" },
+                { value: 'low', label: 'Low' },
+                { value: 'medium', label: 'Medium' },
+                { value: 'high', label: 'High' }
+              ]}
+              value={filters.severity}
+              onChange={(value) => handleFilterChange('severity', value)}
+              clearable
+              radius="xl"
+              size="md"
+              styles={(theme) => ({
+                input: {
+                  border: `1px solid ${theme.colors.gray[3]}`,
+                  '&:focus': {
+                    borderColor: theme.colors.brand[5],
+                    boxShadow: `0 0 0 3px rgba(59, 130, 246, 0.15)`
+                  }
+                },
+                item: {
+                  borderRadius: '6px',
+                  '&[data-selected]': {
+                    backgroundColor: `rgba(59, 130, 246, 0.1)`,
+                    color: theme.colors.brand[5],
+                    fontWeight: 500,
+                  }
+                }
+              })}
+            />
+          </Grid.Col>
+          
+          <Grid.Col span={colSpan}>
+            <Group spacing="xs" mb={6}>
+              <Box style={{ color: theme.colors.brand[5] }}>
+                <IconClock size={16} />
+              </Box>
+              <Text className="filter-label">
+                From Time
+              </Text>
+            </Group>
+            <Select
+              placeholder="Start Time"
+              data={[{value: "", label: "All"}, ...timeOptions]}
+              value={filters.startTime}
+              onChange={(value) => handleFilterChange('startTime', value)}
+              clearable
+              radius="xl"
+              size="md"
+              styles={(theme) => ({
+                input: {
+                  border: `1px solid ${theme.colors.gray[3]}`,
+                  '&:focus': {
+                    borderColor: theme.colors.brand[5],
+                    boxShadow: `0 0 0 3px rgba(59, 130, 246, 0.15)`
+                  }
+                },
+                item: {
+                  borderRadius: '6px',
+                  '&[data-selected]': {
+                    backgroundColor: `rgba(59, 130, 246, 0.1)`,
+                    color: theme.colors.brand[5],
+                    fontWeight: 500,
+                  }
+                }
+              })}
+            />
+          </Grid.Col>
+          
+          <Grid.Col span={colSpan}>
+            <Group spacing="xs" mb={6}>
+              <Box style={{ color: theme.colors.brand[5] }}>
+                <IconClock size={16} />
+              </Box>
+              <Text className="filter-label">
+                To Time
+              </Text>
+            </Group>
+            <Select
+              placeholder="End Time"
+              data={[{value: "", label: "All"}, ...timeOptions]}
+              value={filters.endTime}
+              onChange={(value) => handleFilterChange('endTime', value)}
+              clearable
+              radius="xl"
+              size="md"
+              styles={(theme) => ({
+                input: {
+                  border: `1px solid ${theme.colors.gray[3]}`,
+                  '&:focus': {
+                    borderColor: theme.colors.brand[5],
+                    boxShadow: `0 0 0 3px rgba(59, 130, 246, 0.15)`
+                  }
+                },
+                item: {
+                  borderRadius: '6px',
+                  '&[data-selected]': {
+                    backgroundColor: `rgba(59, 130, 246, 0.1)`,
+                    color: theme.colors.brand[5],
+                    fontWeight: 500,
+                  }
+                }
+              })}
+            />
+          </Grid.Col>
+          
+          <Grid.Col span={{ base: 12 }} mt={5}>
+            <Group position="right">
+              {filteredLogs.length > 0 && (
+                <Text c="dimmed" fz="sm" mr="auto">
+                  {filteredLogs.length} accident log{filteredLogs.length !== 1 ? 's' : ''} found
+                </Text>
+              )}
+              <Button 
+                variant="light" 
+                onClick={handleClearFilters}
+                leftIcon={<IconX size={16} />}
+                radius="xl"
+                color="black"
+                fw={500}
+              >
+                Clear Filters
+              </Button>
+            </Group>
+          </Grid.Col>
+        </Grid>
+      </div>
     </Paper>
   );
 };
