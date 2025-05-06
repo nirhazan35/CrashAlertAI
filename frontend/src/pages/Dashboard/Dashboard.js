@@ -18,7 +18,7 @@ const Dashboard = () => {
       setFilteredLogs(accidentLogs);
     }
   }, [accidentLogs]);
-
+  
   return (
     <Stack spacing="md" className="dashboard-container">
       <Alert alert={selectedAlert} />

@@ -54,6 +54,13 @@ const AccidentLog = ({
     setSelectedRowIndex(index);
   };
 
+  // Function to truncate text to a specific length with ellipsis
+  const truncateText = (text, maxLength = 20) => {
+    if (!text) return "No description";
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
   // Helper to get severity badge color
   const getSeverityColor = (severity) => {
     switch(severity?.toLowerCase()) {
@@ -92,11 +99,11 @@ const AccidentLog = ({
                 <Table.Tbody>
                   {logsToDisplay.length > 0 ? (
                     logsToDisplay
-                      .slice()
-                      .sort((a, b) => new Date(a.date) - new Date(b.date))
-                      .map((log, index) => (
-                        <Table.Tr
-                          key={index}
+                    .slice()
+                    .sort((a, b) => new Date(a.date) - new Date(b.date))
+                    .map((log, index) => (
+                      <Table.Tr
+                        key={index}
                           className={`accident-row ${selectedRowIndex === index ? 'accident-row-selected' : ''} ${
                             isHistoryView 
                               ? 'accident-row-handled' 
@@ -104,92 +111,94 @@ const AccidentLog = ({
                                 ? 'accident-row-assigned' 
                                 : 'accident-row-active'
                           }`}
-                          onClick={() => handleRowClick(index)}
-                          onDoubleClick={() => handleRowDoubleClick(log)}
-                        >
-                          <Table.Td>
-                            <Tooltip label="View video" position="top">
-                              <ActionIcon 
-                                component="a" 
-                                href={log.video} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                variant="light" 
-                                color="blue"
-                                radius="xl"
-                              >
-                                <IconEye size={16} />
-                              </ActionIcon>
-                            </Tooltip>
-                          </Table.Td>
-                          <Table.Td>
-                            <Text fw={500}>{log.location}</Text>
-                          </Table.Td>
-                          <Table.Td>
-                            <Text>{log.displayDate}</Text>
-                          </Table.Td>
-                          <Table.Td>
-                            <Text>{log.displayTime}</Text>
-                          </Table.Td>
-                          <Table.Td>
-                            <Badge 
-                              color={getSeverityColor(log.severity)}
+                        onClick={() => handleRowClick(index)}
+                        onDoubleClick={() => handleRowDoubleClick(log)}
+                      >
+                        <Table.Td>
+                          <Tooltip label="View video" position="top">
+                            <ActionIcon 
+                              component="a" 
+                              href={log.video} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              variant="light" 
+                              color="blue"
                               radius="xl"
-                              size="sm"
-                              px="xs"
-                              tt="uppercase"
-                              fz="10px"
-                              lts="0.5px"
                             >
-                              {log.severity}
-                            </Badge>
-                          </Table.Td>
-                          <Table.Td>
-                            <Text lineClamp={1}>
-                              {log.description || "No description"}
+                              <IconEye size={16} />
+                            </ActionIcon>
+                          </Tooltip>
+                        </Table.Td>
+                        <Table.Td>
+                          <Text fw={500}>{log.location}</Text>
+                        </Table.Td>
+                        <Table.Td>
+                          <Text>{log.displayDate}</Text>
+                        </Table.Td>
+                        <Table.Td>
+                          <Text>{log.displayTime}</Text>
+                        </Table.Td>
+                        <Table.Td>
+                          <Badge 
+                            color={getSeverityColor(log.severity)}
+                            radius="xl"
+                            size="sm"
+                            px="xs"
+                            tt="uppercase"
+                            fz="10px"
+                            lts="0.5px"
+                          >
+                            {log.severity}
+                          </Badge>
+                        </Table.Td>
+                        <Table.Td>
+                          <Tooltip label={log.description || "No description"} position="top">
+                            <Text>
+                              {truncateText(log.description)}
                             </Text>
-                          </Table.Td>
-                          <Table.Td>
-                            {renderActions ? (
-                              renderActions(log, index)
-                            ) : (
-                              // Default action column
-                              <>
-                                {log.status === "assigned" && log.assignedTo !== user?.username ? (
-                                  <Button 
-                                    size="xs" 
-                                    variant="subtle" 
-                                    color="gray" 
-                                    disabled
-                                    radius="xl"
-                                    fz="11px"
-                                  >
-                                    Assigned to {log.assignedTo}
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    size="xs"
-                                    variant={log.status === "assigned" ? "outline" : "filled"}
-                                    color={log.status === "assigned" ? "red" : "blue"}
-                                    radius="xl"
-                                    fz="11px"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      updateAccidentStatus(
-                                        log._id,
-                                        log.status === "assigned" ? "active" : "assigned"
-                                      );
-                                    }}
-                                  >
-                                    {log.status === "assigned" && log.assignedTo === user?.username
-                                      ? "Unassign"
-                                      : "Assign"}
-                                  </Button>
-                                )}
-                              </>
-                            )}
-                          </Table.Td>
-                        </Table.Tr>
+                          </Tooltip>
+                        </Table.Td>
+                        <Table.Td>
+                          {renderActions ? (
+                            renderActions(log, index)
+                          ) : (
+                            // Default action column
+                            <>
+                              {log.status === "assigned" && log.assignedTo !== user?.username ? (
+                                <Button 
+                                  size="xs" 
+                                  variant="subtle" 
+                                  color="gray" 
+                                  disabled
+                                  radius="xl"
+                                  fz="11px"
+                                >
+                                  Assigned to {log.assignedTo}
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="xs"
+                                  variant={log.status === "assigned" ? "outline" : "filled"}
+                                  color={log.status === "assigned" ? "red" : "blue"}
+                                  radius="xl"
+                                  fz="11px"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateAccidentStatus(
+                                      log._id,
+                                      log.status === "assigned" ? "active" : "assigned"
+                                    );
+                                  }}
+                                >
+                                  {log.status === "assigned" && log.assignedTo === user?.username
+                                    ? "Unassign"
+                                    : "Assign"}
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </Table.Td>
+                      </Table.Tr>
                       ))
                   ) : (
                     <Table.Tr>

@@ -172,9 +172,9 @@ const AccidentHistory = () => {
         </Paper>
       </Container>
       
-      <AccidentLog 
-        filteredLogs={filteredAccidents} 
-        renderActions={renderCustomActions}
+        <AccidentLog 
+          filteredLogs={filteredAccidents} 
+          renderActions={renderCustomActions}
         isHistoryView={true}
       />
     </Stack>
