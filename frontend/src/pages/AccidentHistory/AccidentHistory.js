@@ -146,31 +146,11 @@ const AccidentHistory = () => {
 
   return (
     <Stack spacing="md" className="history-container">
-      <Container fluid p={0}>
-        <Paper radius="lg" p="xl" shadow="md" className="history-paper">
-          <Box className="history-bg-bubble-1" />
-          <Box className="history-bg-bubble-2" />
-          
-          <Box className="history-content">
-            <Group mb="lg" spacing="xs">
-              <IconHistory size={24} className="history-icon" />
-              <Title order={2} className="history-title">
-                Accident History
-              </Title>
-            </Group>
-            
-            <Text size="sm" c="dimmed" mb="lg">
-              View and manage handled accidents. Use the filters below to narrow down results.
-            </Text>
-            
-            <FilterPanel 
-              onFilteredLogsChange={handleFilteredLogsChange}
-              colSpan={{ base: 12, sm: 6, md: 4, lg: 3 }}
-              initialLogs={handledAccidents}
-            />
-          </Box>
-        </Paper>
-      </Container>
+      <FilterPanel 
+            onFilteredLogsChange={handleFilteredLogsChange}
+            colSpan={{ base: 12, sm: 6, md: 4, lg: 1.7 }}
+            initialLogs={handledAccidents}
+          />
       
         <AccidentLog 
           filteredLogs={filteredAccidents} 
