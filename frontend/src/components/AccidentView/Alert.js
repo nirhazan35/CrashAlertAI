@@ -213,32 +213,61 @@ const Alert = () => {
                     </Text>
                   </Group>
                   
-                  <Select
-                    value={selectedSeverity}
-                    onChange={handleSeverityChange}
-                    placeholder="Select severity"
-                    data={[
-                      { value: 'low', label: 'Low' },
-                      { value: 'medium', label: 'Medium' },
-                      { value: 'high', label: 'High' }
-                    ]}
-                    radius="xl"
-                    size="md"
-                    rightSection={<IconChevronDown size={16} style={{ color: theme.colors.gray[6] }} />}
-                    className="severity-select"
-                    styles={{
-                      root: {
-                        width: '25%'
-                      },
-                      dropdown: {
-                        className: 'severity-dropdown'
-                      },
-                      item: {
-                        className: 'severity-item'
-                      }
-                    }}
-                    rightSectionWidth={40}
-                  />
+                  {isEditable ? (
+                    // Editable version - actual dropdown
+                    <Select
+                      value={selectedSeverity}
+                      onChange={handleSeverityChange}
+                      placeholder="Select severity"
+                      data={[
+                        { value: 'low', label: 'Low' },
+                        { value: 'medium', label: 'Medium' },
+                        { value: 'high', label: 'High' }
+                      ]}
+                      radius="xl"
+                      size="md"
+                      rightSection={<IconChevronDown size={16} style={{ color: theme.colors.gray[6] }} />}
+                      className="severity-select"
+                      styles={(theme) => ({
+                        root: {
+                          width: '25%'
+                        },
+                        input: {
+                          border: '1px solid',
+                          borderColor: theme.colors.gray[3],
+                          '&:focus': {
+                            borderColor: theme.colors.brand[5],
+                            boxShadow: `0 0 0 2px ${(theme.colors.brand[5], 0.2)}`
+                          }
+                        }
+                      })}
+                      rightSectionWidth={40}
+                    />
+                  ) : (
+                    // Read-only version - styled badge instead of disabled dropdown
+                    <Box style={{ display: 'flex', width: '100%', marginTop: '8px', marginLeft: '27px' }}>
+                      <Badge
+                        color={
+                          selectedSeverity === 'high' ? 'red' :
+                          selectedSeverity === 'medium' ? 'orange' : 'blue'
+                        }
+                        variant="light"
+                        size="lg"
+                        radius="xl"
+                        px="lg"
+                        py={6}
+                        style={{
+                          textTransform: 'capitalize',
+                          fontWeight: 500,
+                          fontSize: '14px',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                          cursor: 'default'
+                        }}
+                      >
+                        {selectedSeverity}
+                      </Badge>
+                    </Box>
+                  )}
                   
                   {/* Visual color indicator based on selected severity */}
                   <Box className="severity-indicator">
@@ -246,13 +275,13 @@ const Alert = () => {
                       className="severity-indicator-dot"
                       style={{ 
                         backgroundColor: selectedSeverity === 'high' ? theme.colors.danger[5] : 
-                                          selectedSeverity === 'medium' ? theme.colors.warning[5] : 
-                                          theme.colors.brand[5]
+                                        selectedSeverity === 'medium' ? theme.colors.warning[5] : 
+                                        theme.colors.brand[5]
                       }} 
                     />
                     <Text className="severity-indicator-text">
                       {selectedSeverity === 'high' ? 'High priority response needed' : 
-                       selectedSeverity === 'medium' ? 'Moderate attention required' : 'Routine review'}
+                        selectedSeverity === 'medium' ? 'Moderate attention required' : 'Routine review'}
                     </Text>
                   </Box>
                 </Box>
@@ -341,27 +370,31 @@ const Alert = () => {
           
           {/* toggle button */}
           <Group position="right" mt="md">
-            <Button
-              size="md"
-              variant="outline"
-              radius="xl"
-              color={selectedAlert.falsePositive ? "green" : "red"}
-              fw={500}
-              onClick={handleToggleAccidentMark}
-            >
-              {selectedAlert.falsePositive ? "Mark as Accident" : "Not an Accident"}
-            </Button>
-            
-            {selectedAlert.status !== "handled" && (
-              <Button
-                size="md"
-                radius="xl"
-                color="green"
-                onClick={handleMarkAsHandled}
-                fw={500}
-              >
-                Handled
-              </Button>
+            {isEditable && (
+              <>
+                <Button
+                  size="md"
+                  variant="outline"
+                  radius="xl"
+                  color={selectedAlert.falsePositive ? "green" : "red"}
+                  fw={500}
+                  onClick={handleToggleAccidentMark}
+                >
+                  {selectedAlert.falsePositive ? "Mark as Accident" : "Not an Accident"}
+                </Button>
+                
+                {selectedAlert.status !== "handled" && (
+                  <Button
+                    size="md"
+                    radius="xl"
+                    color="green"
+                    onClick={handleMarkAsHandled}
+                    fw={500}
+                  >
+                    Handled
+                  </Button>
+                )}
+              </>
             )}
           </Group>
         </Stack>

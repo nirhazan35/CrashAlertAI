@@ -1,70 +1,147 @@
-.accident-history {
-    padding: 20px;
-    font-family: Arial, sans-serif;
-  }
-  
-  .accident-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
-  .accident-table th, .accident-table td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: left;
-  }
-  
-  .accident-table th {
-    background-color: #f4f4f4;
-  }
-  
-  .accident-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  
-  /* Modern styling for AccidentHistory page */
+/* AccidentHistory.css - Styling for the accident history page */
 
+/* Container and layout */
+.history-container {
+  margin-top: 0;
+}
+
+.history-paper {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(248,250,252,0.9) 100%);
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+  border-left: 4px solid #3b82f6;
+}
+
+/* Visual design elements */
+.history-bg-bubble-1 {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.1);
+  z-index: 0;
+}
+
+.history-bg-bubble-2 {
+  position: absolute;
+  bottom: -80px;
+  left: 100px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.05);
+  z-index: 0;
+}
+
+.history-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Title styles */
+.history-title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+}
+
+.history-icon {
+  color: #3b82f6;
+}
+
+/* Summary card styles */
+.summary-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
+  flex: 1;
+  animation: slideUp 0.5s ease forwards;
+}
+
+.summary-card-title {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+}
+
+.summary-card-value {
+  font-family: 'Inter', sans-serif;
+  color: #3b82f6;
+  margin-top: 5px;
+  font-weight: 700;
+}
+
+/* Table styles */
+.history-table-header {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.history-table-heading {
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  font-weight: 600;
+  padding: 16px 12px;
+}
+
+.history-table-cell {
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+}
+
+.history-table-cell-bold {
+  font-weight: 500;
+}
+
+/* Severity badge styles */
+.severity-badge {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+}
+
+/* Loading and empty states */
 .empty-state {
+  animation: fadeIn 0.5s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
-  text-align: center;
+  padding: 3rem;
 }
 
-/* Animations */
+/* Animation effects */
+.table-hover-effect {
+  transition: background-color 0.2s ease;
+}
+
+.table-hover-effect:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Table hover effect */
-.table-hover-effect:hover {
-  background-color: rgba(59, 130, 246, 0.05);
-  transition: background-color 0.2s ease;
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
 }
 
-/* Badge styling */
-.severity-badge {
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-}
-
-/* Card hover effect */
-.summary-card {
-  transition: all 0.2s ease;
-}
-
-.summary-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-  
+.fade-in-delayed {
+  animation: fadeIn 0.3s ease forwards;
+  animation-delay: calc(var(--index) * 0.05s);
+} 
