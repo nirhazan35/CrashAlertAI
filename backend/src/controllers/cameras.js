@@ -47,7 +47,7 @@ const assignCameras = async (req, res) => {
         }
 
         // Ensure all cameras exist before assignment
-        const cameras = await Camera.find({ _id: { $in: cameraIds } });
+        const cameras = await Camera.find({ cameraId: { $in: cameraIds } });
         if (cameras.length !== cameraIds.length) {
             return res.status(400).json({ message: 'One or more cameras not found' });
         }

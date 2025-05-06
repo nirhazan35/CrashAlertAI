@@ -70,8 +70,8 @@ const ManageUserCameras = () => {
                   <span className="camera-id">{camera.cameraId}</span>
                   <label className="flex items-center space-x-2">
                     <Checkbox
-                      checked={assignedCameras.includes(camera._id)}
-                      onChange={() => handleCameraToggle(camera._id)}
+                      checked={assignedCameras.includes(camera.cameraId)}
+                      onChange={() => handleCameraToggle(camera.cameraId)}
                     />
                     <span>{camera.name}</span>
                   </label>
