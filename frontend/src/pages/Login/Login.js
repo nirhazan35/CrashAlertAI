@@ -9,12 +9,11 @@ import {
   Text, 
   Paper, 
   Container, 
-  Center, 
   Box, 
-  Alert,
-  useMantineTheme
+  Alert
 } from '@mantine/core';
 import { IconAlertCircle, IconEyeCheck, IconEyeOff } from '@tabler/icons-react';
+import './Login.css';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -22,8 +21,6 @@ const Login = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const theme = useMantineTheme();
-
   const navigate = useNavigate();
 
   // Handle form submission
@@ -68,28 +65,21 @@ const Login = () => {
   };
 
   return (
-    <Box 
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: theme.colors.gray[0]
-      }}
-    >
+    <Box className="login-page">
       <Container size="xs">
         <Paper
           radius="md"
           p={30}
           withBorder
           shadow="md"
+          className="login-paper"
         >
           <Title
             order={2}
             ta="center"
             mb="xl"
             fw={900}
-            c={theme.colors.brand[7]}
+            className="login-title"
           >
             CrashAlert AI
           </Title>
@@ -101,6 +91,7 @@ const Login = () => {
               color="red" 
               radius="md"
               mb="md"
+              className="login-error"
             >
               {error}
             </Alert>
@@ -114,6 +105,7 @@ const Login = () => {
               onChange={(e) => setUsername(e.target.value)}
               required
               mb="md"
+              className="login-input"
             />
             
             <PasswordInput
@@ -126,6 +118,7 @@ const Login = () => {
                 reveal ? <IconEyeOff size={16} /> : <IconEyeCheck size={16} />
               }
               mb="xl"
+              className="login-input"
             />
             
             <Button
@@ -133,14 +126,15 @@ const Login = () => {
               type="submit"
               loading={loading}
               size="md"
+              className="login-button"
             >
               Login
             </Button>
           </form>
           
-          <Text ta="center" mt="lg" size="sm" c="dimmed">
+          <Text ta="center" mt="lg" size="sm" className="forgot-password-text">
             Forgot your password?{" "}
-            <Link to="/forgot-password" style={{ color: theme.colors.brand[5], textDecoration: 'none' }}>
+            <Link to="/forgot-password" className="forgot-password-link">
               Reset Password
             </Link>
           </Text>

@@ -1,6 +1,6 @@
 const Accident = require("../models/Accident");
 const formatDateTime = require("../util/DateFormatting");
-const { emitAccidentUpdate } = require("../services/socketService");
+const { emitAccidentUpdate, emitNotification } = require("../services/socketService");
 const { clients } = require("../socket/index");
 const User = require("../models/User");
 const { find, findById } = require("../models/Camera");
@@ -56,7 +56,7 @@ const getActiveAccidents = async (req, res) => {
 
     // Get user with their assigned cameras in a single query
     const user = await User.findById(req.user.id).select('assignedCameras');
-    
+
     if (!user || !user.assignedCameras || user.assignedCameras.length === 0) {
       return res.status(200).json({
         success: true,
@@ -64,10 +64,10 @@ const getActiveAccidents = async (req, res) => {
         data: [],
       });
     }
-    
+
     // Filter accidents by assigned cameras without additional DB queries
     const assignedCameraIds = user.assignedCameras.map(cam => cam.toString());
-    const filteredAccidents = activeAccidents.filter(accident => 
+    const filteredAccidents = activeAccidents.filter(accident =>
       assignedCameraIds.includes(accident.cameraId.toString())
     );
 
@@ -131,14 +131,14 @@ const filterAccidentsByUser = async(tokenUser, accidents) => {
   try {
     // Cache this result when possible instead of querying each time
     const user = await User.findById(tokenUser.id).select('assignedCameras');
-    
+
     if (!user || !user.assignedCameras || user.assignedCameras.length === 0) {
       console.warn("User or assignedCameras not found.");
       return [];
     }
-    
+
     const assignedCameraIds = user.assignedCameras.map(cam => cam.toString());
-    return accidents.filter(accident => 
+    return accidents.filter(accident =>
       assignedCameraIds.includes(accident.cameraId.toString())
     );
   } catch (error) {
@@ -147,14 +147,19 @@ const filterAccidentsByUser = async(tokenUser, accidents) => {
   }
 };
 
-// NEW: Update accident details (severity, description, falsePositive)
 const updateAccidentDetails = async (req, res) => {
   try {
     const { accident_id, severity, description, falsePositive } = req.body;
+    const username = (await User.findById(req.user.id)).get('username');
 
     // Validate severity if provided
     if (severity && !['low', 'medium', 'high'].includes(severity.toLowerCase())) {
       return res.status(400).json({ message: "Invalid severity value" });
+    }
+
+    const currentAccident = await Accident.findById(accident_id);
+    if (!currentAccident) {
+      return res.status(404).json({ message: "Accident not found" });
     }
 
     const updateData = {};
@@ -163,9 +168,26 @@ const updateAccidentDetails = async (req, res) => {
     if (typeof falsePositive === 'boolean') updateData.falsePositive = falsePositive;
 
     const updatedAccident = await Accident.findByIdAndUpdate(accident_id, updateData, { new: true });
-    if (!updatedAccident) {
-      return res.status(404).json({ message: "Accident not found" });
+
+    // Send notifications for relevant changes
+    // Severity level changed
+    if (severity && currentAccident.severity !== severity.toLowerCase()) {
+      const notificationData = {
+        accidentId: accident_id,
+        msg: `Accident severity level was changed from ${currentAccident.severity} to ${severity.toLowerCase()} by ${username}`
+      };
+      emitNotification(notificationData);
     }
+
+    // Case 2: Marked as false positive
+    if (typeof falsePositive === 'boolean' && falsePositive === true && !currentAccident.falsePositive) {
+      const notificationData = {
+        accidentId: accident_id,
+        msg: `Accident was marked as false positive by ${username}`
+      };
+      emitNotification(notificationData);
+    }
+
     // Emit update to clients
     emitAccidentUpdate(updatedAccident);
     res.status(200).json(updatedAccident);

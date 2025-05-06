@@ -1,29 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "../../authentication/AuthProvider";
-import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import { useAccidentLogs } from "../../context/AccidentContext";
 import { 
-  Text, 
-  Table, 
-  Badge, 
-  Loader, 
-  Center, 
-  Alert,
-  Paper,
-  ScrollArea,
-  useMantineTheme
+  Box,
+  Button,
+  Stack, 
+  Container,
+  Title,
+  Group,
+  Text,
+  Loader,
+  Alert as MantineAlert,
+  Paper
 } from '@mantine/core';
-import { IconAlertCircle } from '@tabler/icons-react';
+import { IconHistory, IconAlertCircle } from '@tabler/icons-react';
+import FilterPanel from '../../components/FilterPanel/FilterPanel';
+import AccidentLog from '../../components/AccidentLogs/AccidentLog';
+import './AccidentHistory.css';
 
 const AccidentHistory = () => {
   const { user } = useAuth();
+  const { updateAccidentStatus } = useAccidentLogs();
   const [handledAccidents, setHandledAccidents] = useState([]);
+  const [filteredAccidents, setFilteredAccidents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const theme = useMantineTheme();
 
+  // Fetch handled accidents
   useEffect(() => {
-    const getHandledAccidents = async () => {
+    const fetchHandledAccidents = async () => {
       try {
+        setLoading(true);
         const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/handled-accidents`, {
           method: "GET",
           headers: {
@@ -35,6 +42,7 @@ const AccidentHistory = () => {
         const data = await response.json();
         if (response.ok && data.success) {
           setHandledAccidents(data.data);
+          setFilteredAccidents(data.data);
         } else {
           throw new Error(data.message || "Failed to fetch handled accidents");
         }
@@ -47,111 +55,109 @@ const AccidentHistory = () => {
     };
 
     if (user?.token) {
-      getHandledAccidents();
+      fetchHandledAccidents();
     }
   }, [user?.token]);
 
-  // Helper to get severity badge color
-  const getSeverityColor = (severity) => {
-    switch(severity?.toLowerCase()) {
-      case 'high': return 'danger';
-      case 'medium': return 'warning';
-      case 'low': return 'blue';
-      default: return 'gray';
+  // Handle unhandling an accident
+  const handleUnhandleAccident = async (accident_id) => {
+    if (window.confirm("Mark this accident as unhandled? It will be moved back to active accidents.")) {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/accident-status-update`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+          body: JSON.stringify({ accident_id, status: "active" }),
+        });
+
+        if (response.ok) {
+          // Remove the accident from the list after it's unhandled
+          setHandledAccidents(prevAccidents => 
+            prevAccidents.filter(accident => accident._id !== accident_id)
+          );
+          setFilteredAccidents(prevAccidents => 
+            prevAccidents.filter(accident => accident._id !== accident_id)
+          );
+        } else {
+          console.error("Failed to update accident status");
+        }
+      } catch (error) {
+        console.error("Error updating accident status:", error.message);
+      }
     }
   };
+  
+  // Custom action renderer for AccidentLog component
+  const renderCustomActions = (log) => (
+    <Button
+      size="xs"
+      variant="outline"
+      color="blue"
+      radius="xl"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleUnhandleAccident(log._id);
+      }}
+    >
+      Unhandle
+    </Button>
+  );
 
-  // Custom styles for table headers
-  const tableHeaderStyle = {
-    textAlign: 'center',
-    fontWeight: 600,
-    color: theme.colors.gray[8],
-    fontSize: '0.9rem',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px'
+  // Handle filtered logs from FilterPanel
+  const handleFilteredLogsChange = (logs) => {
+    setFilteredAccidents(logs);
   };
 
-  // Style for table data cells
-  const tableCellStyle = {
-    textAlign: 'center'
-  };
-
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <Center p="xl">
-          <Loader size="md" />
-        </Center>
-      );
-    }
-
-    if (error) {
-      return (
-        <Alert 
-          icon={<IconAlertCircle size={16} />} 
-          title="Error" 
-          color="red"
-          variant="filled"
-        >
-          {error}
-        </Alert>
-      );
-    }
-
-    if (handledAccidents.length === 0) {
-      return (
-        <Center p="xl">
-          <Text c="dimmed">No handled accidents found.</Text>
-        </Center>
-      );
-    }
-
+  if (loading) {
     return (
-      <Paper shadow="xs" radius="md" withBorder>
-        <ScrollArea>
-          <Table striped highlightOnHover horizontalSpacing="md" verticalSpacing="sm">
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th style={tableHeaderStyle}>Camera ID</Table.Th>
-                <Table.Th style={tableHeaderStyle}>Location</Table.Th>
-                <Table.Th style={tableHeaderStyle}>Date</Table.Th>
-                <Table.Th style={tableHeaderStyle}>Description</Table.Th>
-                <Table.Th style={tableHeaderStyle}>Severity</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {handledAccidents.map((accident, index) => (
-                <Table.Tr key={index}>
-                  <Table.Td style={tableCellStyle}>
-                    <Text fw={500}>{accident.cameraId || 'N/A'}</Text>
-                  </Table.Td>
-                  <Table.Td style={tableCellStyle}>
-                    <Text fw={500}>{accident.location || 'N/A'}</Text>
-                  </Table.Td>
-                  <Table.Td style={tableCellStyle}>
-                    <Text>{accident.displayDate || 'N/A'}</Text>
-                  </Table.Td>
-                  <Table.Td style={tableCellStyle}>
-                    <Text lineClamp={1}>{accident.description || 'No Description'}</Text>
-                  </Table.Td>
-                  <Table.Td style={tableCellStyle}>
-                    <Badge color={getSeverityColor(accident.severity)}>
-                      {accident.severity || 'N/A'}
-                    </Badge>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </ScrollArea>
-      </Paper>
+      <Container fluid p={0} className="history-container">
+        <Paper p="xl" radius="lg" shadow="md" className="history-paper">
+          <Box className="history-content center-content">
+            <Loader size="md" color="blue" />
+            <Text c="dimmed" size="md" mt="md">Loading accident history...</Text>
+          </Box>
+        </Paper>
+      </Container>
     );
-  };
+  }
+
+  if (error) {
+    return (
+      <Container fluid p={0} className="history-container">
+        <Paper p="xl" radius="lg" shadow="md" className="history-paper">
+          <Box className="history-content">
+            <MantineAlert 
+              icon={<IconAlertCircle size={16} />} 
+              title="Error Loading Accident History" 
+              color="red"
+              variant="filled"
+              radius="md"
+              className="fade-in"
+            >
+              {error}
+            </MantineAlert>
+          </Box>
+        </Paper>
+      </Container>
+    );
+  }
 
   return (
-    <PageTemplate title="Accident History">
-      {renderContent()}
-    </PageTemplate>
+    <Stack spacing="md" className="history-container">
+      <FilterPanel 
+            onFilteredLogsChange={handleFilteredLogsChange}
+            colSpan={{ base: 12, sm: 6, md: 4, lg: 1.7 }}
+            initialLogs={handledAccidents}
+          />
+      
+        <AccidentLog 
+          filteredLogs={filteredAccidents} 
+          renderActions={renderCustomActions}
+        isHistoryView={true}
+      />
+    </Stack>
   );
 };
 

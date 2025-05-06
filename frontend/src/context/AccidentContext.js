@@ -1,16 +1,18 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useAuth } from "../authentication/AuthProvider";
 import { onNewAccident, onAccidentUpdate } from "../services/socket";
+import { onNotification } from "../services/socket";
 import playBeep from "../util/generateSound";
 
 const AccidentLogsContext = createContext();
 
 export const AccidentLogsProvider = ({ children }) => {
   const [accidentLogs, setAccidentLogs] = useState([]);
+  const [cameraLocations, setCameraLocations] = useState([]);
   const [selectedAlert, setSelectedAlert] = useState(null);
+  const [notifications, setNotifications] = useState([]);
   const { user } = useAuth();
 
-  // Fetch active accidents from the server
   const fetchAccidents = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/active-accidents`, {
@@ -31,7 +33,6 @@ export const AccidentLogsProvider = ({ children }) => {
     }
   };
 
-  // Update accident details via backend.
   const updateAccidentDetails = async (updateData) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/update-accident-details`, {
@@ -62,12 +63,10 @@ export const AccidentLogsProvider = ({ children }) => {
     }
   };
 
-  // Clear the selected alert.
   const clearSelectedAlert = () => {
     setSelectedAlert(null);
   };
 
-  // Subscribe to new accidents and accident updates.
   useEffect(() => {
     if (user?.isLoggedIn) {
       fetchAccidents();
@@ -97,12 +96,19 @@ export const AccidentLogsProvider = ({ children }) => {
     }
   }, [user, selectedAlert]);
 
-  // Handle double-click on a log: set it as the selected alert.
+  useEffect(() => {
+    if(user?.role === 'admin'){
+        onNotification((notification) => {
+            console.log("New notification received:", notification);
+            setNotifications((prev) => [{ ...notification, read: false }, ...prev]);
+        });
+    }
+  }, [user]);
+
   const handleRowDoubleClick = (log) => {
     setSelectedAlert(log);
   };
 
-  // Update the status of an accident.
   const updateAccidentStatus = async (accident_id, status) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/accident-status-update`, {
@@ -142,6 +148,8 @@ export const AccidentLogsProvider = ({ children }) => {
         clearSelectedAlert,
         updateAccidentStatus,
         handleRowDoubleClick,
+        notifications,
+        setNotifications,
       }}
     >
       {children}

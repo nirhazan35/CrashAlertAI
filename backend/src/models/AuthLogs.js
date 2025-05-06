@@ -14,6 +14,14 @@ const authLogsSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  displayDate: {
+    type: String,
+    default: null,
+  },
+  displayTime: {
+    type: String,
+    default: null,
+  },
   result: {
     type: String,
     enum: ['Success', 'Failure'],
@@ -58,9 +66,15 @@ const authLogsSchema = new Schema({
 
 // Enhanced method to initialize and save a log with request information
 authLogsSchema.methods.initializeAndSave = async function (username, type, req = null, result = 'Failure') {
+  // Apply date formatting to get displayDate and displayTime
+  const formatDateTime = require("../util/DateFormatting");
+  const { displayDate, displayTime } = formatDateTime(this.timeStamp || new Date());
+  
   this.username = username || 'Unknown';
   this.type = type;
   this.result = result;
+  this.displayDate = displayDate;
+  this.displayTime = displayTime;
   
   // Extract additional information from request object if provided
   if (req) {
@@ -115,10 +129,17 @@ authLogsSchema.methods.updateResult = async function (result, errorMessage = nul
 
 // Static method to create a success log in one step
 authLogsSchema.statics.logSuccess = async function(username, type, req = null) {
+  const formatDateTime = require("../util/DateFormatting");
+  const now = new Date();
+  const { displayDate, displayTime } = formatDateTime(now);
+
   const log = new this({
     username,
     type,
-    result: 'Success'
+    result: 'Success',
+    timeStamp: now,
+    displayDate,
+    displayTime
   });
   
   if (req) {
@@ -132,11 +153,18 @@ authLogsSchema.statics.logSuccess = async function(username, type, req = null) {
 
 // Static method to create a failure log in one step
 authLogsSchema.statics.logFailure = async function(username, type, req = null, errorMessage = null) {
+  const formatDateTime = require("../util/DateFormatting");
+  const now = new Date();
+  const { displayDate, displayTime } = formatDateTime(now);
+
   const log = new this({
     username,
     type,
     result: 'Failure',
-    errorMessage
+    errorMessage,
+    timeStamp: now,
+    displayDate,
+    displayTime
   });
   
   if (req) {

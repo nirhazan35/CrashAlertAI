@@ -17,6 +17,7 @@ const getCameras = async (req, res) => {
 // Get (cameraId,location) of all cameras
 const getLocations = async (req, res) => {
     try {
+      console.log("Fetching camera locations");
         // Fetch only the cameraId and location fields from the Camera model
         const cameras = await Camera.find().select('cameraId location');
 
@@ -46,7 +47,7 @@ const assignCameras = async (req, res) => {
         }
 
         // Ensure all cameras exist before assignment
-        const cameras = await Camera.find({ _id: { $in: cameraIds } });
+        const cameras = await Camera.find({ cameraId: { $in: cameraIds } });
         if (cameras.length !== cameraIds.length) {
             return res.status(400).json({ message: 'One or more cameras not found' });
         }

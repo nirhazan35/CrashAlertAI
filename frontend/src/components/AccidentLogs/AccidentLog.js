@@ -1,127 +1,69 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAccidentLogs } from "../../context/AccidentContext";
 import { useAuth } from "../../authentication/AuthProvider";
 import {
   Table,
   Button,
-  Group,
-  Select,
   Badge,
   Text,
   Paper,
   Box,
   ScrollArea,
-  useMantineTheme,
-  Grid,
   ActionIcon,
-  rgba,
-  Title
+  Tooltip,
+  Container,
+  Center
 } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
-import { IconEye, IconCheck, IconX } from '@tabler/icons-react';
+import { 
+  IconEye,
+  IconAlertCircle,
+  IconHistory
+} from '@tabler/icons-react';
+import './AccidentLog.css';
 
-// Generate time options for each hour of the day
-const timeOptions = Array.from({ length: 24 }, (_, i) => {
-  const hour = i.toString().padStart(2, "0");
-  return { value: `${hour}:00`, label: `${hour}:00` };
-});
-
-const AccidentLog = () => {
-  const { accidentLogs, updateAccidentStatus, handleRowDoubleClick } = useAccidentLogs();
+const AccidentLog = ({ 
+  filteredLogs,
+  renderActions, // Add renderActions prop
+  isHistoryView = false // Add isHistoryView prop to disable blinking in history
+}) => {
+  const { accidentLogs, updateAccidentStatus, handleRowDoubleClick: originalHandleRowDoubleClick } = useAccidentLogs();
   const { user } = useAuth();
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
-  const [cameraData, setCameraData] = useState({ cameras: [], locations: [] });
-  const theme = useMantineTheme();
 
-  // Filter state including new time filters
-  const [filters, setFilters] = useState({
-    cameraId: "",
-    location: "",
-    date: null,
-    severity: "",
-    startTime: "",
-    endTime: "",
-  });
+  // If filteredLogs not provided, use all logs from context
+  const logsToDisplay = filteredLogs || accidentLogs;
 
-  // Fetch all cameras id and location from backend
-  useEffect(() => {
-    const fetchCameraData = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/cameras/get-id_location`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${user?.token}`,
-          },
+  // Custom double click handler that also scrolls to details
+  const handleRowDoubleClick = (log) => {
+    // Call the original handler
+    originalHandleRowDoubleClick(log);
+    
+    // Scroll to accident details
+    setTimeout(() => {
+      const detailsElement = document.getElementById('accident-details');
+      if (detailsElement) {
+        detailsElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start'
         });
-        const data = await response.json();
-        if (response.ok) {
-          setCameraData({
-            cameras: data.map((item) => item.cameraId) || [],
-            locations: data.map((item) => item.location) || [],
-          });
-        } else {
-          console.error("Error fetching camera data:", data);
-        }
-      } catch (error) {
-        console.error("Error fetching camera data:", error);
       }
-    };
-
-    fetchCameraData();
-  }, [user?.token]);
-
-  // Handler for filter changes
-  const handleFilterChange = (name, value) => {
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    }, 100); // Small delay to ensure the details are loaded
   };
-
-  // Clear all filters
-  const handleClearFilters = () => {
-    setFilters({
-      cameraId: "",
-      location: "",
-      date: null,
-      severity: "",
-      startTime: "",
-      endTime: "",
-    });
-  };
-
-  // Format date for comparison
-  const formatDate = (date) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("en-GB");
-  };
-
-  // Filter accident logs based on the filter criteria
-  const filteredLogs = accidentLogs.filter((log) => {
-    const matchesCameraId =
-      filters.cameraId === "" || log.cameraId.toLowerCase() === filters.cameraId.toLowerCase();
-    const matchesLocation =
-      filters.location === "" || log.location.toLowerCase() === filters.location.toLowerCase();
-    const matchesDate =
-      !filters.date || log.displayDate === formatDate(filters.date);
-    const matchesSeverity =
-      filters.severity === "" || log.severity.toLowerCase() === filters.severity.toLowerCase();
-    // Time filter: check if log.displayTime is within the selected range
-    let matchesTime = true;
-    if (filters.startTime) {
-      matchesTime = matchesTime && (log.displayTime >= filters.startTime);
-    }
-    if (filters.endTime) {
-      matchesTime = matchesTime && (log.displayTime <= filters.endTime);
-    }
-    return matchesCameraId && matchesLocation && matchesDate && matchesSeverity && matchesTime;
-  });
 
   const handleRowClick = (index) => {
     setSelectedRowIndex(index);
   };
 
+  // Function to truncate text to a specific length with ellipsis
+  const truncateText = (text, maxLength = 20) => {
+    if (!text) return "No description";
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
   // Helper to get severity badge color
   const getSeverityColor = (severity) => {
-    switch(severity) {
+    switch(severity?.toLowerCase()) {
       case 'high': return 'danger';
       case 'medium': return 'warning';
       case 'low': return 'blue';
@@ -129,200 +71,165 @@ const AccidentLog = () => {
     }
   };
 
-  // Process camera and location data for Select components
-  const cameraOptions = cameraData.cameras.map(camera => ({ value: camera, label: camera }));
-  const locationOptions = cameraData.locations.map(location => ({ value: location, label: location }));
-
-  // Custom styles for table headers
-  const tableHeaderStyle = {
-    textAlign: 'center',
-    fontWeight: 600,
-    color: theme.colors.gray[8],
-    fontSize: '0.9rem',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px'
-  };
-
+  // This is the component we'll render - without any outer title
   return (
-    <Box>
-      {/* Filter Options */}
-      <Paper shadow="xs" p="md" mb="md" radius="md">
-        <Grid align="flex-end" gutter="md">
-          <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 2 }}>
-            <Select
-              label="Camera ID"
-              placeholder="All Camera IDs"
-              data={[{ value: '', label: 'All Camera IDs' }, ...cameraOptions]}
-              value={filters.cameraId}
-              onChange={(value) => handleFilterChange('cameraId', value)}
-              searchable
-              clearable
-            />
-          </Grid.Col>
-          
-          <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 2 }}>
-            <Select
-              label="Location"
-              placeholder="All Locations"
-              data={[{ value: '', label: 'All Locations' }, ...locationOptions]}
-              value={filters.location}
-              onChange={(value) => handleFilterChange('location', value)}
-              searchable
-              clearable
-            />
-          </Grid.Col>
-          
-          <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 2 }}>
-            <DateInput
-              label="Date"
-              placeholder="Select date"
-              value={filters.date}
-              onChange={(value) => handleFilterChange('date', value)}
-              clearable
-            />
-          </Grid.Col>
-          
-          <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 2 }}>
-            <Select
-              label="Severity"
-              placeholder="All Severities"
-              data={[
-                { value: '', label: 'All Severities' },
-                { value: 'low', label: 'Low' },
-                { value: 'medium', label: 'Medium' },
-                { value: 'high', label: 'High' }
-              ]}
-              value={filters.severity}
-              onChange={(value) => handleFilterChange('severity', value)}
-              clearable
-            />
-          </Grid.Col>
-          
-          <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 2 }}>
-            <Select
-              label="From Time"
-              placeholder="Start Time"
-              data={[{ value: '', label: 'Any Time' }, ...timeOptions]}
-              value={filters.startTime}
-              onChange={(value) => handleFilterChange('startTime', value)}
-              clearable
-            />
-          </Grid.Col>
-          
-          <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 2 }}>
-            <Select
-              label="To Time"
-              placeholder="End Time"
-              data={[{ value: '', label: 'Any Time' }, ...timeOptions]}
-              value={filters.endTime}
-              onChange={(value) => handleFilterChange('endTime', value)}
-              clearable
-            />
-          </Grid.Col>
-          
-          <Grid.Col span={{ base: 12 }} mt={-5}>
-            <Group position="right">
-              <Button variant="light" onClick={handleClearFilters}>
-                Clear Filters
-              </Button>
-            </Group>
-          </Grid.Col>
-        </Grid>
-      </Paper>
+    <Container fluid p={0} className="accident-log-container">
+      <Paper radius="lg" p="xl" shadow="md" className="accident-log-paper">
+        {/* Visual design elements */}
+        <Box className="bg-bubble-1" />
+        <Box className="bg-bubble-2" />
+        
+        <Box style={{ position: 'relative', zIndex: 1, width: '100%' }}>
 
-      {/* Accident Logs Table */}
-      <Paper shadow="sm" radius="md" withBorder>
-        <ScrollArea>
-          <Table striped highlightOnHover horizontalSpacing="md" verticalSpacing="sm">
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th style={tableHeaderStyle}>Video</Table.Th>
-                <Table.Th style={tableHeaderStyle}>Location</Table.Th>
-                <Table.Th style={tableHeaderStyle}>Date</Table.Th>
-                <Table.Th style={tableHeaderStyle}>Time</Table.Th>
-                <Table.Th style={tableHeaderStyle}>Severity</Table.Th>
-                <Table.Th style={tableHeaderStyle}>Description</Table.Th>
-                <Table.Th style={tableHeaderStyle}>Action</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {filteredLogs
-                .slice()
-                .sort((a, b) => new Date(a.date) - new Date(b.date))
-                .map((log, index) => (
-                  <Table.Tr
-                    key={index}
-                    bg={selectedRowIndex === index ? rgba(theme.colors.brand[0], 0.7) : 
-                        log.status === "assigned" ? rgba(theme.colors.gray[2], 0.5) : 
-                        undefined}
-                    style={{
-                      cursor: 'pointer',
-                      animation: log.status !== "assigned" ? 'pulse 2s infinite' : 'none'
-                    }}
-                    onClick={() => handleRowClick(index)}
-                    onDoubleClick={() => handleRowDoubleClick(log)}
-                  >
-                    <Table.Td style={{ textAlign: 'center' }}>
-                      <ActionIcon component="a" href={log.video} target="_blank" rel="noopener noreferrer" variant="light" color="blue">
-                        <IconEye size={16} />
-                      </ActionIcon>
-                    </Table.Td>
-                    <Table.Td>
-                      <Text fw={500}>{log.location}</Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <Text>{log.displayDate}</Text>
-                    </Table.Td>
-                    <Table.Td>
-                      <Text>{log.displayTime}</Text>
-                    </Table.Td>
-                    <Table.Td style={{ textAlign: 'center' }}>
-                      <Badge color={getSeverityColor(log.severity)}>
-                        {log.severity}
-                      </Badge>
-                    </Table.Td>
-                    <Table.Td>
-                      <Text lineClamp={1}>{log.description || "No description"}</Text>
-                    </Table.Td>
-                    <Table.Td style={{ textAlign: 'center' }}>
-                      {log.status === "assigned" && log.assignedTo !== user?.username ? (
-                        <Button size="xs" variant="subtle" color="gray" disabled>
-                          Assigned to {log.assignedTo}
-                        </Button>
-                      ) : (
-                        <Button
-                          size="xs"
-                          variant={log.status === "assigned" ? "outline" : "filled"}
-                          color={log.status === "assigned" ? "red" : "blue"}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateAccidentStatus(
-                              log._id,
-                              log.status === "assigned" ? "active" : "assigned"
-                            );
-                          }}
-                        >
-                          {log.status === "assigned" && log.assignedTo === user?.username
-                            ? "Unassign"
-                            : "Assign"}
-                        </Button>
-                      )}
-                    </Table.Td>
+          {/* Accident Logs Table */}
+          <Paper shadow="md" radius="md" style={{ overflow: 'hidden', width: '100%' }}>
+            <ScrollArea style={{ width: '100%' }}>
+              <Table striped highlightOnHover horizontalSpacing="md" verticalSpacing="sm" className="accident-log-table">
+                <Table.Thead style={{ backgroundColor: `rgba(59, 130, 246, 0.05)` }}>
+                  <Table.Tr>
+                    <Table.Th>Video</Table.Th>
+                    <Table.Th>Location</Table.Th>
+                    <Table.Th>Date</Table.Th>
+                    <Table.Th>Time</Table.Th>
+                    <Table.Th>Severity</Table.Th>
+                    <Table.Th>Description</Table.Th>
+                    <Table.Th>Action</Table.Th>
                   </Table.Tr>
-                ))}
-            </Table.Tbody>
-          </Table>
-        </ScrollArea>
+                </Table.Thead>
+                <Table.Tbody>
+                  {logsToDisplay.length > 0 ? (
+                    logsToDisplay
+                    .slice()
+                    .sort((a, b) => new Date(a.date) - new Date(b.date))
+                    .map((log, index) => (
+                      <Table.Tr
+                        key={index}
+                          className={`accident-row ${selectedRowIndex === index ? 'accident-row-selected' : ''} ${
+                            isHistoryView 
+                              ? 'accident-row-handled' 
+                              : log.status === "assigned" 
+                                ? 'accident-row-assigned' 
+                                : 'accident-row-active'
+                          }`}
+                        onClick={() => handleRowClick(index)}
+                        onDoubleClick={() => handleRowDoubleClick(log)}
+                      >
+                        <Table.Td>
+                          <Tooltip label="View video" position="top">
+                            <ActionIcon 
+                              component="a" 
+                              href={log.video} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              variant="light" 
+                              color="blue"
+                              radius="xl"
+                            >
+                              <IconEye size={16} />
+                            </ActionIcon>
+                          </Tooltip>
+                        </Table.Td>
+                        <Table.Td>
+                          <Text fw={500}>{log.location}</Text>
+                        </Table.Td>
+                        <Table.Td>
+                          <Text>{log.displayDate}</Text>
+                        </Table.Td>
+                        <Table.Td>
+                          <Text>{log.displayTime}</Text>
+                        </Table.Td>
+                        <Table.Td>
+                          <Badge 
+                            color={getSeverityColor(log.severity)}
+                            radius="xl"
+                            size="sm"
+                            px="xs"
+                            tt="uppercase"
+                            fz="10px"
+                            lts="0.5px"
+                          >
+                            {log.severity}
+                          </Badge>
+                        </Table.Td>
+                        <Table.Td>
+                          <Tooltip label={log.description || "No description"} position="top">
+                            <Text>
+                              {truncateText(log.description)}
+                            </Text>
+                          </Tooltip>
+                        </Table.Td>
+                        <Table.Td>
+                          {renderActions ? (
+                            renderActions(log, index)
+                          ) : (
+                            // Default action column
+                            <>
+                              {log.status === "assigned" && log.assignedTo !== user?.username ? (
+                                <Button 
+                                  size="xs" 
+                                  variant="subtle" 
+                                  color="gray" 
+                                  disabled
+                                  radius="xl"
+                                  fz="11px"
+                                >
+                                  Assigned to {log.assignedTo}
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="xs"
+                                  variant={log.status === "assigned" ? "outline" : "filled"}
+                                  color={log.status === "assigned" ? "red" : "blue"}
+                                  radius="xl"
+                                  fz="11px"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateAccidentStatus(
+                                      log._id,
+                                      log.status === "assigned" ? "active" : "assigned"
+                                    );
+                                  }}
+                                >
+                                  {log.status === "assigned" && log.assignedTo === user?.username
+                                    ? "Unassign"
+                                    : "Assign"}
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </Table.Td>
+                      </Table.Tr>
+                      ))
+                  ) : (
+                    <Table.Tr>
+                      <Table.Td colSpan={7}>
+                        <Center py="xl">
+                          <Box style={{ textAlign: 'center' }}>
+                            {isHistoryView ? (
+                              <>
+                                <IconHistory size={32} style={{ opacity: 0.5, marginBottom: '0.75rem' }} />
+                                <Text size="lg" fw={500}>No handled accidents found</Text>
+                                <Text size="sm" c="dimmed" mt="xs">Accidents marked as handled will appear here</Text>
+                              </>
+                            ) : (
+                              <>
+                                <IconAlertCircle size={32} style={{ opacity: 0.5, marginBottom: '0.75rem' }} />
+                                <Text size="lg" fw={500}>No accident logs found</Text>
+                                <Text size="sm" c="dimmed" mt="xs">There are no accidents matching your criteria</Text>
+                              </>
+                            )}
+                          </Box>
+                        </Center>
+                      </Table.Td>
+                    </Table.Tr>
+                  )}
+                </Table.Tbody>
+              </Table>
+            </ScrollArea>
+          </Paper>
+        </Box>
       </Paper>
-      
-      <style jsx global>{`
-        @keyframes pulse {
-          0% { background-color: transparent; }
-          50% { background-color: ${rgba(theme.colors.danger[0], 0.3)}; }
-          100% { background-color: transparent; }
-        }
-      `}</style>
-    </Box>
+    </Container>
   );
 };
 

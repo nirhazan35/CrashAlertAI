@@ -1,4 +1,4 @@
-import { MantineProvider as Provider, createTheme } from '@mantine/core';
+import { MantineProvider as Provider } from '@mantine/core';
 import theme from '../../theme/mantineTheme';
 
 export function MantineProvider({ children }) {

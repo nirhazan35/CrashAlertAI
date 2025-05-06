@@ -1,8 +1,9 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from "../../authentication/AuthProvider";
-import { Group, UnstyledButton, Text, ThemeIcon, Stack, Divider, rgba } from '@mantine/core';
+import { Group, UnstyledButton, Text, ThemeIcon, Stack, Divider } from '@mantine/core';
 import { IconHome, IconChartLine, IconHistory, IconVideo, IconShield, IconList } from '@tabler/icons-react';
+import './sidebar.css';
 
 const navigationItems = [
   { icon: IconHome, label: 'Dashboard', to: '/' },
@@ -16,31 +17,19 @@ const adminItems = [
   { icon: IconList, label: 'Logs', to: '/logs' },
 ];
 
-const NavItem = ({ icon: Icon, label, to, active }) => {
+const NavItem = ({ icon: Icon, label, to }) => {
   return (
-    <NavLink to={to} style={{ textDecoration: 'none' }}>
+    <NavLink to={to} className="nav-link">
       {({ isActive }) => (
         <UnstyledButton
-          sx={(theme) => ({
-            display: 'block',
-            width: '100%',
-            padding: theme.spacing.xs,
-            borderRadius: theme.radius.sm,
-            color: theme.colors.dark[0],
-            backgroundColor: isActive ? rgba(theme.colors.brand[8], 0.25) : 'transparent',
-            '&:hover': {
-              backgroundColor: rgba(theme.colors.brand[8], 0.15),
-              color: theme.white,
-              transform: 'translateX(4px)',
-              transition: 'transform 0.2s, background-color 0.2s',
-            },
-          })}
+          className={`nav-button ${isActive ? 'active' : ''}`}
         >
           <Group>
             <ThemeIcon 
               size={30} 
               variant={isActive ? "filled" : "light"} 
               color={isActive ? "brand" : "gray"}
+              className="nav-icon"
             >
               <Icon size={18} stroke={1.5} />
             </ThemeIcon>
@@ -54,37 +43,35 @@ const NavItem = ({ icon: Icon, label, to, active }) => {
 
 const Sidebar = () => {
   const { user } = useAuth();
-  const location = useLocation();
+  // const location = useLocation();
   
   return (
-    <Stack spacing="xs">
-      <Text fw={700} size="lg" mb="md" align="center" c="white">
+    <Stack spacing="xs" className="sidebar-container">
+      <Text fw={700} size="lg" mb="md" align="center" c="white" className="sidebar-title">
         Navigation
       </Text>
       
-      <Stack spacing={4}>
+      <Stack spacing={4} className="nav-section">
         {navigationItems.map((item) => (
           <NavItem
             key={item.label}
             icon={item.icon}
             label={item.label}
             to={item.to}
-            active={location.pathname === item.to}
           />
         ))}
       </Stack>
       
       {user?.role === 'admin' && (
         <>
-          <Divider my="sm" label="Admin" labelPosition="center" />
-          <Stack spacing={4}>
+          <Divider my="sm" label="Admin" labelPosition="center" className="admin-divider" />
+          <Stack spacing={4} className="nav-section">
             {adminItems.map((item) => (
               <NavItem
                 key={item.label}
                 icon={item.icon}
                 label={item.label}
                 to={item.to}
-                active={location.pathname === item.to}
               />
             ))}
           </Stack>

@@ -1,0 +1,12 @@
+.dashboard-container {
+  width: 100%;
+  padding: 16px;
+}
+
+.alert-container {
+  height: 100%;
+}
+
+.accident-logs-section {
+  margin-top: 16px;
+} 
