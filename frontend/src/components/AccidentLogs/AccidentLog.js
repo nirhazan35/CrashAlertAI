@@ -27,7 +27,6 @@ const AccidentLog = ({
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
 
   // If filteredLogs not provided, use all logs from context
-  console.log("@@@@@@@@@@filteredLogs:", filteredLogs);
   const logsToDisplay = filteredLogs || accidentLogs;
 
   // Custom double click handler that also scrolls to details
