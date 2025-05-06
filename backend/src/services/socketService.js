@@ -33,6 +33,7 @@ const emitNewAccident = async (accidentData) => {
       const socket = clients[socketId];
       if (socket && socket.user && authorizedUserIds.includes(socket.user.id)) {
         socket.emit("new_accident", accidentData);
+        console.log(`Accident dispatched to ${socket.user.username}`);
         broadcastCount++;
       }
     });

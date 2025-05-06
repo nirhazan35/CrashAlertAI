@@ -11,10 +11,10 @@ import {
   Badge, 
   Stack, 
   Grid, 
-  Title,
   ActionIcon, 
   Divider, 
-  Paper
+  Paper,
+  useMantineTheme
 } from '@mantine/core';
 import { IconEdit, IconCheck, IconX, IconCamera, IconMapPin, IconCalendar, IconClock, IconAlertTriangle, IconCheckbox, IconChevronDown } from '@tabler/icons-react';
 import './Alert.css';
@@ -42,6 +42,7 @@ const Alert = () => {
   const [descEditMode, setDescEditMode] = useState(false);
   const [newDescription, setNewDescription] = useState("");
   const [selectedSeverity, setSelectedSeverity] = useState("low");
+  const theme = useMantineTheme();
 
   useEffect(() => {
     if (selectedAlert) {
@@ -114,7 +115,6 @@ const Alert = () => {
         <Stack spacing="md" className="content-stack">
           {/* Title and Status Badge */}
           <Group position="apart" mb="md">
-            <Title order={3} fw={600} className="accident-details-title">Accident Details</Title>
             <Badge 
               size="lg" 
               color={getStatusColor(selectedAlert.status)}
@@ -205,20 +205,10 @@ const Alert = () => {
                 {/* Third row - Severity */}
                 <Box>
                   <Group spacing="xs" mb={6}>
-                    <Box style={{ color: "#3b82f6" }}>
+                    <Box className="detail-item-icon">
                       <IconAlertTriangle size={20} />
                     </Box>
-                    <Text 
-                      fw={600} 
-                      size="sm" 
-                      style={{ 
-                        fontFamily: "'DM Sans', sans-serif",
-                        letterSpacing: '0.3px',
-                        textTransform: 'uppercase',
-                        fontSize: '11px',
-                        color: '#64748b'
-                      }}
-                    >
+                    <Text className="detail-item-label">
                       Severity
                     </Text>
                   </Group>
@@ -234,73 +224,33 @@ const Alert = () => {
                     ]}
                     radius="xl"
                     size="md"
-                    rightSection={<IconChevronDown size={16} style={{ color: '#64748b' }} />}
+                    rightSection={<IconChevronDown size={16} style={{ color: theme.colors.gray[6] }} />}
+                    className="severity-select"
                     styles={{
                       root: {
-                        width: '100%'
-                      },
-                      input: {
-                        fontFamily: "'Inter', sans-serif",
-                        fontWeight: 500,
-                        padding: '12px 16px',
-                        fontSize: '15px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                        border: '1px solid #e2e8f0',
-                        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          borderColor: '#cbd5e1'
-                        },
-                        '&:focus': {
-                          borderColor: '#3b82f6',
-                          boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.15)'
-                        }
+                        width: '25%'
                       },
                       dropdown: {
-                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
-                        borderRadius: '12px',
-                        border: '1px solid #e2e8f0',
-                        backgroundColor: 'white'
+                        className: 'severity-dropdown'
                       },
                       item: {
-                        fontFamily: "'Inter', sans-serif",
-                        borderRadius: '8px',
-                        margin: '4px 6px',
-                        padding: '8px 12px',
-                        '&:hover': {
-                          backgroundColor: 'rgba(59, 130, 246, 0.05)'
-                        },
-                        '&[data-selected]': {
-                          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                          color: '#3b82f6',
-                          fontWeight: 500,
-                          '&:hover': {
-                            backgroundColor: 'rgba(59, 130, 246, 0.15)'
-                          }
-                        }
+                        className: 'severity-item'
                       }
                     }}
                     rightSectionWidth={40}
                   />
                   
                   {/* Visual color indicator based on selected severity */}
-                  <Box mt={8} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Box className="severity-indicator">
                     <Box 
+                      className="severity-indicator-dot"
                       style={{ 
-                        width: '8px', 
-                        height: '8px', 
-                        borderRadius: '50%', 
-                        backgroundColor: selectedSeverity === 'high' ? '#ef4444' : 
-                                          selectedSeverity === 'medium' ? '#f59e0b' : '#3b82f6'
+                        backgroundColor: selectedSeverity === 'high' ? theme.colors.danger[5] : 
+                                          selectedSeverity === 'medium' ? theme.colors.warning[5] : 
+                                          theme.colors.brand[5]
                       }} 
                     />
-                    <Text 
-                      style={{ 
-                        fontFamily: "'Inter', sans-serif", 
-                        fontSize: '12px',
-                        color: '#64748b'
-                      }}
-                    >
+                    <Text className="severity-indicator-text">
                       {selectedSeverity === 'high' ? 'High priority response needed' : 
                        selectedSeverity === 'medium' ? 'Moderate attention required' : 'Routine review'}
                     </Text>
@@ -318,12 +268,7 @@ const Alert = () => {
                       size="lg"
                       radius="xl"
                       px="md"
-                      style={{ 
-                        fontFamily: "'Inter', sans-serif", 
-                        textTransform: 'uppercase',
-                        fontSize: '12px',
-                        letterSpacing: '0.5px'
-                      }}
+                      className="accident-mark-badge"
                     >
                       {selectedAlert.falsePositive ? "Not an Accident" : "Accident"}
                     </Badge>
@@ -339,7 +284,7 @@ const Alert = () => {
                     !descEditMode ? (
                       <Stack spacing="xs">
                         <Group position="apart" noWrap>
-                          <Text style={{ fontFamily: "'Inter', sans-serif" }}>
+                          <Text>
                             {selectedAlert.description || "No Description"}
                           </Text>
                           {isEditable && (
@@ -362,11 +307,7 @@ const Alert = () => {
                           minRows={2}
                           autosize
                           radius="md"
-                          styles={{
-                            input: {
-                              fontFamily: "'Inter', sans-serif",
-                            }
-                          }}
+                          styles={{}}
                         />
                         <Group position="right">
                           <Button 
@@ -375,7 +316,7 @@ const Alert = () => {
                             radius="xl"
                             leftIcon={<IconX size={16} />}
                             onClick={() => setDescEditMode(false)}
-                            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+                            fw={500}
                           >
                             Cancel
                           </Button>
@@ -384,7 +325,7 @@ const Alert = () => {
                             radius="xl"
                             leftIcon={<IconCheck size={16} />}
                             onClick={handleDescriptionSave}
-                            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+                            fw={500}
                           >
                             Save
                           </Button>
@@ -398,14 +339,14 @@ const Alert = () => {
             </Grid.Col>
           </Grid>
           
-          {/* Fixed toggle button */}
+          {/* toggle button */}
           <Group position="right" mt="md">
             <Button
               size="md"
               variant="outline"
               radius="xl"
               color={selectedAlert.falsePositive ? "green" : "red"}
-              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+              fw={500}
               onClick={handleToggleAccidentMark}
             >
               {selectedAlert.falsePositive ? "Mark as Accident" : "Not an Accident"}
@@ -417,7 +358,7 @@ const Alert = () => {
                 radius="xl"
                 color="green"
                 onClick={handleMarkAsHandled}
-                style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+                fw={500}
               >
                 Handled
               </Button>
@@ -433,34 +374,20 @@ const Alert = () => {
 const DetailItem = ({ label, value, icon, variant = "default" }) => {
   if (variant === "modern") {
     return (
-      <Box mb="xs">
+      <Box className="detail-item-container">
         <Group spacing="xs" mb={6}>
           {icon && (
-            <Box style={{ color: "#3b82f6" }}>
+            <Box className="detail-item-icon">
               {icon}
             </Box>
           )}
-          <Text 
-            fw={600} 
-            size="sm" 
-            style={{ 
-              fontFamily: "'DM Sans', sans-serif",
-              letterSpacing: '0.3px',
-              textTransform: 'uppercase',
-              fontSize: '11px',
-              color: '#64748b'
-            }}
-          >
+          <Text className="detail-item-label">
             {label}
           </Text>
         </Group>
         <Box ml={icon ? 28 : 0}>
           {typeof value === 'string' ? (
-            <Text style={{ 
-              fontFamily: "'Inter', sans-serif", 
-              fontWeight: 500,
-              fontSize: '16px'
-            }}>
+            <Text className="detail-item-value">
               {value}
             </Text>
           ) : value}

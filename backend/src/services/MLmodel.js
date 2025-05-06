@@ -11,7 +11,8 @@ const startFakeAccidentSimulation = () => {
       location: "Highway 1",
       date: new Date().toISOString(),
       severity: "high",
-      video: "https://drive.google.com/file/d/1PrdFv0D57EKBeGtslIJjlQGJGjQszRfE/view",
+      // video: "https://drive.google.com/file/d/1PrdFv0D57EKBeGtslIJjlQGJGjQszRfE/view",
+      video: ""
     };
 
     // Create a fake req object with the accident data as req.body

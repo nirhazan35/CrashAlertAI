@@ -147,7 +147,6 @@ const filterAccidentsByUser = async(tokenUser, accidents) => {
   }
 };
 
-// NEW: Update accident details (severity, description, falsePositive)
 const updateAccidentDetails = async (req, res) => {
   try {
     const { accident_id, severity, description, falsePositive } = req.body;
