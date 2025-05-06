@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, Button, Select, MenuItem, Checkbox, FormControl, InputLabel } from "@mui/material";
-import { fetchUsers, fetchCameras, fetchAssignedCameras, updateAssignedCameras } from "../AdminActions";
-import { useAuth } from '../../../authentication/AuthProvider';
+import { fetchUsers, fetchCameras, fetchAssignedCameras, updateAssignedCameras } from "../AdminPage/AdminActions";
+import { useAuth } from '../../authentication/AuthProvider';
 import './ManageCameras.css';
 
 const ManageUserCameras = () => {

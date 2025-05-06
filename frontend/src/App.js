@@ -12,7 +12,7 @@ import AccidentHistoryPage from "./pages/AccidentHistory/AccidentHistory";
 import LiveCameraPage from "./pages/LiveCameraPage/LiveCameraPage";
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
-import ManageCameras from './pages/AdminPage/ManageCameras/ManageCameras';
+import ManageCameras from './pages/ManageCameras/ManageCameras';
 import SidebarLayout from './components/sidebar/SidebarLayout';
 import AuthLogs from './pages/AuthLogs/AuthLogs';
 import MantineProvider from './components/MantineProvider/MantineProvider';
