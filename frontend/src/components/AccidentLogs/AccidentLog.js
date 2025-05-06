@@ -10,22 +10,24 @@ import {
   Box,
   ScrollArea,
   ActionIcon,
-  Title,
   Tooltip,
-  Container,
-  useMantineTheme
+  Container
 } from '@mantine/core';
 import { 
   IconEye
 } from '@tabler/icons-react';
 import './AccidentLog.css';
 
-const AccidentLog = ({ filteredLogs }) => {
+const AccidentLog = ({ 
+  filteredLogs,
+  renderActions // Add renderActions prop
+}) => {
   const { accidentLogs, updateAccidentStatus, handleRowDoubleClick: originalHandleRowDoubleClick } = useAccidentLogs();
   const { user } = useAuth();
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
 
   // If filteredLogs not provided, use all logs from context
+  console.log("@@@@@@@@@@filteredLogs:", filteredLogs);
   const logsToDisplay = filteredLogs || accidentLogs;
 
   // Custom double click handler that also scrolls to details
@@ -138,36 +140,43 @@ const AccidentLog = ({ filteredLogs }) => {
                           </Text>
                         </Table.Td>
                         <Table.Td>
-                          {log.status === "assigned" && log.assignedTo !== user?.username ? (
-                            <Button 
-                              size="xs" 
-                              variant="subtle" 
-                              color="gray" 
-                              disabled
-                              radius="xl"
-                              fz="11px"
-                            >
-                              Assigned to {log.assignedTo}
-                            </Button>
+                          {renderActions ? (
+                            renderActions(log, index)
                           ) : (
-                            <Button
-                              size="xs"
-                              variant={log.status === "assigned" ? "outline" : "filled"}
-                              color={log.status === "assigned" ? "red" : "blue"}
-                              radius="xl"
-                              fz="11px"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                updateAccidentStatus(
-                                  log._id,
-                                  log.status === "assigned" ? "active" : "assigned"
-                                );
-                              }}
-                            >
-                              {log.status === "assigned" && log.assignedTo === user?.username
-                                ? "Unassign"
-                                : "Assign"}
-                            </Button>
+                            // Default action column
+                            <>
+                              {log.status === "assigned" && log.assignedTo !== user?.username ? (
+                                <Button 
+                                  size="xs" 
+                                  variant="subtle" 
+                                  color="gray" 
+                                  disabled
+                                  radius="xl"
+                                  fz="11px"
+                                >
+                                  Assigned to {log.assignedTo}
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="xs"
+                                  variant={log.status === "assigned" ? "outline" : "filled"}
+                                  color={log.status === "assigned" ? "red" : "blue"}
+                                  radius="xl"
+                                  fz="11px"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateAccidentStatus(
+                                      log._id,
+                                      log.status === "assigned" ? "active" : "assigned"
+                                    );
+                                  }}
+                                >
+                                  {log.status === "assigned" && log.assignedTo === user?.username
+                                    ? "Unassign"
+                                    : "Assign"}
+                                </Button>
+                              )}
+                            </>
                           )}
                         </Table.Td>
                       </Table.Tr>

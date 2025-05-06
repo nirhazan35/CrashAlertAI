@@ -1,31 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "../../authentication/AuthProvider";
+import { useAccidentLogs } from "../../context/AccidentContext";
 import { 
-  Text, 
-  Table, 
-  Badge, 
-  Loader, 
-  Center, 
-  Alert,
-  Paper,
-  ScrollArea,
-  Group,
-  Title,
   Box,
-  Container
+  Button,
+  Stack, 
+  Container,
+  Title,
+  Group,
+  Text,
+  Loader,
+  Alert as MantineAlert,
+  Paper
 } from '@mantine/core';
-import { IconAlertCircle, IconHistory, IconCalendarStats } from '@tabler/icons-react';
+import { IconHistory, IconAlertCircle } from '@tabler/icons-react';
+import FilterPanel from '../../components/FilterPanel/FilterPanel';
+import AccidentLog from '../../components/AccidentLogs/AccidentLog';
 import './AccidentHistory.css';
 
 const AccidentHistory = () => {
   const { user } = useAuth();
+  const { updateAccidentStatus } = useAccidentLogs();
   const [handledAccidents, setHandledAccidents] = useState([]);
+  const [filteredAccidents, setFilteredAccidents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch handled accidents
   useEffect(() => {
-    const getHandledAccidents = async () => {
+    const fetchHandledAccidents = async () => {
       try {
+        setLoading(true);
         const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/handled-accidents`, {
           method: "GET",
           headers: {
@@ -37,6 +42,7 @@ const AccidentHistory = () => {
         const data = await response.json();
         if (response.ok && data.success) {
           setHandledAccidents(data.data);
+          setFilteredAccidents(data.data);
         } else {
           throw new Error(data.message || "Failed to fetch handled accidents");
         }
@@ -49,237 +55,140 @@ const AccidentHistory = () => {
     };
 
     if (user?.token) {
-      getHandledAccidents();
+      fetchHandledAccidents();
     }
   }, [user?.token]);
 
-  // Helper to get severity badge color
-  const getSeverityColor = (severity) => {
-    switch(severity?.toLowerCase()) {
-      case 'high': return 'danger';
-      case 'medium': return 'warning';
-      case 'low': return 'blue';
-      default: return 'gray';
+  // Handle unhandling an accident
+  const handleUnhandleAccident = async (accident_id) => {
+    if (window.confirm("Mark this accident as unhandled? It will be moved back to active accidents.")) {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/accident-status-update`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+          body: JSON.stringify({ accident_id, status: "active" }),
+        });
+
+        if (response.ok) {
+          // Remove the accident from the list after it's unhandled
+          setHandledAccidents(prevAccidents => 
+            prevAccidents.filter(accident => accident._id !== accident_id)
+          );
+          setFilteredAccidents(prevAccidents => 
+            prevAccidents.filter(accident => accident._id !== accident_id)
+          );
+        } else {
+          console.error("Failed to update accident status");
+        }
+      } catch (error) {
+        console.error("Error updating accident status:", error.message);
+      }
     }
   };
+  
+  // Custom action renderer for AccidentLog component
+  const renderCustomActions = (log) => (
+    <Button
+      size="xs"
+      variant="outline"
+      color="blue"
+      radius="xl"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleUnhandleAccident(log._id);
+      }}
+    >
+      Unhandle
+    </Button>
+  );
 
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <Paper p="xl" radius="md" className="empty-state" style={{ animation: 'fadeIn 0.5s ease' }}>
-          <Loader size="md" color="blue" />
-          <Text c="dimmed" size="md" mt="md">Loading accident history...</Text>
-        </Paper>
-      );
-    }
+  // Handle filtered logs from FilterPanel
+  const handleFilteredLogsChange = (logs) => {
+    setFilteredAccidents(logs);
+  };
 
-    if (error) {
-      return (
-        <Paper p="xl" radius="md" style={{ animation: 'fadeIn 0.5s ease' }}>
-          <Alert 
-            icon={<IconAlertCircle size={16} />} 
-            title="Error Loading Accident History" 
-            color="red"
-            variant="filled"
-            radius="md"
-            style={{ animation: 'slideUp 0.3s ease' }}
-          >
-            {error}
-          </Alert>
-        </Paper>
-      );
-    }
-
-    if (handledAccidents.length === 0) {
-      return (
-        <Paper p="xl" radius="md" className="empty-state" style={{ animation: 'fadeIn 0.5s ease' }}>
-          <IconHistory size={48} style={{ color: "#3b82f6", opacity: 0.5, marginBottom: '1rem' }} />
-          <Text c="dimmed" size="lg" fw={500}>No handled accidents found.</Text>
-          <Text c="dimmed" size="sm" mt="xs">All handled accidents will appear here.</Text>
-        </Paper>
-      );
-    }
-
+  if (loading) {
     return (
-      <Paper shadow="md" radius="md" style={{ overflow: 'hidden' }}>
-        <ScrollArea>
-          <Table striped highlightOnHover horizontalSpacing="md" verticalSpacing="sm">
-            <Table.Thead style={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}>
-              <Table.Tr>
-                <Table.Th style={{ 
-                  textAlign: 'center',
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: '12px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  color: '#64748b',
-                  fontWeight: 600,
-                  padding: '16px 12px'
-                }}>Camera ID</Table.Th>
-                <Table.Th style={{ 
-                  textAlign: 'center',
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: '12px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  color: '#64748b',
-                  fontWeight: 600,
-                  padding: '16px 12px'
-                }}>Location</Table.Th>
-                <Table.Th style={{ 
-                  textAlign: 'center',
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: '12px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  color: '#64748b',
-                  fontWeight: 600,
-                  padding: '16px 12px'
-                }}>Date</Table.Th>
-                <Table.Th style={{ 
-                  textAlign: 'center',
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: '12px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  color: '#64748b',
-                  fontWeight: 600,
-                  padding: '16px 12px'
-                }}>Description</Table.Th>
-                <Table.Th style={{ 
-                  textAlign: 'center',
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: '12px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  color: '#64748b',
-                  fontWeight: 600,
-                  padding: '16px 12px'
-                }}>Severity</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {handledAccidents.map((accident, index) => (
-                <Table.Tr 
-                  key={index}
-                  className="table-hover-effect"
-                  style={{
-                    animation: 'fadeIn 0.3s ease forwards',
-                    animationDelay: `${index * 0.05}s`
-                  }}
-                >
-                  <Table.Td style={{ textAlign: 'center' }}>
-                    <Text fw={500} style={{ fontFamily: "'Inter', sans-serif" }}>{accident.cameraId || 'N/A'}</Text>
-                  </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>
-                    <Text fw={500} style={{ fontFamily: "'Inter', sans-serif" }}>{accident.location || 'N/A'}</Text>
-                  </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>
-                    <Text style={{ fontFamily: "'Inter', sans-serif" }}>{accident.displayDate || 'N/A'}</Text>
-                  </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>
-                    <Text lineClamp={1} style={{ fontFamily: "'Inter', sans-serif" }}>{accident.description || 'No Description'}</Text>
-                  </Table.Td>
-                  <Table.Td style={{ textAlign: 'center' }}>
-                    <Badge 
-                      color={getSeverityColor(accident.severity)}
-                      radius="xl"
-                      size="sm"
-                      px="xs"
-                      className="severity-badge"
-                      style={{ 
-                        fontFamily: "'Inter', sans-serif",
-                        fontSize: '10px'
-                      }}
-                    >
-                      {accident.severity || 'N/A'}
-                    </Badge>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </ScrollArea>
-      </Paper>
+      <Container fluid p={0} className="history-container">
+        <Paper p="xl" radius="lg" shadow="md" className="history-paper">
+          <Box className="history-content center-content">
+            <Loader size="md" color="blue" />
+            <Text c="dimmed" size="md" mt="md">Loading accident history...</Text>
+          </Box>
+        </Paper>
+      </Container>
     );
-  };
+  }
+
+  if (error) {
+    return (
+      <Container fluid p={0} className="history-container">
+        <Paper p="xl" radius="lg" shadow="md" className="history-paper">
+          <Box className="history-content">
+            <MantineAlert 
+              icon={<IconAlertCircle size={16} />} 
+              title="Error Loading Accident History" 
+              color="red"
+              variant="filled"
+              radius="md"
+              className="fade-in"
+            >
+              {error}
+            </MantineAlert>
+          </Box>
+        </Paper>
+      </Container>
+    );
+  }
 
   return (
-    <Container fluid p={0} style={{ marginTop: 0 }}>
-      <Paper radius="lg" p="xl" shadow="md" style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(248,250,252,0.9) 100%)',
-        backdropFilter: 'blur(8px)',
-        position: 'relative',
-        overflow: 'hidden',
-        borderLeft: '4px solid #3b82f6',
-      }}>
-        {/* Visual design elements */}
-        <Box style={{ 
-          position: 'absolute', 
-          top: -60, 
-          right: -60, 
-          width: 120, 
-          height: 120, 
-          borderRadius: '50%', 
-          background: 'rgba(59, 130, 246, 0.1)',
-          zIndex: 0
-        }} />
-        
-        <Box style={{ 
-          position: 'absolute', 
-          bottom: -80, 
-          left: 100, 
-          width: 160, 
-          height: 160, 
-          borderRadius: '50%', 
-          background: 'rgba(59, 130, 246, 0.05)',
-          zIndex: 0
-        }} />
-        
-        <Box style={{ position: 'relative', zIndex: 1 }}>
-          {/* Title with icon */}
-          <Group mb="lg" spacing="xs">
-            <IconHistory size={24} style={{ color: "#3b82f6" }} />
-            <Title order={2} style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>
-              Accident History
-            </Title>
-          </Group>
-
-          {/* Statistics summary */}
-          <Group mb="xl" spacing="lg">
-            <Paper 
-              shadow="sm" 
-              p="md" 
-              radius="md" 
-              className="summary-card"
-              style={{ 
-                background: 'rgba(255, 255, 255, 0.6)',
-                backdropFilter: 'blur(4px)',
-                flex: '1',
-                animation: 'slideUp 0.5s ease forwards'
-              }}
-            >
-              <Group spacing="xs">
-                <IconCalendarStats size={20} style={{ color: "#3b82f6" }} />
-                <Text fw={600} size="sm" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                  Total Handled Accidents
-                </Text>
-              </Group>
-              <Text size="xl" fw={700} style={{ 
-                fontFamily: "'Inter', sans-serif", 
-                color: "#3b82f6", 
-                marginTop: '5px' 
-              }}>
-                {handledAccidents.length}
-              </Text>
-            </Paper>
-          </Group>
-
-          {/* Main content */}
-          {renderContent()}
-        </Box>
-      </Paper>
-    </Container>
+    <Stack spacing="md" className="history-container">
+      <Container fluid p={0}>
+        <Paper radius="lg" p="xl" shadow="md" className="history-paper">
+          <Box className="history-bg-bubble-1" />
+          <Box className="history-bg-bubble-2" />
+          
+          <Box className="history-content">
+            <Group mb="lg" spacing="xs">
+              <IconHistory size={24} className="history-icon" />
+              <Title order={2} className="history-title">
+                Accident History
+              </Title>
+            </Group>
+            
+            <Text size="sm" c="dimmed" mb="lg">
+              View and manage handled accidents. Use the filters below to narrow down results.
+            </Text>
+            
+            <FilterPanel 
+              onFilteredLogsChange={handleFilteredLogsChange}
+              colSpan={{ base: 12, sm: 6, md: 4, lg: 3 }}
+              initialLogs={handledAccidents}
+            />
+          </Box>
+        </Paper>
+      </Container>
+      
+      {filteredAccidents.length > 0 ? (
+        <AccidentLog 
+          filteredLogs={filteredAccidents} 
+          renderActions={renderCustomActions}
+        />
+      ) : (
+        <Container fluid p={0}>
+          <Paper p="xl" radius="lg" shadow="md" className="history-paper">
+            <Box className="history-content center-content">
+              <IconHistory size={48} className="history-icon" style={{ opacity: 0.5, marginBottom: '1rem' }} />
+              <Text size="lg" fw={500}>No handled accidents found</Text>
+              <Text size="sm" c="dimmed" mt="xs">Accidents marked as handled will appear here</Text>
+            </Box>
+          </Paper>
+        </Container>
+      )}
+    </Stack>
   );
 };
 
