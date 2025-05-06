@@ -75,4 +75,22 @@ const emitAccidentUpdate = async (updateData) => {
   }
 };
 
-module.exports = { emitNewAccident, emitAccidentUpdate };
+const emitNotification = async (notification) => {
+  try {
+    // Broadcast to all sockets where socket.user.role is an admin
+    let broadcastCount = 0;
+    Object.keys(clients).forEach((socketId) => {
+      const socket = clients[socketId];
+      if (socket && socket.user && socket.user.role === 'admin') {
+        socket.emit("new_notification", notification);
+        console.log(`Notification dispatched to ${socket.user.username}`);
+        broadcastCount++;
+      }
+    });
+    console.log(`Notification dispatched to ${broadcastCount} admin users`);
+  } catch (error) {
+    console.error("Error emitting new accident:", error);
+  }
+};
+
+module.exports = { emitNewAccident, emitAccidentUpdate, emitNotification };
