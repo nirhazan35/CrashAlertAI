@@ -7,6 +7,7 @@ const AccidentLogsContext = createContext();
 
 export const AccidentLogsProvider = ({ children }) => {
   const [accidentLogs, setAccidentLogs] = useState([]);
+  const [cameraLocations, setCameraLocations] = useState([]);
   const [selectedAlert, setSelectedAlert] = useState(null);
   const { user } = useAuth();
 

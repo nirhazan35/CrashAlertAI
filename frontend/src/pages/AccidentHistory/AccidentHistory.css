@@ -2,7 +2,8 @@
 
 /* Container and layout */
 .history-container {
-  margin-top: 0;
+  width: 100%;
+  padding: 16px;
 }
 
 .history-paper {
@@ -41,6 +42,14 @@
   z-index: 1;
 }
 
+.center-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
 /* Title styles */
 .history-title {
   font-family: 'DM Sans', sans-serif;
@@ -51,76 +60,7 @@
   color: #3b82f6;
 }
 
-/* Summary card styles */
-.summary-card {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(4px);
-  flex: 1;
-  animation: slideUp 0.5s ease forwards;
-}
-
-.summary-card-title {
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 600;
-}
-
-.summary-card-value {
-  font-family: 'Inter', sans-serif;
-  color: #3b82f6;
-  margin-top: 5px;
-  font-weight: 700;
-}
-
-/* Table styles */
-.history-table-header {
-  background-color: rgba(59, 130, 246, 0.05);
-}
-
-.history-table-heading {
-  text-align: center;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #64748b;
-  font-weight: 600;
-  padding: 16px 12px;
-}
-
-.history-table-cell {
-  text-align: center;
-  font-family: 'Inter', sans-serif;
-}
-
-.history-table-cell-bold {
-  font-weight: 500;
-}
-
-/* Severity badge styles */
-.severity-badge {
-  font-family: 'Inter', sans-serif;
-  font-size: 10px;
-}
-
-/* Loading and empty states */
-.empty-state {
-  animation: fadeIn 0.5s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-}
-
 /* Animation effects */
-.table-hover-effect {
-  transition: background-color 0.2s ease;
-}
-
-.table-hover-effect:hover {
-  background-color: rgba(59, 130, 246, 0.05);
-}
-
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
