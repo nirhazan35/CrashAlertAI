@@ -95,6 +95,11 @@ input[type="date"]::-webkit-datetime-edit {
   animation: none !important; /* Ensure assigned rows don't pulse */
 }
 
+.accident-row-handled {
+  background-color: rgba(243, 244, 246, 0.5);
+  animation: none !important; /* Ensure handled rows don't pulse */
+}
+
 .accident-row-selected {
   background-color: rgba(59, 130, 246, 0.05);
 }
@@ -120,6 +125,32 @@ input[type="date"]::-webkit-datetime-edit {
   position: relative;
   overflow: hidden;
   border-left: 4px solid var(--mantine-color-brand-5);
+  width: 100%;
+}
+
+/* Empty state styles */
+.accident-log-table {
+  width: 100%;
+  min-width: 800px; /* Ensures minimum width even when empty */
+  table-layout: fixed; /* Force table to respect width */
+}
+
+.accident-log-table td {
+  text-align: center;
+  padding: 12px;
+}
+
+/* Ensure scroll area takes full width */
+.mantine-ScrollArea-root {
+  width: 100% !important;
+}
+
+.mantine-ScrollArea-viewport {
+  width: 100% !important;
+}
+
+/* Override width for empty state */
+.accident-log-container .accident-log-paper > div {
   width: 100%;
 }
 
