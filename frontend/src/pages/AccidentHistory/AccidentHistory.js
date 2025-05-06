@@ -172,22 +172,11 @@ const AccidentHistory = () => {
         </Paper>
       </Container>
       
-      {filteredAccidents.length > 0 ? (
         <AccidentLog 
           filteredLogs={filteredAccidents} 
           renderActions={renderCustomActions}
-        />
-      ) : (
-        <Container fluid p={0}>
-          <Paper p="xl" radius="lg" shadow="md" className="history-paper">
-            <Box className="history-content center-content">
-              <IconHistory size={48} className="history-icon" style={{ opacity: 0.5, marginBottom: '1rem' }} />
-              <Text size="lg" fw={500}>No handled accidents found</Text>
-              <Text size="sm" c="dimmed" mt="xs">Accidents marked as handled will appear here</Text>
-            </Box>
-          </Paper>
-        </Container>
-      )}
+        isHistoryView={true}
+      />
     </Stack>
   );
 };

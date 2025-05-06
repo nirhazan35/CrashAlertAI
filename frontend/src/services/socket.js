@@ -1,3 +1,4 @@
+
 import { io } from "socket.io-client";
 
 let socket;
@@ -10,13 +11,13 @@ export const connectSocket = (token) => {
     socket.disconnect();
     socket = null;
   }
-  
+
   // Only connect if we have a valid token
   if (!token) {
     console.error("Cannot connect socket: No authentication token provided");
     return;
   }
-  
+
   socket = io(process.env.REACT_APP_URL_BACKEND, {
     auth: { token },
   });
@@ -32,7 +33,7 @@ export const connectSocket = (token) => {
   socket.on("disconnect", (reason) => {
     console.log(`Disconnected from Socket.IO server. Reason: ${reason}`);
   });
-  
+
   // Listen for force logout events
   socket.on("force_logout", (data) => {
     console.log("Forced logout detected:", data.message);
@@ -53,7 +54,7 @@ export const disconnectSocket = () => {
 // Register a callback for force logout events
 export const onForceLogout = (callback) => {
   forceLogoutCallback = callback;
-  
+
   // If socket already exists, register the handler immediately
   if (socket) {
     socket.off("force_logout"); // Remove any existing handler
@@ -85,3 +86,12 @@ export const onAccidentUpdate = (callback) => {
     callback(data);
   });
 };
+
+// Listen for notification updates
+export const onNotification = (callback) => {
+  if (!socket) throw new Error("Socket not initialized. Call connectSocket first.");
+  socket.on("new_notification", (notification) => {
+    callback(notification);
+  });
+};
+

@@ -1,21 +1,40 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
-import { AppShell, Burger, Group, Text, ScrollArea, useMantineTheme, ActionIcon } from '@mantine/core';
+import { Outlet, useNavigate } from 'react-router-dom';
+import {
+  AppShell,
+  Burger,
+  Group,
+  Text,
+  ScrollArea,
+  useMantineTheme,
+  ActionIcon,
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import Sidebar from './sidebar';
 import { IconLogout } from '@tabler/icons-react';
 import { useAuth } from "../../authentication/AuthProvider";
+import NotificationCenter from '../notifications/notificationDropbox';
+import { useAccidentLogs } from '../../context/AccidentContext';
 
 const SidebarLayout = () => {
-  const [opened, { toggle, close, open }] = useDisclosure();
+  const [opened, { toggle }] = useDisclosure();
   const theme = useMantineTheme();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const { setSelectedAlert } = useAccidentLogs();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await logout();
     } catch (error) {
       console.error('Logout failed:', error.message);
+    }
+  };
+
+  const handleNotificationClick = (alert) => {
+    if (alert) {
+      setSelectedAlert(alert);
+      navigate('/dashboard');
     }
   };
 
@@ -33,16 +52,18 @@ const SidebarLayout = () => {
         <Group justify="space-between">
           <Group>
             <Burger opened={opened} onClick={toggle} size="sm" />
-            <Text size="lg" fw={700} c={theme.colors.brand[7]}>CrashAlert AI</Text>
+            <Text size="lg" fw={700} c={theme.colors.brand[7]}>
+              CrashAlert AI
+            </Text>
           </Group>
-          <ActionIcon 
-            color="red" 
-            onClick={handleLogout}
-            variant="subtle"
-            size="lg"
-          >
-            <IconLogout size={22} />
-          </ActionIcon>
+          <Group>
+            {user?.role === 'admin' && (
+                <NotificationCenter onNotificationClick={handleNotificationClick} />
+              )}
+            <ActionIcon color="red" onClick={handleLogout} variant="subtle" size="lg">
+              <IconLogout size={22} />
+            </ActionIcon>
+          </Group>
         </Group>
       </AppShell.Header>
 

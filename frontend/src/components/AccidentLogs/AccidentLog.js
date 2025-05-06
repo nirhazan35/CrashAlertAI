@@ -11,16 +11,20 @@ import {
   ScrollArea,
   ActionIcon,
   Tooltip,
-  Container
+  Container,
+  Center
 } from '@mantine/core';
 import { 
-  IconEye
+  IconEye,
+  IconAlertCircle,
+  IconHistory
 } from '@tabler/icons-react';
 import './AccidentLog.css';
 
 const AccidentLog = ({ 
   filteredLogs,
-  renderActions // Add renderActions prop
+  renderActions, // Add renderActions prop
+  isHistoryView = false // Add isHistoryView prop to disable blinking in history
 }) => {
   const { accidentLogs, updateAccidentStatus, handleRowDoubleClick: originalHandleRowDoubleClick } = useAccidentLogs();
   const { user } = useAuth();
@@ -48,6 +52,13 @@ const AccidentLog = ({
 
   const handleRowClick = (index) => {
     setSelectedRowIndex(index);
+  };
+
+  // Function to truncate text to a specific length with ellipsis
+  const truncateText = (text, maxLength = 20) => {
+    if (!text) return "No description";
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
   };
 
   // Helper to get severity badge color
@@ -86,13 +97,20 @@ const AccidentLog = ({
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {logsToDisplay
+                  {logsToDisplay.length > 0 ? (
+                    logsToDisplay
                     .slice()
                     .sort((a, b) => new Date(a.date) - new Date(b.date))
                     .map((log, index) => (
                       <Table.Tr
                         key={index}
-                        className={`accident-row ${selectedRowIndex === index ? 'accident-row-selected' : ''} ${log.status === "assigned" ? 'accident-row-assigned' : 'accident-row-active'}`}
+                          className={`accident-row ${selectedRowIndex === index ? 'accident-row-selected' : ''} ${
+                            isHistoryView 
+                              ? 'accident-row-handled' 
+                              : log.status === "assigned" 
+                                ? 'accident-row-assigned' 
+                                : 'accident-row-active'
+                          }`}
                         onClick={() => handleRowClick(index)}
                         onDoubleClick={() => handleRowDoubleClick(log)}
                       >
@@ -134,9 +152,11 @@ const AccidentLog = ({
                           </Badge>
                         </Table.Td>
                         <Table.Td>
-                          <Text lineClamp={1}>
-                            {log.description || "No description"}
-                          </Text>
+                          <Tooltip label={log.description || "No description"} position="top">
+                            <Text>
+                              {truncateText(log.description)}
+                            </Text>
+                          </Tooltip>
                         </Table.Td>
                         <Table.Td>
                           {renderActions ? (
@@ -179,7 +199,30 @@ const AccidentLog = ({
                           )}
                         </Table.Td>
                       </Table.Tr>
-                    ))}
+                      ))
+                  ) : (
+                    <Table.Tr>
+                      <Table.Td colSpan={7}>
+                        <Center py="xl">
+                          <Box style={{ textAlign: 'center' }}>
+                            {isHistoryView ? (
+                              <>
+                                <IconHistory size={32} style={{ opacity: 0.5, marginBottom: '0.75rem' }} />
+                                <Text size="lg" fw={500}>No handled accidents found</Text>
+                                <Text size="sm" c="dimmed" mt="xs">Accidents marked as handled will appear here</Text>
+                              </>
+                            ) : (
+                              <>
+                                <IconAlertCircle size={32} style={{ opacity: 0.5, marginBottom: '0.75rem' }} />
+                                <Text size="lg" fw={500}>No accident logs found</Text>
+                                <Text size="sm" c="dimmed" mt="xs">There are no accidents matching your criteria</Text>
+                              </>
+                            )}
+                          </Box>
+                        </Center>
+                      </Table.Td>
+                    </Table.Tr>
+                  )}
                 </Table.Tbody>
               </Table>
             </ScrollArea>
