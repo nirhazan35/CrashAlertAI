@@ -8,6 +8,12 @@ services:
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}@cluster0.mongodb.net/crashalert?retryWrites=true&w=majority
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
     depends_on:
       - mongo
     volumes:
@@ -20,6 +26,7 @@ services:
       - "3000:80"  # Map container's 80 to host's 3000
     environment:
       - REACT_APP_URL_BACKEND=https://crashalertai-backend.onrender.com
+      - REACT_APP_GOOGLE_MAPS_API_KEY=${REACT_APP_GOOGLE_MAPS_API_KEY}
     depends_on:
       - backend
     volumes:
