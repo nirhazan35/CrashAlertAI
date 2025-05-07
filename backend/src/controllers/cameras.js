@@ -17,7 +17,6 @@ const getCameras = async (req, res) => {
 // Get (cameraId,location) of all cameras
 const getLocations = async (req, res) => {
     try {
-      console.log("Fetching camera locations");
         // Fetch only the cameraId and location fields from the Camera model
         const cameras = await Camera.find().select('cameraId location');
 
