@@ -9,6 +9,9 @@ FROM node:18-alpine AS builder
 WORKDIR /usr/src/app
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY . .
+# Inject environment variables during build
+ARG REACT_APP_URL_BACKEND
+ENV REACT_APP_URL_BACKEND=$REACT_APP_URL_BACKEND
 RUN npm run build
 
 # Stage 3: Production

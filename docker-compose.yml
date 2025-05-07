@@ -16,23 +16,16 @@ services:
       - EMAIL_PORT=${EMAIL_PORT}
     depends_on:
       - mongo
-    volumes:
-      - ./backend:/usr/src/app
-      - /usr/src/app/node_modules
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - REACT_APP_URL_BACKEND=https://crashalertai-backend.onrender.com
     ports:
-      - "3000:80"  # Map container's 80 to host's 3000
-    environment:
-      - REACT_APP_URL_BACKEND=https://crashalertai-backend.onrender.com
-      - REACT_APP_GOOGLE_MAPS_API_KEY=${REACT_APP_GOOGLE_MAPS_API_KEY}
-      - NODE_ENV=production
+      - "80:80"  # Match Nginx port
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/usr/src/app
-      - /usr/src/app/node_modules
 
   # MongoDB (only for local testing; use Atlas in production)
   mongo:
