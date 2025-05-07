@@ -27,6 +27,7 @@ services:
     environment:
       - REACT_APP_URL_BACKEND=https://crashalertai-backend.onrender.com
       - REACT_APP_GOOGLE_MAPS_API_KEY=${REACT_APP_GOOGLE_MAPS_API_KEY}
+      - NODE_ENV=production
     depends_on:
       - backend
     volumes:
