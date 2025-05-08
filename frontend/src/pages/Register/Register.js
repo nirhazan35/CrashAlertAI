@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../../authentication/AuthProvider";
+import { TextInput, PasswordInput, Select, Button, Paper, Title, Alert } from '@mantine/core';
+import { IconAlertCircle } from '@tabler/icons-react';
 import "./Register.css";
 
 const Register = () => {
@@ -40,58 +42,65 @@ const Register = () => {
   };
 
   return (
-    <div className="register-container">
-      <h2>Register</h2>
-      {message && <p className="error-message">{message}</p>}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleRegister();
-        }}
-      >
-        <div>
-          <label htmlFor="username">Username</label>
-          <input
-            type="text"
-            id="username"
+    <div className="register-page">
+      <Paper className="register-paper" shadow="md">
+        <Title order={2} className="register-title">Register</Title>
+        {message && (
+          <Alert 
+            icon={<IconAlertCircle size="1rem" />}
+            title="Notification"
+            color={message.includes("successful") ? "green" : "red"}
+            className="register-error"
+          >
+            {message}
+          </Alert>
+        )}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleRegister();
+          }}
+        >
+          <TextInput
+            label="Username"
+            placeholder="Enter your username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
+            className="register-input"
           />
-        </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
+          <TextInput
+            label="Email"
+            placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="register-input"
           />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
+          <PasswordInput
+            label="Password"
+            placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="register-input"
           />
-        </div>
-        <div>
-          <label htmlFor="role">Role</label>
-          <select
-            id="role"
+          <Select
+            label="Role"
+            placeholder="Select your role"
             value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-        <button type="submit">Register</button>
-      </form>
+            onChange={setRole}
+            data={[
+              { value: 'user', label: 'User' },
+              { value: 'admin', label: 'Admin' },
+            ]}
+            className="register-input"
+          />
+          <Button type="submit" className="register-button">
+            Register
+          </Button>
+        </form>
+      </Paper>
     </div>
   );
 };
