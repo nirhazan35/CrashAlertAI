@@ -1,4 +1,4 @@
-/* Consolidated auth page styling */
+/* AuthForms.css - Consolidated authentication forms styling */
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -48,6 +48,7 @@
   background: linear-gradient(135deg, rgba(49, 130, 206, 0.1) 0%, rgba(49, 130, 206, 0.05) 100%);
 }
 
+/* Titles and subtitles */
 .auth-container h2,
 .auth-container .mantine-Title-root {
   text-align: center;
@@ -70,19 +71,7 @@
   z-index: 1;
 }
 
-.auth-error-message {
-  color: var(--mantine-color-red-6);
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
-  text-align: center;
-  padding: 0.75rem;
-  background: rgba(255, 0, 0, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 0, 0, 0.1);
-  position: relative;
-  z-index: 1;
-}
-
+/* Form elements */
 .auth-container form {
   display: flex;
   flex-direction: column;
@@ -91,7 +80,8 @@
   z-index: 1;
 }
 
-.auth-container input {
+.auth-container input,
+.auth-container select {
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid rgba(226, 232, 240, 0.8);
@@ -102,12 +92,21 @@
   background: rgba(255, 255, 255, 0.9);
 }
 
-.auth-container input:focus {
+.auth-container select {
+  appearance: none;
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+}
+
+.auth-container input:focus,
+.auth-container select:focus {
   outline: none;
   border-color: var(--mantine-color-brand-5);
   box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.1);
 }
 
+/* Buttons */
 .auth-container button {
   width: 100%;
   padding: 0.875rem;
@@ -128,6 +127,31 @@
   box-shadow: 0 6px 16px rgba(66, 153, 225, 0.3);
 }
 
+/* Messages and alerts */
+.auth-message {
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-message-error {
+  color: var(--mantine-color-red-6);
+  background: rgba(255, 0, 0, 0.05);
+  border-color: rgba(255, 0, 0, 0.1);
+}
+
+.auth-message-success {
+  color: var(--mantine-color-green-6);
+  background: rgba(0, 255, 0, 0.05);
+  border-color: rgba(0, 255, 0, 0.1);
+}
+
+/* Links */
 .auth-link-text {
   text-align: center;
   margin-top: 1.5rem;
@@ -150,6 +174,7 @@
   transform: translateY(-1px);
 }
 
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .auth-container {
     padding: 2.5rem;
@@ -169,4 +194,84 @@
   .auth-container h2 {
     font-size: 1.5rem;
   }
+}
+
+/* Custom input groups with icons */
+.auth-input-group {
+  margin-bottom: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-input-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--mantine-color-gray-7);
+  font-weight: 500;
+}
+
+.auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--mantine-color-gray-6);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Adjust input padding for icons */
+.auth-container input:not([type="checkbox"]) {
+  padding-left: 2.25rem !important;
+}
+
+/* Password input specific adjustments */
+.auth-container input[type="password"] {
+  letter-spacing: 0.1em;
+}
+
+/* Enhance transitions for better UX */
+.auth-input,
+.auth-container button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus states for icons */
+.auth-input:focus ~ .auth-input-icon {
+  color: var(--mantine-color-brand-5);
+}
+
+/* Add these to improve consistency */
+.auth-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* Better icon positioning */
+.auth-input-icon {
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+/* Remove Mantine Title specific styling */
+.auth-container h2 {
+  text-align: center;
+  margin-bottom: 1.2rem;
+  font-weight: 700;
+  color: var(--mantine-color-gray-8);
+  font-size: 2.2rem;
+  position: relative;
+  z-index: 1;
 }

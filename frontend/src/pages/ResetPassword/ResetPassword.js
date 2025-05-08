@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import "./ResetPassword.css";
 import { useAuth } from "../../authentication/AuthProvider";
 import { useSearchParams } from "react-router-dom";
-import { PasswordInput, Button, Paper, Title, Alert } from '@mantine/core';
-import { IconAlertCircle } from '@tabler/icons-react';
+import { Button, Title, Container, Box, TextInput } from '@mantine/core';
 import notifyPasswordChange from "./NotifyUser";
+import '../authFormCSS/AuthForm.css';
 
 const ResetPassword = () => {
   const { user } = useAuth();
@@ -12,11 +11,11 @@ const ResetPassword = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [message, setMessage] = useState("");
   const [searchParams] = useSearchParams();
-
   const token = searchParams.get('token');
 
-  const handleResetPassword = async () => {
-    setMessage(""); // Clear previous messages
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setMessage("");
 
     if (newPassword !== confirmNewPassword) {
       setMessage("Passwords do not match.");
@@ -49,47 +48,54 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="reset-password-page">
-      <Paper className="reset-password-paper" shadow="md">
-        <Title order={2} className="reset-password-title">Reset Password</Title>
-        {message && (
-          <Alert 
-            icon={<IconAlertCircle size="1rem" />}
-            title="Notification"
-            color={message.includes("successfully") ? "green" : "red"}
-            className="reset-password-error"
-          >
-            {message}
-          </Alert>
-        )}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleResetPassword();
-          }}
-        >
-          <PasswordInput
-            label="New Password"
-            placeholder="Enter your new password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-            className="reset-password-input"
-          />
-          <PasswordInput
-            label="Confirm New Password"
-            placeholder="Confirm your new password"
-            value={confirmNewPassword}
-            onChange={(e) => setConfirmNewPassword(e.target.value)}
-            required
-            className="reset-password-input"
-          />
-          <Button type="submit" className="reset-password-button">
-            Reset Password
-          </Button>
-        </form>
-      </Paper>
-    </div>
+    <Box className="auth-page">
+      <Container size="xs">
+        <div className="auth-container">
+          <Title order={2} style={{ textAlign: 'center' }}>Reset Password</Title>
+          <div className="auth-subtitle">
+            Please enter and confirm your new password
+          </div>
+
+          {message && (
+            <div className={`auth-message ${
+              message.includes("successfully") ? "auth-message-success" : "auth-message-error"
+            }`}>
+              {message}
+            </div>
+          )}
+
+          <form onSubmit={handleResetPassword}>
+            <TextInput
+              label="New Password"
+              placeholder="Enter your new password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              size="md"
+              type="password"
+            />
+
+            <TextInput
+              label="Confirm New Password"
+              placeholder="Confirm your new password"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              required
+              size="md"
+              type="password"
+            />
+
+            <Button 
+              type="submit" 
+              fullWidth 
+              size="md"
+            >
+              Reset Password
+            </Button>
+          </form>
+        </div>
+      </Container>
+    </Box>
   );
 };
 

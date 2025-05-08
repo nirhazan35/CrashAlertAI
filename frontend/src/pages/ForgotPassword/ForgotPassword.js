@@ -1,20 +1,15 @@
 import React, { useState } from "react";
-import { 
-  TextInput, 
-  Button, 
-  Title, 
-  Container, 
-  Box
-} from '@mantine/core';
+import { Button, Title, Container, Box } from '@mantine/core';
 import { IconUser, IconMail } from '@tabler/icons-react';
-import "./ForgotPassword.css";
+import "../authFormCSS/AuthForm.css";
 
 const ForgotPassword = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleForgotPassword = async () => {
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
     setMessage("");
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/users/request-password-change`, {
@@ -24,7 +19,6 @@ const ForgotPassword = () => {
         },
         body: JSON.stringify({ username, email }),
       });
-      console.log("response", response);
 
       if (response.ok) {
         setMessage("An email has been sent to your admin for further instructions.");
@@ -41,43 +35,47 @@ const ForgotPassword = () => {
   };
 
   return (
-    <Box className="forgot-password-page">
+    <Box className="auth-page">
       <Container size="xs">
-        <div className="forgot-password-container">
+        <div className="auth-container">
           <Title order={2} style={{ textAlign: 'center' }}>Reset Password</Title>
-          <div className="forgot-password-subtitle">
+          <div className="auth-subtitle">
             Please enter your username and email to reset your password
           </div>
-          {message && <p className="error-message">{message}</p>}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleForgotPassword();
-            }}
-          >
-            <div>
-              <TextInput
-                label="Username"
-                placeholder="Enter your username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                icon={<IconUser size="1rem" />}
-                size="md"
-              />
+          
+          {message && <div className="auth-message auth-message-error">{message}</div>}
+
+          <form onSubmit={handleForgotPassword}>
+            <div className="auth-input-group">
+              <label className="auth-input-label">Username</label>
+              <div className="auth-input-wrapper">
+                <IconUser size="1rem" className="auth-input-icon" />
+                <input
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="auth-input"
+                  required
+                />
+              </div>
             </div>
-            <div>
-              <TextInput
-                label="Email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                type="email"
-                icon={<IconMail size="1rem" />}
-                size="md"
-              />
+
+            <div className="auth-input-group">
+              <label className="auth-input-label">Email</label>
+              <div className="auth-input-wrapper">
+                <IconMail size="1rem" className="auth-input-icon" />
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="auth-input"
+                  required
+                />
+              </div>
             </div>
+
             <Button
               type="submit"
               fullWidth

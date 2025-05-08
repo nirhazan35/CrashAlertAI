@@ -1,16 +1,8 @@
-// src/components/Login/Login.js
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../authentication/AuthProvider';
-import { 
-  TextInput,
-  Button, 
-  Title, 
-  Text, 
-  Container, 
-  Box
-} from '@mantine/core';
-import { IconUser } from '@tabler/icons-react';
+import { Button, Title, Text, Container, Box } from '@mantine/core';
+import { IconUser, IconLock } from '@tabler/icons-react';
 import '../authFormCSS/AuthForm.css';
 
 const Login = () => {
@@ -48,36 +40,51 @@ const Login = () => {
   return (
     <Box className="auth-page">
       <Container size="xs">
-        <div className="auth-container" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="auth-container">
           <Title order={2} style={{ textAlign: 'center' }}>CrashAlert AI</Title>
           <div className="auth-subtitle">
             Welcome back! Please enter your credentials to continue
           </div>
 
-          {error && <p className="auth-error-message">{error}</p>}
+          {error && <div className="auth-message auth-message-error">{error}</div>}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <TextInput
-              label="Username"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              icon={<IconUser size="1rem" />}
+          <form onSubmit={handleSubmit}>
+            <div className="auth-input-group">
+              <label className="auth-input-label">Username</label>
+              <div className="auth-input-wrapper">
+                <IconUser size="1rem" className="auth-input-icon" />
+                <input
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="auth-input"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="auth-input-group">
+              <label className="auth-input-label">Password</label>
+              <div className="auth-input-wrapper">
+                <IconLock size="1rem" className="auth-input-icon" />
+                <input
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="auth-input"
+                  required
+                />
+              </div>
+            </div>
+
+            <Button 
+              type="submit" 
+              fullWidth 
+              loading={loading} 
               size="md"
-            />
-
-            <TextInput
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              size="md"
-              type="password"
-            />
-
-            <Button type="submit" fullWidth loading={loading} size="md">
+            >
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
