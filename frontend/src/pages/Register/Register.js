@@ -1,15 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../../authentication/AuthProvider";
-import { 
-  TextInput, 
-  PasswordInput, 
-  Select, 
-  Button, 
-  Title, 
-  Container, 
-  Box 
-} from '@mantine/core';
-import { IconUser, IconMail, IconLock, IconShield } from '@tabler/icons-react';
+import { Button, Title, Container, Box } from '@mantine/core';
+import { IconUser, IconMail, IconLock } from '@tabler/icons-react';
 import '../authFormCSS/AuthForm.css';
 
 const Register = () => {
@@ -34,7 +26,6 @@ const Register = () => {
           "Authorization": `Bearer ${user.token}`,
         },
         body: JSON.stringify({ username, email, password, role }),
-        credentials: "include",
       });
 
       if (response.ok) {
@@ -65,62 +56,79 @@ const Register = () => {
           </div>
 
           {message && (
-            <p className={`auth-message ${message.includes("successful") ? "auth-message-success" : "auth-message-error"}`}>
+            <div className={`auth-message ${
+              message.includes("successful") ? "auth-message-success" : "auth-message-error"
+            }`}>
               {message}
-            </p>
+            </div>
           )}
 
           <form onSubmit={handleRegister}>
-            <TextInput
-              label="Username"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              icon={<IconUser size="1rem" />}
-              size="md"
-            />
+            <div className="auth-input-group">
+              <label className="auth-input-label">Username</label>
+              <div className="auth-input-wrapper">
+                <IconUser size="1rem" className="auth-input-icon" />
+                <input
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="auth-input"
+                  required
+                />
+              </div>
+            </div>
 
-            <TextInput
-              label="Email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              type="email"
-              icon={<IconMail size="1rem" />}
-              size="md"
-            />
+            <div className="auth-input-group">
+              <label className="auth-input-label">Email</label>
+              <div className="auth-input-wrapper">
+                <IconMail size="1rem" className="auth-input-icon" />
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="auth-input"
+                  required
+                />
+              </div>
+            </div>
 
-            <PasswordInput
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              icon={<IconLock size="1rem" />}
-              size="md"
-            />
+            <div className="auth-input-group">
+              <label className="auth-input-label">Password</label>
+              <div className="auth-input-wrapper">
+                <IconLock size="1rem" className="auth-input-icon" />
+                <input
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="auth-input"
+                  required
+                />
+              </div>
+            </div>
 
-            <Select
-              label="Role"
-              placeholder="Select user role"
-              value={role}
-              onChange={setRole}
-              data={[
-                { value: 'user', label: 'User' },
-                { value: 'admin', label: 'Admin' },
-              ]}
-              icon={<IconShield size="1rem" />}
-              size="md"
-            />
+            <div className="auth-input-group">
+              <label className="auth-input-label">Role</label>
+              <div className="auth-input-wrapper">
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="auth-input"
+                  required
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            </div>
 
             <Button
               type="submit"
               fullWidth
               loading={isLoading}
               size="md"
-              mt="xl"
             >
               {isLoading ? "Registering..." : "Register User"}
             </Button>
