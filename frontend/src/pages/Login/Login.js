@@ -12,7 +12,7 @@ import {
   Box, 
   Alert
 } from '@mantine/core';
-import { IconAlertCircle, IconEyeCheck, IconEyeOff } from '@tabler/icons-react';
+import { IconAlertCircle, IconEyeCheck, IconEyeOff, IconUser, IconLock } from '@tabler/icons-react';
 import './Login.css';
 
 const Login = () => {
@@ -67,22 +67,13 @@ const Login = () => {
   return (
     <Box className="login-page">
       <Container size="xs">
-        <Paper
-          radius="md"
-          p={30}
-          withBorder
-          shadow="md"
-          className="login-paper"
-        >
-          <Title
-            order={2}
-            ta="center"
-            mb="xl"
-            fw={900}
-            className="login-title"
-          >
+        <Paper className="login-paper">
+          <Title order={2} className="login-title" style={{ textAlign: 'center' }}>
             CrashAlert AI
           </Title>
+          <div className="login-subtitle">
+            Welcome back! Please enter your credentials to continue
+          </div>
           
           {error && (
             <Alert 
@@ -106,6 +97,8 @@ const Login = () => {
               required
               mb="md"
               className="login-input"
+              icon={<IconUser size="1rem" />}
+              size="md"
             />
             
             <PasswordInput
@@ -119,6 +112,8 @@ const Login = () => {
               }
               mb="xl"
               className="login-input"
+              icon={<IconLock size="1rem" />}
+              size="md"
             />
             
             <Button
@@ -128,7 +123,7 @@ const Login = () => {
               size="md"
               className="login-button"
             >
-              Login
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
           

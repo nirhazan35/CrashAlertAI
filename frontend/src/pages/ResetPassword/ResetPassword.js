@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import "./ResetPassword.css";
 import { useAuth } from "../../authentication/AuthProvider";
 import { useSearchParams } from "react-router-dom";
+import { PasswordInput, Button, Paper, Title, Alert } from '@mantine/core';
+import { IconAlertCircle } from '@tabler/icons-react';
 import notifyPasswordChange from "./NotifyUser";
 
 const ResetPassword = () => {
@@ -38,7 +40,7 @@ const ResetPassword = () => {
         setConfirmNewPassword("");
       } else {
         const errorData = await response.json();
-        setMessage(`Failed to reset password: ${errorData.message}`);
+        setMessage(`Failed to reset password: ${errorData.error}`);
       }
     } catch (error) {
       setMessage("An error occurred while resetting the password.");
@@ -46,39 +48,47 @@ const ResetPassword = () => {
     }
   };
 
-
   return (
-    <div className="reset-password-container">
-      <h2>Reset Password</h2>
-      {message && <p className={`message ${message.includes("successfully") ? "success-message" : "error-message"}`}>{message}</p>}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleResetPassword();
-        }}
-      >
-        <div>
-          <label htmlFor="newPassword">New Password</label>
-          <input
-            type="password"
-            id="newPassword"
+    <div className="reset-password-page">
+      <Paper className="reset-password-paper" shadow="md">
+        <Title order={2} className="reset-password-title">Reset Password</Title>
+        {message && (
+          <Alert 
+            icon={<IconAlertCircle size="1rem" />}
+            title="Notification"
+            color={message.includes("successfully") ? "green" : "red"}
+            className="reset-password-error"
+          >
+            {message}
+          </Alert>
+        )}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleResetPassword();
+          }}
+        >
+          <PasswordInput
+            label="New Password"
+            placeholder="Enter your new password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
+            className="reset-password-input"
           />
-        </div>
-        <div>
-          <label htmlFor="confirmNewPassword">Confirm New Password</label>
-          <input
-            type="password"
-            id="confirmNewPassword"
+          <PasswordInput
+            label="Confirm New Password"
+            placeholder="Confirm your new password"
             value={confirmNewPassword}
             onChange={(e) => setConfirmNewPassword(e.target.value)}
             required
+            className="reset-password-input"
           />
-        </div>
-        <button type="submit">Reset Password</button>
-      </form>
+          <Button type="submit" className="reset-password-button">
+            Reset Password
+          </Button>
+        </form>
+      </Paper>
     </div>
   );
 };

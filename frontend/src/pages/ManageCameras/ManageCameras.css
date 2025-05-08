@@ -1,90 +1,191 @@
-/* General styles for the container */
-.manage-user-cameras-container {
-  padding: 1rem;
-  background-color: #f9fafb; /* Light background */
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 800px;
+/* Manage Cameras page styling */
+.manage-cameras-page {
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f6f8fd 0%, #f1f4f9 100%);
+  position: relative;
+}
+
+.manage-cameras-container {
+  max-width: 1400px;
   margin: 0 auto;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1.5rem;
+  position: relative;
 }
 
-/* Heading style */
-.manage-user-cameras-container h1 {
+.manage-cameras-title {
+  margin-bottom: 2rem;
+  color: var(--mantine-color-brand-7);
+  font-weight: 900;
+  grid-column: 1 / -1;
+}
+
+.manage-cameras-sidebar {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--mantine-radius-lg);
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  height: fit-content;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.manage-cameras-sidebar::before,
+.manage-cameras-sidebar::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(5px);
+  z-index: 0;
+}
+
+.manage-cameras-sidebar::before {
+  width: 150px;
+  height: 150px;
+  top: -50px;
+  right: -50px;
+  background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(66, 153, 225, 0.05) 100%);
+}
+
+.manage-cameras-main {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--mantine-radius-lg);
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.manage-cameras-main::before,
+.manage-cameras-main::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(5px);
+  z-index: 0;
+}
+
+.manage-cameras-main::before {
+  width: 200px;
+  height: 200px;
+  top: -80px;
+  right: -80px;
+  background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(66, 153, 225, 0.05) 100%);
+}
+
+.manage-cameras-main::after {
+  width: 150px;
+  height: 150px;
+  bottom: -50px;
+  left: -50px;
+  background: linear-gradient(135deg, rgba(49, 130, 206, 0.1) 0%, rgba(49, 130, 206, 0.05) 100%);
+}
+
+.manage-cameras-subtitle {
+  margin-bottom: 1.5rem;
+  color: var(--mantine-color-gray-8);
+  font-weight: 700;
   font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
 }
 
-/* Form control label styling */
-.manage-user-cameras-container .MuiInputLabel-root {
-  font-weight: 600;
-  color: #555;
-}
-
-/* Select Dropdown Style */
-.manage-user-cameras-container .MuiSelect-root {
-  font-size: 1rem;
-  padding: 0.5rem;
-}
-
-/* Camera selection grid */
 .camera-selection-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-top: 1.5rem;
-  margin-bottom: 2rem; /* Added margin to create space between camera selection and the button */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+  position: relative;
+  z-index: 1;
 }
 
-/* Style for each camera item */
 .camera-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: var(--mantine-radius-lg);
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  position: relative;
+  overflow: hidden;
 }
 
-.camera-item .camera-id {
+.camera-item::before {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(66, 153, 225, 0.05) 100%);
+  top: -20px;
+  right: -20px;
+  z-index: 0;
+}
+
+.camera-item:hover {
+  border-color: var(--mantine-color-brand-5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.camera-id {
+  color: var(--mantine-color-gray-6);
   font-size: 0.875rem;
-  color: #777;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
 }
 
-/* Checkbox and label styling */
-.camera-item .MuiCheckbox-root {
-  margin-right: 0.5rem;
+.camera-name {
+  color: var(--mantine-color-gray-8);
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
 }
 
-.camera-item label {
-  display: flex;
-  align-items: center;
-  font-size: 1rem;
-  color: #333;
-}
-
-/* Save Changes button style */
-.save-changes-btn {
-  margin-top: 1rem;
+.save-changes-button {
+  margin-top: 1.5rem;
   width: 100%;
-  padding: 0.75rem;
-  background-color: #4caf50;
-  color: white;
-  font-weight: bold;
-  border-radius: 4px;
-  text-transform: uppercase;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
-.save-changes-btn:hover {
-  background-color: #45a049;
+.save-changes-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Responsive adjustments */
+@media (max-width: 1024px) {
+  .manage-cameras-container {
+    grid-template-columns: 1fr;
+  }
+
+  .manage-cameras-sidebar {
+    order: 2;
+  }
+
+  .manage-cameras-main {
+    order: 1;
+  }
+}
+
 @media (max-width: 768px) {
+  .manage-cameras-page {
+    padding: 1rem;
+  }
+
   .camera-selection-grid {
     grid-template-columns: 1fr;
   }

@@ -49,6 +49,12 @@ const deleteUser = async (req, res) => {
 const changePassword = async(req, res) => {
   try {
     const { token, newPassword } = req.body;
+    if (!newPassword) {
+      return res.status(400).json({ error: "New password is required" });
+    }
+    if (!token) {
+      return res.status(400).json({ error: "Token is required" });
+    }
     const data = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const { id } = data;
     const user = await User.findById(id);

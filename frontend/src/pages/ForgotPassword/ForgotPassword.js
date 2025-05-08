@@ -1,4 +1,12 @@
 import React, { useState } from "react";
+import { 
+  TextInput, 
+  Button, 
+  Title, 
+  Container, 
+  Box
+} from '@mantine/core';
+import { IconUser, IconMail } from '@tabler/icons-react';
 import "./ForgotPassword.css";
 
 const ForgotPassword = () => {
@@ -33,38 +41,54 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="forgot-password-container">
-      <h2>Forgot Password</h2>
-      {message && <p className="error-message">{message}</p>}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleForgotPassword();
-        }}
-      >
-        <div>
-          <label htmlFor="username">Username</label>
-          <input
-            type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
+    <Box className="forgot-password-page">
+      <Container size="xs">
+        <div className="forgot-password-container">
+          <Title order={2} style={{ textAlign: 'center' }}>Reset Password</Title>
+          <div className="forgot-password-subtitle">
+            Please enter your username and email to reset your password
+          </div>
+          {message && <p className="error-message">{message}</p>}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleForgotPassword();
+            }}
+          >
+            <div>
+              <TextInput
+                label="Username"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                icon={<IconUser size="1rem" />}
+                size="md"
+              />
+            </div>
+            <div>
+              <TextInput
+                label="Email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                type="email"
+                icon={<IconMail size="1rem" />}
+                size="md"
+              />
+            </div>
+            <Button
+              type="submit"
+              fullWidth
+              size="md"
+            >
+              Submit
+            </Button>
+          </form>
         </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Send Reset Request</button>
-      </form>
-    </div>
+      </Container>
+    </Box>
   );
 };
 
