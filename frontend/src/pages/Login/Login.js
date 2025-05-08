@@ -11,7 +11,7 @@ import {
   Box
 } from '@mantine/core';
 import { IconUser } from '@tabler/icons-react';
-import './Login.css';
+import '../authFormCSS/AuthForm.css';
 
 const Login = () => {
   const [username, setUsername] = useState('');
