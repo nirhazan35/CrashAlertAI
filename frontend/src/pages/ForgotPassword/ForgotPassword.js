@@ -15,7 +15,7 @@ const ForgotPassword = () => {
   const [message, setMessage] = useState("");
 
   const handleForgotPassword = async () => {
-    setMessage(""); // Clear previous messages
+    setMessage("");
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/users/request-password-change`, {
         method: "POST",
