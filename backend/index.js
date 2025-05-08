@@ -45,7 +45,7 @@ app.get('/', (req, res) => {
 // Start server
 if (process.env.NODE_ENV !== "test") {
   server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+    console.log(`Server running on port: ${port}`);
   });
 }
 module.exports = app;
