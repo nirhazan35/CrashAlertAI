@@ -1,18 +1,16 @@
-import React, {useState} from 'react';
-import {useNavigate, Link} from 'react-router-dom';
+// src/components/Login/Login.js
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../authentication/AuthProvider';
 import { 
-  TextInput, 
-  PasswordInput, 
+  TextInput,
   Button, 
   Title, 
   Text, 
-  Paper, 
   Container, 
-  Box, 
-  Alert
+  Box
 } from '@mantine/core';
-import { IconAlertCircle, IconEyeCheck, IconEyeOff, IconUser, IconLock } from '@tabler/icons-react';
+import { IconUser } from '@tabler/icons-react';
 import './Login.css';
 
 const Login = () => {
@@ -23,39 +21,22 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
         credentials: "include",
       });
-      
-      if (response.status !== 200) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || "Login failed");
       }
-      
-      setError(null);
       const data = await response.json();
-      const { accessToken, session } = data;
-      
-      // Pass both the access token and session info to the login function
-      await login(accessToken, session);
-      
-      // If session.singleSessionOnly is true, show a message
-      if (session && session.singleSessionOnly) {
-        console.log("Note: Your account is configured for single-session only. Logging in from another device will terminate this session.");
-      }
-      
-      // Redirect
+      await login(data.accessToken, data.session);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');
@@ -65,75 +46,49 @@ const Login = () => {
   };
 
   return (
-    <Box className="login-page">
+    <Box className="auth-page">
       <Container size="xs">
-        <Paper className="login-paper">
-          <Title order={2} className="login-title" style={{ textAlign: 'center' }}>
-            CrashAlert AI
-          </Title>
-          <div className="login-subtitle">
+        <div className="auth-container" style={{ position: 'relative', zIndex: 1 }}>
+          <Title order={2} style={{ textAlign: 'center' }}>CrashAlert AI</Title>
+          <div className="auth-subtitle">
             Welcome back! Please enter your credentials to continue
           </div>
-          
-          {error && (
-            <Alert 
-              icon={<IconAlertCircle size={16} />}
-              title="Authentication Error" 
-              color="red" 
-              radius="md"
-              mb="md"
-              className="login-error"
-            >
-              {error}
-            </Alert>
-          )}
-          
-          <form onSubmit={handleSubmit}>
+
+          {error && <p className="auth-error-message">{error}</p>}
+
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <TextInput
               label="Username"
               placeholder="Enter your username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              mb="md"
-              className="login-input"
               icon={<IconUser size="1rem" />}
               size="md"
             />
-            
-            <PasswordInput
+
+            <TextInput
               label="Password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              visibilityToggleIcon={({ reveal }) =>
-                reveal ? <IconEyeOff size={16} /> : <IconEyeCheck size={16} />
-              }
-              mb="xl"
-              className="login-input"
-              icon={<IconLock size="1rem" />}
               size="md"
+              type="password"
             />
-            
-            <Button
-              fullWidth
-              type="submit"
-              loading={loading}
-              size="md"
-              className="login-button"
-            >
+
+            <Button type="submit" fullWidth loading={loading} size="md">
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          
-          <Text ta="center" mt="lg" size="sm" className="forgot-password-text">
+
+          <Text ta="center" mt="lg" size="sm" className="auth-link-text">
             Forgot your password?{" "}
-            <Link to="/forgot-password" className="forgot-password-link">
+            <Link to="/forgot-password" className="auth-link">
               Reset Password
             </Link>
           </Text>
-        </Paper>
+        </div>
       </Container>
     </Box>
   );
