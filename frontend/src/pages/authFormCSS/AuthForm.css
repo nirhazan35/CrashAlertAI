@@ -1,0 +1,315 @@
+/* AuthForms.css - Consolidated authentication forms styling */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f6f8fd 0%, #f1f4f9 100%);
+  padding: 2rem;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 620px;
+  margin: auto;
+  padding: 4.5rem;
+  border-radius: var(--mantine-radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-container::before,
+.auth-container::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(5px);
+  z-index: 0;
+}
+
+.auth-container::before {
+  width: 150px;
+  height: 150px;
+  top: -60px;
+  right: -60px;
+  background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(66, 153, 225, 0.05) 100%);
+}
+
+.auth-container::after {
+  width: 100px;
+  height: 100px;
+  bottom: -40px;
+  left: -40px;
+  background: linear-gradient(135deg, rgba(49, 130, 206, 0.1) 0%, rgba(49, 130, 206, 0.05) 100%);
+}
+
+/* Titles and subtitles */
+.auth-container h2,
+.auth-container .mantine-Title-root {
+  text-align: center;
+  margin-bottom: 1.2rem;
+  font-weight: 700;
+  color: var(--mantine-color-gray-8);
+  font-size: 2.2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-subtitle {
+  text-align: center;
+  max-width: 420px;
+  margin: 0 auto 2.2rem auto;
+  color: var(--mantine-color-gray-6);
+  font-size: 1.08rem;
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+
+/* Form elements */
+.auth-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-container input,
+.auth-container select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.auth-container select {
+  appearance: none;
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+}
+
+.auth-container input:focus,
+.auth-container select:focus {
+  outline: none;
+  border-color: var(--mantine-color-brand-5);
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.1);
+}
+
+/* Buttons */
+.auth-container button {
+  width: 100%;
+  padding: 0.875rem;
+  border: none;
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.2);
+}
+
+.auth-container button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(66, 153, 225, 0.3);
+}
+
+/* Messages and alerts */
+.auth-message {
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-message-error {
+  color: var(--mantine-color-red-6);
+  background: rgba(255, 0, 0, 0.05);
+  border-color: rgba(255, 0, 0, 0.1);
+}
+
+.auth-message-success {
+  color: var(--mantine-color-green-6);
+  background: rgba(0, 255, 0, 0.05);
+  border-color: rgba(0, 255, 0, 0.1);
+}
+
+/* Links */
+.auth-link-text {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: var(--mantine-color-gray-6);
+  position: relative;
+  z-index: 1;
+}
+
+.auth-link {
+  color: var(--mantine-color-brand-5);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.auth-link:hover {
+  color: var(--mantine-color-brand-6);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 2.5rem;
+    margin: 1rem;
+  }
+
+  .auth-container h2 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 1.5rem;
+  }
+
+  .auth-container h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Custom input groups with icons */
+.auth-input-group {
+  margin-bottom: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-input-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--mantine-color-gray-7);
+  font-weight: 500;
+}
+
+.auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--mantine-color-gray-6);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Adjust input padding for icons */
+.auth-container input:not([type="checkbox"]) {
+  padding-left: 2.25rem !important;
+}
+
+/* Password input specific adjustments */
+.auth-container input[type="password"] {
+  letter-spacing: 0.1em;
+}
+
+/* Enhance transitions for better UX */
+.auth-input,
+.auth-container button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus states for icons */
+.auth-input:focus ~ .auth-input-icon {
+  color: var(--mantine-color-brand-5);
+}
+
+/* Add these to improve consistency */
+.auth-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+/* Better icon positioning */
+.auth-input-icon {
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+/* Remove Mantine Title specific styling */
+.auth-container h2 {
+  text-align: center;
+  margin-bottom: 1.2rem;
+  font-weight: 700;
+  color: var(--mantine-color-gray-8);
+  font-size: 2.2rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Select input styling */
+.auth-input-wrapper select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+}
+
+/* Loading state for buttons */
+.auth-container button[data-loading] {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* Better spacing for form elements */
+.auth-input-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Add these select-specific styles */
+.auth-input-wrapper select {
+  padding-right: 2.5rem !important;
+  background-position: right 0.75rem center;
+}
+
+.auth-input-wrapper select + .auth-input-icon {
+  left: auto;
+  right: 0.75rem;
+  transform: translateY(-50%) rotate(0deg);
+  transition: transform 0.2s ease;
+}
+
+.auth-input-wrapper select:focus + .auth-input-icon {
+  transform: translateY(-50%) rotate(180deg);
+  color: var(--mantine-color-brand-5);
+}

@@ -1,6 +1,4 @@
 const notifyPasswordChange = async (token, user, newPassword) => {
-    console.log("Sending password change notification...");
-    console.log("user:", user);
     try {
         const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/users/notify-password-change`, {
         method: "POST",
