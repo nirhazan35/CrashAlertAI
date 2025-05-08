@@ -7,13 +7,11 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}@cluster0.mongodb.net/crashalert?retryWrites=true&w=majority
+      - MONGO_URL=${MONGO_URL}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRATION=${JWT_EXPIRATION}
       - EMAIL_USER=${EMAIL_USER}
       - EMAIL_PASS=${EMAIL_PASS}
-      - EMAIL_HOST=${EMAIL_HOST}
-      - EMAIL_PORT=${EMAIL_PORT}
     depends_on:
       - mongo
 
