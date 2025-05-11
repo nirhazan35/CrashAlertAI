@@ -91,7 +91,7 @@ const changeAccidentStatus = async (req, res) => {
   try {
     const { accident_id, status } = req.body;
     const username = (await User.findById(req.user.id)).get('username');
-    const assignedTo = status === "assigned" ? username : null;
+    const assignedTo = username;
 
     if (!["active", "assigned", "handled"].includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
