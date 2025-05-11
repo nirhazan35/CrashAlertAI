@@ -1,8 +1,8 @@
 // src/components/FilterPanel.js
 import React, { useEffect } from 'react';
 import { useAccidentLogs } from '../../context/AccidentContext';
-import { useCameraData } from '../../hooks/useCameraData';
-import { useFilterLogs } from '../../hooks/useFilterLogs';
+import { useCameraData } from './useCameraData';
+import { useFilterLogs } from './useFilterLogs';
 import {
   Button,
   Group,

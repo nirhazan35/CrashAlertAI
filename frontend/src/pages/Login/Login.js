@@ -91,8 +91,8 @@ const Login = () => {
 
           <Text ta="center" mt="lg" size="sm" className="auth-link-text">
             Forgot your password?{" "}
-            <Link to="/forgot-password" className="auth-link">
-              Reset Password
+            <Link to="/request-password-change" className="auth-link">
+              Request Password Change
             </Link>
           </Text>
         </div>

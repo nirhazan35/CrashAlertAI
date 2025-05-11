@@ -12,8 +12,10 @@ import AccidentHistoryPage from "./pages/AccidentHistory/AccidentHistory";
 import LiveCameraPage from "./pages/LiveCameraPage/LiveCameraPage";
 import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
+import DeleteUser from './pages/deleteUser/deleteUser';
 import ManageCameras from './pages/ManageCameras/ManageCameras';
 import SidebarLayout from './components/sidebar/SidebarLayout';
+import RequestPasswordChange from './pages/RequestPasswordChange/RequestPasswordChange';
 import AuthLogs from './pages/AuthLogs/AuthLogs';
 import MantineProvider from './components/MantineProvider/MantineProvider';
 import '@mantine/core/styles.css';
@@ -30,7 +32,8 @@ function App() {
           <Route path="/login" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <Login />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-
+          <Route path="/request-password-change" element={<RequestPasswordChange />} />
+          
           {/* Sidebar Layout Wrapper for Protected Routes */}
           <Route element={<SidebarLayout />}>
             <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
@@ -47,6 +50,7 @@ function App() {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/manage-cameras" element={<ManageCameras />} />
               <Route path="/logs" element={<AuthLogs />} />
+              <Route path="/delete-user" element={<DeleteUser />} />
             </Route>
           </Route>
         </Routes>
