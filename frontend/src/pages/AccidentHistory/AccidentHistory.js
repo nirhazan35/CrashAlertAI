@@ -90,20 +90,24 @@ const AccidentHistory = () => {
   };
   
   // Custom action renderer for AccidentLog component
-  const renderCustomActions = (log) => (
-    <Button
-      size="xs"
-      variant="outline"
-      color="blue"
-      radius="xl"
-      onClick={(e) => {
-        e.stopPropagation();
-        handleUnhandleAccident(log._id);
-      }}
-    >
-      Unhandle
-    </Button>
-  );
+ const renderCustomActions = (log) => {
+   if (log.assignedTo !== user?.username && user?.role !== "admin") return null;
+
+   return (
+     <Button
+       size="xs"
+       variant="outline"
+       color="blue"
+       radius="xl"
+       onClick={(e) => {
+         e.stopPropagation();
+         handleUnhandleAccident(log._id);
+       }}
+     >
+       Unhandle
+     </Button>
+   );
+ };
 
   // Handle filtered logs from FilterPanel
   const handleFilteredLogsChange = (logs) => {
@@ -156,7 +160,7 @@ const AccidentHistory = () => {
         <AccidentLog 
           filteredLogs={filteredAccidents} 
           renderActions={renderCustomActions}
-        isHistoryView={true}
+          isHistoryView={true}
       />
     </Stack>
   );
