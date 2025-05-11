@@ -34,11 +34,12 @@ export default function FilterPanel({
   colSpan = { base: 12, sm: 6, md: 4, lg: 1.7 },
   onFilteredLogsChange,
   initialLogs = [],
+  isHistory=false,
 }) {
   const theme = useMantineTheme();
   const { cameras, locations } = useCameraData();
   const { accidentLogs } = useAccidentLogs();
-  const logsToFilter = initialLogs.length > 0 ? initialLogs : accidentLogs;
+  const logsToFilter = initialLogs.length > 0 || isHistory ? initialLogs : accidentLogs;
 
   const {
     filters,

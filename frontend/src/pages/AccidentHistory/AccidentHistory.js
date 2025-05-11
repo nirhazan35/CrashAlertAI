@@ -150,6 +150,7 @@ const AccidentHistory = () => {
             onFilteredLogsChange={handleFilteredLogsChange}
             colSpan={{ base: 12, sm: 6, md: 4, lg: 1.7 }}
             initialLogs={handledAccidents}
+            isHistory={true}
           />
       
         <AccidentLog 
