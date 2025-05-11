@@ -57,7 +57,7 @@ const SidebarLayout = () => {
             </Text>
             {user && (
                           <Text size="sm" c="dimmed">
-                            {user.username} ({user.role})
+                            Welcome, {user.username} ({user.role})
                           </Text>
                         )}
           </Group>

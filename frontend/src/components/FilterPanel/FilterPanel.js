@@ -219,13 +219,13 @@ export default function FilterPanel({
             />
           </Grid.Col>
 
-          {/* From Time */}
+          {/* Start Time */}
           <Grid.Col span={colSpan}>
             <Group spacing="xs" mb={6}>
               <Box style={{ color: theme.colors.brand[5] }}>
                 <IconClock size={16} />
               </Box>
-              <Text className="filter-label">From Time</Text>
+              <Text className="filter-label">Start Time</Text>
             </Group>
             <Select
               placeholder="All"
@@ -248,13 +248,13 @@ export default function FilterPanel({
             />
           </Grid.Col>
 
-          {/* To Time */}
+          {/* End Time */}
           <Grid.Col span={colSpan}>
             <Group spacing="xs" mb={6}>
               <Box style={{ color: theme.colors.brand[5] }}>
                 <IconClock size={16} />
               </Box>
-              <Text className="filter-label">To Time</Text>
+              <Text className="filter-label">End Time</Text>
             </Group>
             <Select
               placeholder="All"
