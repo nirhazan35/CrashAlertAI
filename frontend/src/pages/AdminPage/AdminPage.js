@@ -14,8 +14,8 @@ const AdminPage = () => {
     navigate('/register');
   };
 
-  const handleResetPasswordClick = () => {
-    navigate('/reset-password');
+  const handleDeleteUserClick = () => {
+    navigate('/delete-user');
   };
 
   return (
@@ -52,11 +52,11 @@ const AdminPage = () => {
               <Button 
                 variant="contained" 
                 color="primary" 
-                onClick={handleResetPasswordClick}
+                onClick={handleDeleteUserClick}
                 className="admin-button"
                 size="large"
               >
-                Reset Password
+                Delete User
               </Button>
             </Box>
           </Box>

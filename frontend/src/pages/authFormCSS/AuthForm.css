@@ -174,7 +174,6 @@
   transform: translateY(-1px);
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .auth-container {
     padding: 2.5rem;
@@ -312,4 +311,34 @@
 .auth-input-wrapper select:focus + .auth-input-icon {
   transform: translateY(-50%) rotate(180deg);
   color: var(--mantine-color-brand-5);
+}
+
+/* Delete User specific styles */
+.auth-container .mantine-Alert-root {
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  background: rgba(255, 0, 0, 0.05);
+  border: 1px solid rgba(255, 0, 0, 0.1);
+}
+
+.auth-container .mantine-Alert-title {
+  color: var(--mantine-color-red-6);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.auth-container .mantine-Alert-icon {
+  margin-right: 0.75rem;
+}
+
+/* Confirmation button group */
+.auth-container .confirm-button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Delete button icon */
+.auth-container button .mantine-Button-leftIcon {
+  margin-right: 0.5rem;
 }

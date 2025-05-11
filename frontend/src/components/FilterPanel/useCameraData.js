@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../authentication/AuthProvider';
+import { useAuth } from '../../authentication/AuthProvider';
 
 export function useCameraData() {
   const [cameraData, setCameraData] = useState({
@@ -56,5 +56,5 @@ export function useCameraData() {
     };
   }, []);
 
-  return cameraData; // { cameras: [...], locations: [...] }
+  return cameraData;
 }

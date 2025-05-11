@@ -1,8 +1,8 @@
 // src/components/FilterPanel.js
 import React, { useEffect } from 'react';
 import { useAccidentLogs } from '../../context/AccidentContext';
-import { useCameraData } from '../../hooks/useCameraData';
-import { useFilterLogs } from '../../hooks/useFilterLogs';
+import { useCameraData } from './useCameraData';
+import { useFilterLogs } from './useFilterLogs';
 import {
   Button,
   Group,
@@ -34,11 +34,12 @@ export default function FilterPanel({
   colSpan = { base: 12, sm: 6, md: 4, lg: 1.7 },
   onFilteredLogsChange,
   initialLogs = [],
+  isHistory=false,
 }) {
   const theme = useMantineTheme();
   const { cameras, locations } = useCameraData();
   const { accidentLogs } = useAccidentLogs();
-  const logsToFilter = initialLogs.length > 0 ? initialLogs : accidentLogs;
+  const logsToFilter = initialLogs.length > 0 || isHistory ? initialLogs : accidentLogs;
 
   const {
     filters,
@@ -53,8 +54,31 @@ export default function FilterPanel({
     onFilteredLogsChange?.(filteredLogs);
   }, [filteredLogs, onFilteredLogsChange]);
 
-  const handleChange = (name, value) =>
-    setFilters((prev) => ({ ...prev, [name]: value }));
+  const handleChange = (name, value) => {
+    setFilters((prev) => {
+      let updated = { ...prev, [name]: value };
+
+      // Compare dates as strings (they are 'YYYY-MM-DD')
+      if (updated.startDate && updated.endDate && updated.startDate > updated.endDate) {
+        updated.startDate = updated.endDate;
+      }
+
+      // If same day and time values exist, ensure startTime <= endTime
+      if (
+        updated.startDate &&
+        updated.endDate &&
+        updated.startDate === updated.endDate &&
+        updated.startTime &&
+        updated.endTime &&
+        updated.startTime > updated.endTime
+      ) {
+        updated.startTime = updated.endTime;
+      }
+
+      return updated;
+    });
+  };
+
 
   const cameraOptions = cameras.map((c) => ({ value: c, label: c }));
   const locationOptions = locations.map((l) => ({ value: l, label: l }));
@@ -195,13 +219,13 @@ export default function FilterPanel({
             />
           </Grid.Col>
 
-          {/* From Time */}
+          {/* Start Time */}
           <Grid.Col span={colSpan}>
             <Group spacing="xs" mb={6}>
               <Box style={{ color: theme.colors.brand[5] }}>
                 <IconClock size={16} />
               </Box>
-              <Text className="filter-label">From Time</Text>
+              <Text className="filter-label">Start Time</Text>
             </Group>
             <Select
               placeholder="All"
@@ -224,13 +248,13 @@ export default function FilterPanel({
             />
           </Grid.Col>
 
-          {/* To Time */}
+          {/* End Time */}
           <Grid.Col span={colSpan}>
             <Group spacing="xs" mb={6}>
               <Box style={{ color: theme.colors.brand[5] }}>
                 <IconClock size={16} />
               </Box>
-              <Text className="filter-label">To Time</Text>
+              <Text className="filter-label">End Time</Text>
             </Group>
             <Select
               placeholder="All"

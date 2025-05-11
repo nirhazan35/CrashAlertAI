@@ -55,6 +55,11 @@ const SidebarLayout = () => {
             <Text size="lg" fw={700} c={theme.colors.brand[7]}>
               CrashAlert AI
             </Text>
+            {user && (
+                          <Text size="sm" c="dimmed">
+                            Welcome, {user.username} ({user.role})
+                          </Text>
+                        )}
           </Group>
           <Group>
             {user?.role === 'admin' && (
