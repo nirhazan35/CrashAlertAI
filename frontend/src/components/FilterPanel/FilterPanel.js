@@ -54,8 +54,31 @@ export default function FilterPanel({
     onFilteredLogsChange?.(filteredLogs);
   }, [filteredLogs, onFilteredLogsChange]);
 
-  const handleChange = (name, value) =>
-    setFilters((prev) => ({ ...prev, [name]: value }));
+  const handleChange = (name, value) => {
+    setFilters((prev) => {
+      let updated = { ...prev, [name]: value };
+
+      // Compare dates as strings (they are 'YYYY-MM-DD')
+      if (updated.startDate && updated.endDate && updated.startDate > updated.endDate) {
+        updated.startDate = updated.endDate;
+      }
+
+      // If same day and time values exist, ensure startTime <= endTime
+      if (
+        updated.startDate &&
+        updated.endDate &&
+        updated.startDate === updated.endDate &&
+        updated.startTime &&
+        updated.endTime &&
+        updated.startTime > updated.endTime
+      ) {
+        updated.startTime = updated.endTime;
+      }
+
+      return updated;
+    });
+  };
+
 
   const cameraOptions = cameras.map((c) => ({ value: c, label: c }));
   const locationOptions = locations.map((l) => ({ value: l, label: l }));
