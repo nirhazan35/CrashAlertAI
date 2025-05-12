@@ -342,3 +342,100 @@
 .auth-container button .mantine-Button-leftIcon {
   margin-right: 0.5rem;
 }
+
+/* Additional styles for MultiSelect in authentication forms */
+.mantine-MultiSelect-root {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.mantine-MultiSelect-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--mantine-color-gray-7);
+  font-weight: 500;
+}
+
+.mantine-MultiSelect-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  padding-right: 2.5rem !important;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.mantine-MultiSelect-input:focus {
+  outline: none;
+  border-color: var(--mantine-color-brand-5);
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.1);
+}
+
+/* Remove blue blob for selected items */
+.mantine-MultiSelect-pill {
+  background-color: var(--mantine-color-brand-1);
+  color: var(--mantine-color-brand-7);
+  border: 1px solid var(--mantine-color-brand-2);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.mantine-MultiSelect-pill-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--mantine-color-brand-6);
+  transition: background-color 0.2s ease;
+}
+
+.mantine-MultiSelect-pill-remove:hover {
+  background-color: var(--mantine-color-brand-2);
+}
+
+/* Dropdown styling */
+.mantine-MultiSelect-dropdown {
+  background: white;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.mantine-MultiSelect-item {
+  padding: 0.5rem 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.mantine-MultiSelect-item[data-hovered],
+.mantine-MultiSelect-item:hover {
+  background-color: var(--mantine-color-brand-1);
+}
+
+.mantine-MultiSelect-item[data-selected] {
+  background-color: var(--mantine-color-brand-2);
+  color: var(--mantine-color-brand-7);
+}
+
+/* Dropdown arrow */
+.mantine-MultiSelect-rightSection {
+  right: 0.75rem;
+  color: var(--mantine-color-gray-6);
+  transition: transform 0.2s ease;
+}
+
+.mantine-MultiSelect-input:focus + .mantine-MultiSelect-rightSection {
+  transform: rotate(180deg);
+  color: var(--mantine-color-brand-5);
+}
