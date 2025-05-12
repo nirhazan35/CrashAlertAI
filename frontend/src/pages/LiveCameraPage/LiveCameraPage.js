@@ -13,13 +13,11 @@ import {
   Button,
   Loader,
   Modal,
-  ScrollArea,
   Tooltip
 } from '@mantine/core';
 import {
   IconCamera,
   IconMapPin,
-  IconChevronDown,
   IconFilter,
   IconMaximize,
   IconAlertTriangle,
@@ -27,9 +25,7 @@ import {
   IconLayoutGrid,
   IconList,
   IconRefresh,
-  IconPlayerPlay,
   IconPlayerPause,
-  IconCalendar,
   IconClock,
   IconCheck
 } from '@tabler/icons-react';

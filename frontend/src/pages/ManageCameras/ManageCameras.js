@@ -19,7 +19,7 @@ const ManageUserCameras = () => {
       setCameras(camerasData);
     };
     loadData();
-  }, []);
+  }, [user]);
 
   const handleUserChange = async (value) => {
     setSelectedUser(value);

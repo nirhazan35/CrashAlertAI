@@ -51,10 +51,8 @@ export function useCameraData() {
     }
 
     fetchCameraData();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    return () => { isMounted = false; };
+  }, [user?.token]);
 
   return cameraData;
 }
