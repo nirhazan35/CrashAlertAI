@@ -7,7 +7,7 @@ const { find, findById } = require("../models/Camera");
 
 const saveNewAccident = async (req, res) => {
   try {
-    const { cameraId, location, date, severity, video } = req.body;
+    const { cameraId, location, date, severity, video, status } = req.body;
 
     // Validate required fields
     if (!cameraId || !location || !severity) {
@@ -24,6 +24,7 @@ const saveNewAccident = async (req, res) => {
       date: date || new Date(),
       severity,
       video,
+      status: status || 'active',
     });
 
     // Format date & time using DateFormatting util
