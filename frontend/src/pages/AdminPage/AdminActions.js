@@ -1,5 +1,3 @@
-import { useAuth } from "../../authentication/AuthProvider";
-
 export const fetchUsers = async (user) => {
   try {
     const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/users/get-all-users`, {
