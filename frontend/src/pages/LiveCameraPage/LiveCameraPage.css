@@ -1,0 +1,200 @@
+/* LiveCameraFeed styles */
+
+/* Base containers */
+.live-camera-feed {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.camera-header-paper,
+.camera-feed-paper,
+.camera-list-item {
+  background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(248,250,252,0.9) 100%);
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+  border-left: 4px solid var(--mantine-color-brand-5, #3b82f6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.camera-feed-paper:hover,
+.camera-list-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+}
+
+/* Header elements */
+.camera-header-paper {
+  margin-bottom: 20px;
+}
+
+.view-toggle-group {
+  border-radius: var(--mantine-radius-md);
+  overflow: hidden;
+}
+
+.active-filter-button {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Camera feed containers */
+.camera-feed-container,
+.camera-list-preview {
+  position: relative;
+  border-radius: var(--mantine-radius-md);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.camera-video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  background-color: #000;
+  border-radius: var(--mantine-radius-md);
+  overflow: hidden;
+}
+
+.camera-list-preview .camera-video-container {
+  padding-bottom: 75%; /* 4:3 aspect ratio for list view */
+}
+
+.camera-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--mantine-color-dark-7);
+  color: white;
+}
+
+.camera-controls-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+  color: white;
+  z-index: 2;
+}
+
+.camera-status-badge {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.camera-status-badge-list {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+}
+
+/* Offline camera styling */
+.camera-offline-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--mantine-color-gray-1);
+  border-radius: var(--mantine-radius-md);
+  padding: 20px;
+  min-height: 120px;
+  text-align: center;
+  color: var(--mantine-color-gray-7);
+}
+
+/* Loading and no results states */
+.loading-container,
+.no-results-container {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+/* Expanded camera styling */
+.expanded-camera-container {
+  position: relative;
+  border-radius: var(--mantine-radius-lg);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.expanded-video-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  background-color: #000;
+  border-radius: var(--mantine-radius-lg);
+  overflow: hidden;
+}
+
+.camera-placeholder.expanded {
+  padding: 40px;
+}
+
+.expanded-video-controls {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  width: 100%;
+  z-index: 2;
+}
+
+.camera-offline-container.expanded {
+  min-height: 300px;
+}
+
+/* Camera list view specific */
+.camera-list-item {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .camera-controls-overlay {
+    padding: 8px;
+  }
+
+  .camera-offline-container {
+    min-height: 100px;
+    padding: 15px;
+  }
+
+  .camera-offline-container.expanded {
+    min-height: 200px;
+  }
+}
+
+/* Design elements */
+.design-circle {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.design-circle-top-right {
+  top: -60px;
+  right: -60px;
+  width: 120px;
+  height: 120px;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.design-circle-bottom-left {
+  bottom: -80px;
+  left: 100px;
+  width: 160px;
+  height: 160px;
+  background: rgba(59, 130, 246, 0.05);
+}

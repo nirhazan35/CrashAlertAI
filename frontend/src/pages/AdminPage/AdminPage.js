@@ -18,6 +18,10 @@ const AdminPage = () => {
     navigate('/delete-user');
   };
 
+  const handleAddNewCameraClick = () => {
+    navigate('/add-new-camera');
+  };
+
   return (
     <div className="admin-page">
       <Container maxWidth="lg" className="admin-container">
@@ -39,6 +43,15 @@ const AdminPage = () => {
                 size="large"
               >
                 Manage User Cameras
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddNewCameraClick}
+                className="admin-button"
+                size="large"
+              >
+                Add New Camera
               </Button>
               <Button 
                 variant="contained" 
