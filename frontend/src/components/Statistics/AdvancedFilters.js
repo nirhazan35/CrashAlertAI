@@ -12,14 +12,18 @@ import {
 } from '@mantine/core';
 import { IconX } from '@tabler/icons-react';
 
+/**
+ * Advanced filtering component for statistics data
+ * Provides UI for filtering accidents by date, time, location, camera, user and severity
+ */
 const AdvancedFilters = ({ 
-  isOpen, 
   onClose, 
   filters, 
   onFiltersChange,
   onAdvancedFiltersChange,
   availableLocations = [],
-  availableCameras = []
+  availableCameras = [],
+  availableUserIds = []
 }) => {
   // Update a single filter field
   const handleFilterChange = (key, value) => {
@@ -33,6 +37,7 @@ const AdvancedFilters = ({
       endDate: null,
       startTime: '',
       endTime: '',
+      userIds: [],
       locations: [],
       cameras: [],
       severityLevels: []
@@ -126,6 +131,20 @@ const AdvancedFilters = ({
         </Group>
       </Stack>
 
+      {/* Responders */}
+      <Stack spacing="xs">
+        <Text size="sm" weight={500}>Responders</Text>
+        <MultiSelect
+          size="xs"
+          data={availableUserIds}
+          placeholder="Select responders"
+          value={filters.userIds || []}
+          onChange={(value) => handleFilterChange('userIds', value)}
+          searchable
+          clearable
+        />
+      </Stack>
+      
       {/* Locations */}
       <Stack spacing="xs">
         <Text size="sm" weight={500}>Locations</Text>
@@ -133,7 +152,7 @@ const AdvancedFilters = ({
           size="xs"
           data={availableLocations}
           placeholder="Select locations"
-          value={filters.locations}
+          value={filters.locations || []}
           onChange={(value) => handleFilterChange('locations', value)}
           searchable
           clearable
@@ -147,7 +166,7 @@ const AdvancedFilters = ({
           size="xs"
           data={availableCameras}
           placeholder="Select cameras"
-          value={filters.cameras}
+          value={filters.cameras || []}
           onChange={(value) => handleFilterChange('cameras', value)}
           searchable
           clearable

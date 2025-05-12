@@ -21,6 +21,50 @@ const fetchHandledAccidents = async (token) => {
   }
 };
 
+const fetchUsers = async (token) => {
+    try {
+        const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/users/get-all-users`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+        },
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch users: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        throw error;
+    }
+};
+
+const fetchCamerasLocations = async (token) => {
+    try {
+        const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/cameras/get-id_location`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+        },
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch cameras locations: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Error fetching cameras locations:", error);
+        throw error;
+    }
+};
+
 const calculateCoreStatistics = (accidents) => {
   const totalHandled = accidents.length;
   
@@ -137,6 +181,8 @@ const calculateFalsePositiveTrends = (accidents) => {
 
 export {
   fetchHandledAccidents,
+  fetchUsers,
+  fetchCamerasLocations,
   calculateCoreStatistics,
   calculateTimeBasedTrends,
   calculateFalsePositiveTrends

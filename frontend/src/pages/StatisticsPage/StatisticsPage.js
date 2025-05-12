@@ -16,6 +16,8 @@ import FalsePositiveTrends from '../../components/Statistics/FalsePositiveTrends
 import { useAuth } from '../../authentication/AuthProvider';
 import { 
   fetchHandledAccidents,
+  fetchCamerasLocations,
+  fetchUsers,
   calculateCoreStatistics,
   calculateTimeBasedTrends,
   calculateFalsePositiveTrends
@@ -41,6 +43,7 @@ export default function StatisticsPage() {
   const [allAccidents, setAllAccidents] = useState([]);
   const [availableLocations, setAvailableLocations] = useState([]);
   const [availableCameras, setAvailableCameras] = useState([]);
+  const [availableUserNames, setAvailableUserNames] = useState([]);
   const [advancedFiltersState, setAdvancedFiltersState] = useState(null);
   const [statistics, setStatistics] = useState({
     core: {
@@ -115,6 +118,13 @@ export default function StatisticsPage() {
         }
       }
 
+      // User filter
+      if (filters.userIds && filters.userIds.length > 0) {
+        if (!filters.userIds.includes(accident.assignedTo)) {
+          return false;
+        }
+      }
+
       // Location filter
       if (filters.locations && filters.locations.length > 0) {
         if (!filters.locations.includes(accident.location)) {
@@ -173,19 +183,25 @@ export default function StatisticsPage() {
   /**
    * Extract unique locations and cameras from accident data for filters
    */
-  const extractAvailableFilters = useCallback((accidents) => {
-    const locations = [...new Set(accidents.map(a => a.location))].map(loc => ({
+  const extractAvailableFilters = useCallback((allUsers, allCamerasLocations) => {
+    const locations = [...new Set(allCamerasLocations.map(a => a.location))].map(loc => ({
       value: loc,
       label: loc
     }));
 
-    const cameras = [...new Set(accidents.map(a => a.cameraId))].map(cam => ({
+    const cameras = [...new Set(allCamerasLocations.map(a => a.cameraId))].map(cam => ({
       value: cam,
       label: `Camera ${cam}`
     }));
 
+    const usernames = [...new Set(allUsers.map(a => a.username))].map(username => ({
+      value: username,
+      label: username,
+    }));
+
     setAvailableLocations(locations);
     setAvailableCameras(cameras);
+    setAvailableUserNames(usernames);
   }, []);
 
   /**
@@ -197,8 +213,10 @@ export default function StatisticsPage() {
       setError(null);
       
       const handledAccidents = await fetchHandledAccidents(userToken);
+      const allUsers = await fetchUsers(userToken);
+      const allCamerasLocations = await fetchCamerasLocations(userToken);
       setAllAccidents(handledAccidents);
-      extractAvailableFilters(handledAccidents);
+      extractAvailableFilters(allUsers, allCamerasLocations);
     } catch (err) {
       setError('Failed to load statistics. Please try again.');
       console.error('Error loading statistics:', err);
@@ -270,6 +288,7 @@ export default function StatisticsPage() {
                 onAdvancedFiltersChange={handleAdvancedFiltersChange}
                 availableLocations={availableLocations}
                 availableCameras={availableCameras}
+                availableUserNames={availableUserNames}
                 timeFilter={timeFilter}
               />
             </Paper>

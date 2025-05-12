@@ -33,6 +33,7 @@ const CoreStatistics = ({
   onAdvancedFiltersChange,
   availableLocations = [],
   availableCameras = [],
+  availableUserNames = [],
   timeFilter = 'all'
 }) => {
   const {
@@ -49,6 +50,7 @@ const CoreStatistics = ({
     endDate: null,
     startTime: '',
     endTime: '',
+    userIds: [],
     locations: [],
     cameras: [],
     severityLevels: []
@@ -99,13 +101,13 @@ const CoreStatistics = ({
           </Popover.Target>
           <Popover.Dropdown p={0}>
             <AdvancedFilters
-              isOpen={popoverOpened}
               onClose={() => setPopoverOpened(false)}
               filters={advancedFilters}
               onFiltersChange={handleAdvancedFiltersChange}
               onAdvancedFiltersChange={onAdvancedFiltersChange}
               availableLocations={availableLocations}
               availableCameras={availableCameras}
+              availableUserIds={availableUserNames}
             />
           </Popover.Dropdown>
         </Popover>

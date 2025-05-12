@@ -1,26 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "../../authentication/AuthProvider";
-import { useAccidentLogs } from "../../context/AccidentContext";
 import { 
   Box,
   Button,
   Stack, 
   Container,
-  Title,
-  Group,
   Text,
   Loader,
   Alert as MantineAlert,
   Paper
 } from '@mantine/core';
-import { IconHistory, IconAlertCircle } from '@tabler/icons-react';
+import { IconAlertCircle } from '@tabler/icons-react';
 import FilterPanel from '../../components/FilterPanel/FilterPanel';
 import AccidentLog from '../../components/AccidentLogs/AccidentLog';
 import './AccidentHistory.css';
 
 const AccidentHistory = () => {
   const { user } = useAuth();
-  const { updateAccidentStatus } = useAccidentLogs();
   const [handledAccidents, setHandledAccidents] = useState([]);
   const [filteredAccidents, setFilteredAccidents] = useState([]);
   const [loading, setLoading] = useState(true);

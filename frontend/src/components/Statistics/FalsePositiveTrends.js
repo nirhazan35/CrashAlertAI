@@ -3,22 +3,31 @@ import {
   Paper,
   Text,
   Stack,
+  Center,
+  Group,
 } from '@mantine/core';
-import { LineChart } from '@mantine/charts';
+import { BarChart } from '@mantine/charts';
 
+/**
+ * FalsePositiveTrends - Displays charts for false positive statistics
+ * Shows trends by location and camera to help identify problematic areas
+ */
 const FalsePositiveTrends = ({ trends }) => {
-  const { locationTrends, cameraTrends } = trends;
+  const { locationTrends = [], cameraTrends = [] } = trends;
 
+  // Common chart configuration properties
   const chartProps = {
-    h: 250,
-    tickLine: "y",
-    gridAxis: "xy",
-    curveType: "linear",
-    dotProps: { r: 4 },
-    withTooltip: false,
-    strokeWidth: 2,
-    yAxisProps: { tickCount: 5 },
+    h: 300,
     withLegend: false,
+    withTooltip: false,
+    barProps: { 
+      radius: 4,
+      width: 0.6 
+    },
+    orientation: 'horizontal',
+    yAxisProps: { 
+      width: 120,
+    },
   };
 
   return (
@@ -27,12 +36,20 @@ const FalsePositiveTrends = ({ trends }) => {
       <Paper shadow="sm" p="md" radius="md">
         <Stack>
           <Text size="lg" weight={500}>False Positives by Location</Text>
-          <LineChart
-            {...chartProps}
-            data={locationTrends}
-            dataKey="location"
-            series={[{ name: 'falsePositives', color: 'red.6' }]}
-          />
+          {locationTrends.length > 0 ? (
+            <BarChart
+              {...chartProps}
+              data={locationTrends}
+              dataKey="location"
+              series={[
+                { name: 'count', color: 'red.6', label: 'False Positives' }
+              ]}
+            />
+          ) : (
+            <Center py="xl">
+              <Text color="dimmed">No location data available</Text>
+            </Center>
+          )}
         </Stack>
       </Paper>
 
@@ -40,12 +57,20 @@ const FalsePositiveTrends = ({ trends }) => {
       <Paper shadow="sm" p="md" radius="md">
         <Stack>
           <Text size="lg" weight={500}>False Positives by Camera</Text>
-          <LineChart
-            {...chartProps}
-            data={cameraTrends}
-            dataKey="camera"
-            series={[{ name: 'falsePositives', color: 'orange.6' }]}
-          />
+          {cameraTrends.length > 0 ? (
+            <BarChart
+              {...chartProps}
+              data={cameraTrends}
+              dataKey="cameraId"
+              series={[
+                { name: 'count', color: 'orange.6', label: 'False Positives' }
+              ]}
+            />
+          ) : (
+            <Center py="xl">
+              <Text color="dimmed">No camera data available</Text>
+            </Center>
+          )}
         </Stack>
       </Paper>
     </Stack>
