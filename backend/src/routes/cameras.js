@@ -4,7 +4,7 @@ const { getCameras, getLocations, assignCameras } = require('../controllers/came
 
 const router = express.Router();
 
-router.get("/get-cameras" , verifyToken, hasPermission("admin"), getCameras);
+router.get("/get-cameras" , verifyToken, getCameras);
 router.get("/get-id_location", verifyToken, getLocations);
 router.post("/assign-cameras" , verifyToken, hasPermission("admin"), assignCameras);
 
