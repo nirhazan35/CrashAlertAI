@@ -28,15 +28,20 @@ import {
   isWithinInterval,
 } from 'date-fns';
 
+/**
+ * StatisticsPage - Main dashboard for accident statistics
+ * Provides visualizations of accident data with filtering options
+ */
 export default function StatisticsPage() {
   const { user } = useAuth();
   const userToken = user.token;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [timeFilter, setTimeFilter] = useState('All');
+  const [timeFilter, setTimeFilter] = useState('all');
   const [allAccidents, setAllAccidents] = useState([]);
   const [availableLocations, setAvailableLocations] = useState([]);
   const [availableCameras, setAvailableCameras] = useState([]);
+  const [advancedFiltersState, setAdvancedFiltersState] = useState(null);
   const [statistics, setStatistics] = useState({
     core: {
       totalHandled: 0,
@@ -56,6 +61,9 @@ export default function StatisticsPage() {
     }
   });
 
+  /**
+   * Filter accidents by time period (day, month, year, all)
+   */
   const filterAccidentsByTime = useCallback((accidents, filter) => {
     if (filter === 'all') return accidents;
 
@@ -81,17 +89,21 @@ export default function StatisticsPage() {
     );
   }, []);
 
+  /**
+   * Apply advanced filters to accidents dataset
+   */
   const filterAccidentsByAdvancedFilters = useCallback((accidents, filters) => {
+    if (!filters) return accidents;
+    
     return accidents.filter(accident => {
       const accidentDate = new Date(accident.date);
       const accidentTime = accidentDate.toTimeString().slice(0, 5); // HH:mm format
 
       // Date range filter
       if (filters.startDate && filters.endDate) {
-        if (!isWithinInterval(accidentDate, { 
-          start: filters.startDate, 
-          end: filters.endDate 
-        })) {
+        const startDate = new Date(filters.startDate);
+        const endDate = new Date(filters.endDate);
+        if (!isWithinInterval(accidentDate, { start: startDate, end: endDate })) {
           return false;
         }
       }
@@ -104,21 +116,21 @@ export default function StatisticsPage() {
       }
 
       // Location filter
-      if (filters.locations.length > 0) {
+      if (filters.locations && filters.locations.length > 0) {
         if (!filters.locations.includes(accident.location)) {
           return false;
         }
       }
 
       // Camera filter
-      if (filters.cameras.length > 0) {
+      if (filters.cameras && filters.cameras.length > 0) {
         if (!filters.cameras.includes(accident.cameraId)) {
           return false;
         }
       }
 
       // Severity filter
-      if (filters.severityLevels.length > 0) {
+      if (filters.severityLevels && filters.severityLevels.length > 0) {
         if (!filters.severityLevels.includes(accident.severity)) {
           return false;
         }
@@ -128,11 +140,16 @@ export default function StatisticsPage() {
     });
   }, []);
 
-  const updateStatistics = useCallback((accidents, advancedFilters = null) => {
-    let filteredAccidents = filterAccidentsByTime(accidents, timeFilter);
+  /**
+   * Update statistics based on filtered accident data
+   */
+  const updateStatistics = useCallback(() => {
+    if (!allAccidents.length) return;
     
-    if (advancedFilters) {
-      filteredAccidents = filterAccidentsByAdvancedFilters(filteredAccidents, advancedFilters);
+    let filteredAccidents = filterAccidentsByTime(allAccidents, timeFilter);
+    
+    if (advancedFiltersState) {
+      filteredAccidents = filterAccidentsByAdvancedFilters(filteredAccidents, advancedFiltersState);
     }
 
     const coreStats = calculateCoreStatistics(filteredAccidents);
@@ -151,8 +168,11 @@ export default function StatisticsPage() {
         cameraTrends: falsePositiveStats.byCameraId || []
       }
     });
-  }, [timeFilter, filterAccidentsByTime, filterAccidentsByAdvancedFilters]);
+  }, [allAccidents, timeFilter, advancedFiltersState, filterAccidentsByTime, filterAccidentsByAdvancedFilters]);
 
+  /**
+   * Extract unique locations and cameras from accident data for filters
+   */
   const extractAvailableFilters = useCallback((accidents) => {
     const locations = [...new Set(accidents.map(a => a.location))].map(loc => ({
       value: loc,
@@ -168,6 +188,9 @@ export default function StatisticsPage() {
     setAvailableCameras(cameras);
   }, []);
 
+  /**
+   * Load accident data and calculate initial statistics
+   */
   const loadStatistics = useCallback(async () => {
     try {
       setLoading(true);
@@ -176,20 +199,25 @@ export default function StatisticsPage() {
       const handledAccidents = await fetchHandledAccidents(userToken);
       setAllAccidents(handledAccidents);
       extractAvailableFilters(handledAccidents);
-      updateStatistics(handledAccidents);
     } catch (err) {
       setError('Failed to load statistics. Please try again.');
       console.error('Error loading statistics:', err);
     } finally {
       setLoading(false);
     }
-  }, [userToken, updateStatistics, extractAvailableFilters]);
+  }, [userToken, extractAvailableFilters]);
 
+  // Load initial data
   useEffect(() => {
     if (userToken) {
       loadStatistics();
     }
   }, [userToken, loadStatistics]);
+
+  // Update statistics when filters change
+  useEffect(() => {
+    updateStatistics();
+  }, [updateStatistics]);
 
   const handleRefresh = () => {
     loadStatistics();
@@ -197,12 +225,10 @@ export default function StatisticsPage() {
 
   const handleTimeFilterChange = (value) => {
     setTimeFilter(value);
-    updateStatistics(allAccidents);
   };
 
   const handleAdvancedFiltersChange = (filters) => {
-    setTimeFilter('All');
-    updateStatistics(allAccidents, filters);
+    setAdvancedFiltersState(filters);
   };
 
   if (!userToken) {
@@ -215,7 +241,7 @@ export default function StatisticsPage() {
       
       {/* Header */}
       <Group position="apart" mb="xl">
-        <Text size="xl" weight={700}>Accident Statistics Dashboard</Text>
+        <Text size="xl" weight={700}>Statistics Dashboard</Text>
         <ActionIcon
           variant="light"
           color="blue"
@@ -244,6 +270,7 @@ export default function StatisticsPage() {
                 onAdvancedFiltersChange={handleAdvancedFiltersChange}
                 availableLocations={availableLocations}
                 availableCameras={availableCameras}
+                timeFilter={timeFilter}
               />
             </Paper>
           </Grid.Col>

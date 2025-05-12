@@ -11,13 +11,9 @@ import {
   SegmentedControl,
   Popover,
   Button,
-  MultiSelect,
-  ActionIcon,
-  Divider,
-  Box,
-  Select,
 } from '@mantine/core';
-import { IconMapPin, IconUser, IconAlertTriangle, IconPercentage, IconFilter, IconX } from '@tabler/icons-react';
+import { IconMapPin, IconUser, IconAlertTriangle, IconPercentage, IconFilter } from '@tabler/icons-react';
+import AdvancedFilters from './AdvancedFilters';
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <Paper shadow="sm" p="md" radius="md">
@@ -31,151 +27,13 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
   </Paper>
 );
 
-const AdvancedFilters = ({ 
-  isOpen, 
-  onClose, 
-  filters, 
-  onFiltersChange,
-  availableLocations = [],
-  availableCameras = []
-}) => {
-  const handleFilterChange = (key, value) => {
-    onFiltersChange({ ...filters, [key]: value });
-  };
-
-  return (
-    <Stack spacing="md" p="md" style={{ minWidth: 300 }}>
-      <Group position="apart" mb="xs">
-        <Text weight={500}>Advanced Filters</Text>
-        <ActionIcon onClick={onClose} variant="subtle" color="gray">
-          <IconX size={16} />
-        </ActionIcon>
-      </Group>
-      
-      <Divider />
-
-      {/* Date Range */}
-      <Stack spacing="xs">
-        <Text size="sm" weight={500}>Date Range</Text>
-        <Group grow>
-          <Box>
-            <Text size="xs" mb={4}>Start Date</Text>
-            <input
-              type="date"
-              className="native-date-input"
-              value={filters.startDate || ''}
-              onChange={(e) => handleFilterChange('startDate', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px',
-                borderRadius: '4px',
-                border: '1px solid #ced4da'
-              }}
-            />
-          </Box>
-          <Box>
-            <Text size="xs" mb={4}>End Date</Text>
-            <input
-              type="date"
-              className="native-date-input"
-              value={filters.endDate || ''}
-              onChange={(e) => handleFilterChange('endDate', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px',
-                borderRadius: '4px',
-                border: '1px solid #ced4da'
-              }}
-            />
-          </Box>
-        </Group>
-      </Stack>
-
-      {/* Time Range */}
-      <Stack spacing="xs">
-        <Text size="sm" weight={500}>Time Range</Text>
-        <Group grow>
-          <Select
-            size="xs"
-            label="Start Time"
-            placeholder="Select time"
-            data={Array.from({ length: 24 }, (_, i) => ({
-              value: `${i.toString().padStart(2, '0')}:00`,
-              label: `${i.toString().padStart(2, '0')}:00`
-            }))}
-            value={filters.startTime}
-            onChange={(value) => handleFilterChange('startTime', value)}
-            clearable
-          />
-          <Select
-            size="xs"
-            label="End Time"
-            placeholder="Select time"
-            data={Array.from({ length: 24 }, (_, i) => ({
-              value: `${i.toString().padStart(2, '0')}:00`,
-              label: `${i.toString().padStart(2, '0')}:00`
-            }))}
-            value={filters.endTime}
-            onChange={(value) => handleFilterChange('endTime', value)}
-            clearable
-          />
-        </Group>
-      </Stack>
-
-      {/* Locations */}
-      <Stack spacing="xs">
-        <Text size="sm" weight={500}>Locations</Text>
-        <MultiSelect
-          size="xs"
-          data={availableLocations}
-          placeholder="Select locations"
-          value={filters.locations}
-          onChange={(value) => handleFilterChange('locations', value)}
-          searchable
-          clearable
-        />
-      </Stack>
-
-      {/* Cameras */}
-      <Stack spacing="xs">
-        <Text size="sm" weight={500}>Cameras</Text>
-        <MultiSelect
-          size="xs"
-          data={availableCameras}
-          placeholder="Select cameras"
-          value={filters.cameras}
-          onChange={(value) => handleFilterChange('cameras', value)}
-          searchable
-          clearable
-        />
-      </Stack>
-
-      {/* Severity */}
-      <Stack spacing="xs">
-        <Text size="sm" weight={500}>Severity</Text>
-        <MultiSelect
-          size="xs"
-          data={[
-            { value: 'low', label: 'Low' },
-            { value: 'medium', label: 'Medium' },
-            { value: 'high', label: 'High' }
-          ]}
-          placeholder="Select severity levels"
-          value={filters.severityLevels || []}
-          onChange={(value) => handleFilterChange('severityLevels', value)}
-          clearable
-        />
-      </Stack>
-    </Stack>
-  );
-};
-
 const CoreStatistics = ({ 
   statistics = {}, 
   onTimeFilterChange,
   onAdvancedFiltersChange,
   availableLocations = [],
-  availableCameras = []
+  availableCameras = [],
+  timeFilter = 'all'
 }) => {
   const {
     totalHandled = 0,
@@ -185,7 +43,7 @@ const CoreStatistics = ({
     mostActiveResponders = []
   } = statistics;
 
-  const [isAdvancedFiltersOpen, setIsAdvancedFiltersOpen] = useState(false);
+  const [popoverOpened, setPopoverOpened] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState({
     startDate: null,
     endDate: null,
@@ -206,25 +64,6 @@ const CoreStatistics = ({
     setAdvancedFilters(newFilters);
   };
 
-  const handleApplyFilters = () => {
-    onAdvancedFiltersChange?.(advancedFilters);
-    setIsAdvancedFiltersOpen(false);
-  };
-
-  const handleClearFilters = () => {
-    const clearedFilters = {
-      startDate: null,
-      endDate: null,
-      startTime: '',
-      endTime: '',
-      locations: [],
-      cameras: [],
-      severityLevels: []
-    };
-    setAdvancedFilters(clearedFilters);
-    onAdvancedFiltersChange?.(clearedFilters);
-  };
-
   return (
     <Stack spacing="md">
       {/* Filters */}
@@ -237,52 +76,39 @@ const CoreStatistics = ({
             { label: 'Year', value: 'year' },
             { label: 'All', value: 'all' },
           ]}
-          defaultValue="all"
+          value={timeFilter}
           onChange={onTimeFilterChange}
         />
+        
         <Popover
-          opened={isAdvancedFiltersOpen}
-          onChange={setIsAdvancedFiltersOpen}
+          opened={popoverOpened}
+          onChange={setPopoverOpened}
           position="bottom-end"
           shadow="md"
+          closeOnClickOutside={false}
         >
           <Popover.Target>
             <Button 
               variant="light" 
               size="sm"
               leftIcon={<IconFilter size={16} />}
-              onClick={() => setIsAdvancedFiltersOpen((o) => !o)}
+              onClick={() => setPopoverOpened((o) => !o)}
             >
               Advanced Filters
             </Button>
           </Popover.Target>
           <Popover.Dropdown p={0}>
             <AdvancedFilters
-              isOpen={isAdvancedFiltersOpen}
-              onClose={() => setIsAdvancedFiltersOpen(false)}
+              isOpen={popoverOpened}
+              onClose={() => setPopoverOpened(false)}
               filters={advancedFilters}
               onFiltersChange={handleAdvancedFiltersChange}
+              onAdvancedFiltersChange={onAdvancedFiltersChange}
               availableLocations={availableLocations}
               availableCameras={availableCameras}
             />
           </Popover.Dropdown>
         </Popover>
-        <Button 
-          size="sm"
-          leftIcon={<IconFilter size={16} />}
-          onClick={handleApplyFilters}
-        >
-          Apply Filters
-        </Button>
-        <Button 
-          variant="light" 
-          color="gray"
-          size="sm"
-          leftIcon={<IconX size={16} />}
-          onClick={handleClearFilters}
-        >
-          Clear Filters
-        </Button>
       </Group>
 
       <Grid>
@@ -382,4 +208,4 @@ const CoreStatistics = ({
   );
 };
 
-export default CoreStatistics; 
+export default CoreStatistics;
