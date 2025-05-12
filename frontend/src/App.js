@@ -14,6 +14,7 @@ import ResetPassword from './pages/ResetPassword/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 import DeleteUser from './pages/deleteUser/deleteUser';
 import ManageCameras from './pages/ManageCameras/ManageCameras';
+import AddNewCamera from './pages/AddNewCamera/AddCamera';
 import SidebarLayout from './components/sidebar/SidebarLayout';
 import RequestPasswordChange from './pages/RequestPasswordChange/RequestPasswordChange';
 import AuthLogs from './pages/AuthLogs/AuthLogs';
@@ -51,6 +52,7 @@ function App() {
               <Route path="/manage-cameras" element={<ManageCameras />} />
               <Route path="/logs" element={<AuthLogs />} />
               <Route path="/delete-user" element={<DeleteUser />} />
+              <Route path="/add-new-camera" element={<AddNewCamera />} />
             </Route>
           </Route>
         </Routes>

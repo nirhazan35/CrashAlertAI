@@ -40,7 +40,7 @@ app.get('/', (req, res) => {
   res.send('CrashAlertAI Backend is running!');
 });
 
-// startFakeAccidentSimulation();
+//startFakeAccidentSimulation('handled');
 
 // Start server
 if (process.env.NODE_ENV !== "test") {

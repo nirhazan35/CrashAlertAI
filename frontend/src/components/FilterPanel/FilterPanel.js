@@ -149,6 +149,40 @@ export default function FilterPanel({
             />
           </Grid.Col>
 
+          {/* Severity */}
+          <Grid.Col span={colSpan}>
+            <Group spacing="xs" mb={6}>
+              <Box style={{ color: theme.colors.brand[5] }}>
+                <IconAlertTriangle size={16} />
+              </Box>
+              <Text className="filter-label">Severity</Text>
+            </Group>
+            <Select
+              placeholder="All"
+              data={[
+                { value: '', label: 'All' },
+                { value: 'low', label: 'Low' },
+                { value: 'medium', label: 'Medium' },
+                { value: 'high', label: 'High' },
+              ]}
+              value={filters.severity}
+              onChange={(v) => handleChange('severity', v)}
+              clearable
+              radius="xl"
+              size="md"
+              styles={(t) => ({
+                input: {
+                  border: `1px solid ${t.colors.gray[3]}`,
+                  '&:focus': {
+                    borderColor: t.colors.brand[5],
+                    boxShadow: `0 0 0 3px rgba(59,130,246,0.15)`,
+                  },
+                },
+                item: { borderRadius: '6px' },
+              })}
+            />
+          </Grid.Col>
+
           {/* Start Date */}
           <Grid.Col span={colSpan}>
             <Group spacing="xs" mb={6}>
@@ -182,40 +216,6 @@ export default function FilterPanel({
               onChange={(e) =>
                 handleChange('endDate', e.target.value)
               }
-            />
-          </Grid.Col>
-
-          {/* Severity */}
-          <Grid.Col span={colSpan}>
-            <Group spacing="xs" mb={6}>
-              <Box style={{ color: theme.colors.brand[5] }}>
-                <IconAlertTriangle size={16} />
-              </Box>
-              <Text className="filter-label">Severity</Text>
-            </Group>
-            <Select
-              placeholder="All"
-              data={[
-                { value: '', label: 'All' },
-                { value: 'low', label: 'Low' },
-                { value: 'medium', label: 'Medium' },
-                { value: 'high', label: 'High' },
-              ]}
-              value={filters.severity}
-              onChange={(v) => handleChange('severity', v)}
-              clearable
-              radius="xl"
-              size="md"
-              styles={(t) => ({
-                input: {
-                  border: `1px solid ${t.colors.gray[3]}`,
-                  '&:focus': {
-                    borderColor: t.colors.brand[5],
-                    boxShadow: `0 0 0 3px rgba(59,130,246,0.15)`,
-                  },
-                },
-                item: { borderRadius: '6px' },
-              })}
             />
           </Grid.Col>
 
