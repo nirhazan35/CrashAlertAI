@@ -71,6 +71,14 @@ const addNewCamera = async (req, res) => {
       });
     }
 
+    const camera = await Camera.findOne({ cameraId });
+    if (camera) {
+      return res.status(400).json({
+        success: false,
+        message: "Camera already exists.",
+      });
+    }
+
     // validate that provided user IDs exist
     let validUsers = [];
     if (users && Array.isArray(users)) {

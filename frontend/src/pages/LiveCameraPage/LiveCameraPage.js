@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -13,13 +13,11 @@ import {
   Button,
   Loader,
   Modal,
-  ScrollArea,
   Tooltip
 } from '@mantine/core';
 import {
   IconCamera,
   IconMapPin,
-  IconChevronDown,
   IconFilter,
   IconMaximize,
   IconAlertTriangle,
@@ -27,9 +25,7 @@ import {
   IconLayoutGrid,
   IconList,
   IconRefresh,
-  IconPlayerPlay,
   IconPlayerPause,
-  IconCalendar,
   IconClock,
   IconCheck
 } from '@tabler/icons-react';
@@ -51,7 +47,7 @@ const LiveCameraFeed = () => {
   const { user } = useAuth();
 
   // Fetch cameras from the backend API
-  const fetchCameras = async () => {
+  const fetchCameras = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -107,7 +103,7 @@ const LiveCameraFeed = () => {
       setError('Failed to load camera data. Please try again.');
       setLoading(false);
     }
-  };
+  }, [user]);
 
   // Helper function to determine camera status
   const determineStatus = (camera) => {
@@ -155,7 +151,7 @@ const LiveCameraFeed = () => {
   // Fetch cameras on component mount
   useEffect(() => {
     fetchCameras();
-  }, []);
+  }, [fetchCameras]);
 
   // Helper to format date and time
   const formatDateTime = (date) => {

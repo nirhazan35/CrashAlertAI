@@ -3,8 +3,7 @@ import Alert from '../../components/AccidentView/Alert';
 import { useAccidentLogs } from '../../context/AccidentContext';
 import AccidentLog from '../../components/AccidentLogs/AccidentLog';
 import FilterPanel from '../../components/FilterPanel/FilterPanel';
-import { Stack, Container, Paper, Box, Text } from '@mantine/core';
-import { IconAlertCircle } from '@tabler/icons-react';
+import { Stack } from '@mantine/core';
 import './Dashboard.css';
 
 const Dashboard = () => {

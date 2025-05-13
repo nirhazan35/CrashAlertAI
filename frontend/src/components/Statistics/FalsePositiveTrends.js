@@ -4,7 +4,6 @@ import {
   Text,
   Stack,
   Center,
-  Group,
 } from '@mantine/core';
 import { BarChart } from '@mantine/charts';
 

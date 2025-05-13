@@ -26,9 +26,15 @@ export function useCameraData() {
         if (!isMounted) return;
 
         if (res.ok) {
+          // Extract camera IDs
+          const cameras = data.map((i) => i.cameraId) || [];
+          
+          // Extract unique locations using Set to remove duplicates
+          const uniqueLocations = [...new Set(data.map((i) => i.location))] || [];
+          
           setCameraData({
-            cameras: data.map((i) => i.cameraId) || [],
-            locations: data.map((i) => i.location) || [],
+            cameras,
+            locations: uniqueLocations,
           });
         } else {
           console.error('Error fetching camera data:', data);
@@ -51,10 +57,8 @@ export function useCameraData() {
     }
 
     fetchCameraData();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    return () => { isMounted = false; };
+  }, [user?.token]);
 
   return cameraData;
 }
