@@ -26,6 +26,10 @@ const cameraSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
     }],
+  demoVideo: {
+    type: String,
+    default: null,
+  },
 });
 
 const Camera = model("Camera", cameraSchema);

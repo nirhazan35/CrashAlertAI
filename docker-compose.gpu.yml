@@ -1,0 +1,8 @@
+services:
+  model-service:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
