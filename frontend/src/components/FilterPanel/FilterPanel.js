@@ -161,6 +161,7 @@ export default function FilterPanel({
               placeholder="All"
               data={[
                 { value: '', label: 'All' },
+                { value: 'no severity', label: 'No Severity' },
                 { value: 'low', label: 'Low' },
                 { value: 'medium', label: 'Medium' },
                 { value: 'high', label: 'High' },

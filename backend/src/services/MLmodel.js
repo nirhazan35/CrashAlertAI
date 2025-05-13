@@ -27,7 +27,8 @@ const startFakeAccidentSimulation = async (initialStatus) => {
   }
 
   // Severity options
-  const severityOptions = ['high', 'medium', 'low'];
+  // const severityOptions = ['high', 'medium', 'low', 'null'];
+  const severityOptions = ['no severity'];
 
   // Function to generate a random date within a specific range
   const getRandomDate = (start, end) => {
