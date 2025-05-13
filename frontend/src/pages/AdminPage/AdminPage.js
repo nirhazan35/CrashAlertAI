@@ -40,16 +40,16 @@ const AdminPage = () => {
                 color="primary" 
                 onClick={handleManageCamerasClick}
                 className="admin-button"
-                size="large"
+                size="medium"
               >
-                Manage User Cameras
+                Manage User's Cameras
               </Button>
               <Button
                 variant="contained"
                 color="primary"
                 onClick={handleAddNewCameraClick}
                 className="admin-button"
-                size="large"
+                size="medium"
               >
                 Add New Camera
               </Button>
@@ -58,7 +58,7 @@ const AdminPage = () => {
                 color="primary" 
                 onClick={handleRegisterClick}
                 className="admin-button"
-                size="large"
+                size="medium"
               >
                 Register New User
               </Button>
@@ -67,7 +67,7 @@ const AdminPage = () => {
                 color="primary" 
                 onClick={handleDeleteUserClick}
                 className="admin-button"
-                size="large"
+                size="medium"
               >
                 Delete User
               </Button>

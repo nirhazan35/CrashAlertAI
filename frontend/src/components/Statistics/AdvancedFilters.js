@@ -10,7 +10,7 @@ import {
   MultiSelect,
   Button
 } from '@mantine/core';
-import { IconX } from '@tabler/icons-react';
+import { IconX, IconUser, IconMapPin, IconCamera, IconAlertTriangle } from '@tabler/icons-react';
 
 /**
  * Advanced filtering component for statistics data
@@ -132,63 +132,59 @@ const AdvancedFilters = ({
       </Stack>
 
       {/* Responders */}
-      <Stack spacing="xs">
-        <Text size="sm" weight={500}>Responders</Text>
-        <MultiSelect
-          size="xs"
-          data={availableUserIds}
-          placeholder="Select responders"
-          value={filters.userIds || []}
-          onChange={(value) => handleFilterChange('userIds', value)}
-          searchable
-          clearable
-        />
-      </Stack>
+      <Text size="sm" weight={500} mb={4}>Responders</Text>
+      <MultiSelect
+        size="sm"
+        data={availableUserIds}
+        placeholder="Select responders"
+        value={filters.userIds || []}
+        onChange={(value) => handleFilterChange('userIds', value)}
+        searchable
+        clearable
+        icon={<IconUser size={16} />}
+      />
       
       {/* Locations */}
-      <Stack spacing="xs">
-        <Text size="sm" weight={500}>Locations</Text>
-        <MultiSelect
-          size="xs"
-          data={availableLocations}
-          placeholder="Select locations"
-          value={filters.locations || []}
-          onChange={(value) => handleFilterChange('locations', value)}
-          searchable
-          clearable
-        />
-      </Stack>
+      <Text size="sm" weight={500} mb={4}>Locations</Text>
+      <MultiSelect
+        size="sm"
+        data={availableLocations}
+        placeholder="Select locations"
+        value={filters.locations || []}
+        onChange={(value) => handleFilterChange('locations', value)}
+        searchable
+        clearable
+        icon={<IconMapPin size={16} />}
+      />
 
       {/* Cameras */}
-      <Stack spacing="xs">
-        <Text size="sm" weight={500}>Cameras</Text>
-        <MultiSelect
-          size="xs"
-          data={availableCameras}
-          placeholder="Select cameras"
-          value={filters.cameras || []}
-          onChange={(value) => handleFilterChange('cameras', value)}
-          searchable
-          clearable
-        />
-      </Stack>
+      <Text size="sm" weight={500} mb={4}>Cameras</Text>
+      <MultiSelect
+        size="sm"
+        data={availableCameras}
+        placeholder="Select cameras"
+        value={filters.cameras || []}
+        onChange={(value) => handleFilterChange('cameras', value)}
+        searchable
+        clearable
+        icon={<IconCamera size={16} />}
+      />
 
       {/* Severity */}
-      <Stack spacing="xs">
-        <Text size="sm" weight={500}>Severity</Text>
-        <MultiSelect
-          size="xs"
-          data={[
-            { value: 'low', label: 'Low' },
-            { value: 'medium', label: 'Medium' },
-            { value: 'high', label: 'High' }
-          ]}
-          placeholder="Select severity levels"
-          value={filters.severityLevels || []}
-          onChange={(value) => handleFilterChange('severityLevels', value)}
-          clearable
-        />
-      </Stack>
+      <Text size="sm" weight={500} mb={4}>Severity</Text>
+      <MultiSelect
+        size="sm"
+        data={[
+          { value: 'low', label: 'Low' },
+          { value: 'medium', label: 'Medium' },
+          { value: 'high', label: 'High' }
+        ]}
+        placeholder="Select severity levels"
+        value={filters.severityLevels || []}
+        onChange={(value) => handleFilterChange('severityLevels', value)}
+        clearable
+        icon={<IconAlertTriangle size={16} />}
+      />
 
       <Group position="right" mt="md">
         <Button variant="outline" size="xs" onClick={handleClear}>
