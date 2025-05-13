@@ -59,8 +59,69 @@ const assignCameras = async (req, res) => {
     }
 };
 
+const addNewCamera = async (req, res) => {
+  try {
+    const { cameraId, location, users } = req.body;
+
+    // Validate required fields
+    if (!cameraId || !location) {
+      return res.status(400).json({
+        success: false,
+        message: "cameraId and location are required.",
+      });
+    }
+
+    const camera = await Camera.findOne({ cameraId });
+    if (camera) {
+      return res.status(400).json({
+        success: false,
+        message: "Camera already exists.",
+      });
+    }
+
+    // validate that provided user IDs exist
+    let validUsers = [];
+    if (users && Array.isArray(users)) {
+      validUsers = await User.find({ _id: { $in: users } });
+      if (validUsers.length !== users.length) {
+        return res.status(400).json({
+          success: false,
+          message: "One or more user IDs are invalid.",
+        });
+      }
+    }
+
+    // Create and save the Camera document
+    const newCamera = new Camera({
+      cameraId,
+      location,
+      users: validUsers.map((user) => user._id),
+    });
+
+    const savedCamera = await newCamera.save();
+
+    // Populate the users field
+    const populatedCamera = await savedCamera.populate("users");
+
+    return res.status(201).json({
+      success: true,
+      message: "New camera added successfully.",
+      data: populatedCamera,
+    });
+  } catch (error) {
+    console.error("Error saving camera:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while saving the camera.",
+      error: error.message,
+    });
+  }
+};
+
+
 module.exports = {
   getCameras,
   getLocations,
   assignCameras,
+  addNewCamera
 };

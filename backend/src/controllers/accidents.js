@@ -7,7 +7,7 @@ const { find, findById } = require("../models/Camera");
 
 const saveNewAccident = async (req, res) => {
   try {
-    const { cameraId, location, date, severity, video } = req.body;
+    const { cameraId, location, date, severity, video, status, falsePositive } = req.body;
 
     // Validate required fields
     if (!cameraId || !location || !severity) {
@@ -24,6 +24,8 @@ const saveNewAccident = async (req, res) => {
       date: date || new Date(),
       severity,
       video,
+      status: status || 'active',
+      falsePositive: falsePositive || 'false',
     });
 
     // Format date & time using DateFormatting util
@@ -91,7 +93,7 @@ const changeAccidentStatus = async (req, res) => {
   try {
     const { accident_id, status } = req.body;
     const username = (await User.findById(req.user.id)).get('username');
-    const assignedTo = status === "assigned" ? username : null;
+    const assignedTo = username;
 
     if (!["active", "assigned", "handled"].includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import "./ResetPassword.css";
 import { useAuth } from "../../authentication/AuthProvider";
 import { useSearchParams } from "react-router-dom";
+import { Button, Title, Container, Box } from '@mantine/core';
+import { IconLock } from '@tabler/icons-react';
 import notifyPasswordChange from "./NotifyUser";
+import '../authFormCSS/AuthForm.css';
 
 const ResetPassword = () => {
   const { user } = useAuth();
@@ -10,11 +12,11 @@ const ResetPassword = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [message, setMessage] = useState("");
   const [searchParams] = useSearchParams();
-
   const token = searchParams.get('token');
 
-  const handleResetPassword = async () => {
-    setMessage(""); // Clear previous messages
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setMessage("");
 
     if (newPassword !== confirmNewPassword) {
       setMessage("Passwords do not match.");
@@ -38,7 +40,7 @@ const ResetPassword = () => {
         setConfirmNewPassword("");
       } else {
         const errorData = await response.json();
-        setMessage(`Failed to reset password: ${errorData.message}`);
+        setMessage(`Failed to reset password: ${errorData.error}`);
       }
     } catch (error) {
       setMessage("An error occurred while resetting the password.");
@@ -46,40 +48,65 @@ const ResetPassword = () => {
     }
   };
 
-
   return (
-    <div className="reset-password-container">
-      <h2>Reset Password</h2>
-      {message && <p className={`message ${message.includes("successfully") ? "success-message" : "error-message"}`}>{message}</p>}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleResetPassword();
-        }}
-      >
-        <div>
-          <label htmlFor="newPassword">New Password</label>
-          <input
-            type="password"
-            id="newPassword"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-          />
+    <Box className="auth-page">
+      <Container size="xs">
+        <div className="auth-container">
+          <Title order={2} style={{ textAlign: 'center' }}>Reset Password</Title>
+          <div className="auth-subtitle">
+            Please enter and confirm your new password
+          </div>
+
+          {message && (
+            <div className={`auth-message ${
+              message.includes("successfully") ? "auth-message-success" : "auth-message-error"
+            }`}>
+              {message}
+            </div>
+          )}
+
+          <form onSubmit={handleResetPassword}>
+            <div className="auth-input-group">
+              <label className="auth-input-label">New Password</label>
+              <div className="auth-input-wrapper">
+                <IconLock size="1rem" className="auth-input-icon" />
+                <input
+                  type="password"
+                  placeholder="Enter your new password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="auth-input"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="auth-input-group">
+              <label className="auth-input-label">Confirm Password</label>
+              <div className="auth-input-wrapper">
+                <IconLock size="1rem" className="auth-input-icon" />
+                <input
+                  type="password"
+                  placeholder="Confirm your new password"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  className="auth-input"
+                  required
+                />
+              </div>
+            </div>
+
+            <Button 
+              type="submit" 
+              fullWidth 
+              size="md"
+            >
+              Reset Password
+            </Button>
+          </form>
         </div>
-        <div>
-          <label htmlFor="confirmNewPassword">Confirm New Password</label>
-          <input
-            type="password"
-            id="confirmNewPassword"
-            value={confirmNewPassword}
-            onChange={(e) => setConfirmNewPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">Reset Password</button>
-      </form>
-    </div>
+      </Container>
+    </Box>
   );
 };
 

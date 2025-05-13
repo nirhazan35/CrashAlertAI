@@ -39,8 +39,11 @@ const getRole = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try{
-    const result = await User.findByIdAndDelete(req.user.id);
-    console.log('User deleted:', result);
+    const result = await User.findByIdAndDelete(req.params.id);
+    if (!result) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
     } catch (error){
     res.status(500).json({ error: "Failed to delete user", message: error.message });
   }
@@ -49,6 +52,12 @@ const deleteUser = async (req, res) => {
 const changePassword = async(req, res) => {
   try {
     const { token, newPassword } = req.body;
+    if (!newPassword) {
+      return res.status(400).json({ error: "New password is required" });
+    }
+    if (!token) {
+      return res.status(400).json({ error: "Token is required" });
+    }
     const data = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const { id } = data;
     const user = await User.findById(id);

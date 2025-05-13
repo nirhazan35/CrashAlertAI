@@ -1,5 +1,3 @@
-import { useAuth } from "../../authentication/AuthProvider";
-
 export const fetchUsers = async (user) => {
   try {
     const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/users/get-all-users`, {
@@ -67,5 +65,29 @@ export const updateAssignedCameras = async (user, userId, cameraIds) => {
     return data;
   } catch (error) {
     console.error("Error updating assigned cameras:", error);
+  }
+};
+
+export const addNewCamera = async (user, cameraData) => {
+  try {
+    const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/cameras/add-new-camera`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${user?.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(cameraData),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert("Camera added successfully");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error adding new camera:", error);
+    throw error;
   }
 };

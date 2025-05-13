@@ -22,9 +22,7 @@ import './Alert.css';
 // Helper function to convert a standard Google Drive URL to an embeddable URL
 const getEmbedUrl = (url) => {
   if (!url) return "";
-  // Extract the file ID from a URL of the form:
-  // https://drive.google.com/file/d/FILE_ID/view
-  const match = url.match(/\/d\/([^\/]+)\//);
+  const match = url.match(/\/d\/([^/]+)\//);
   if (match && match[1]) {
     return `https://drive.google.com/file/d/${match[1]}/preview`;
   }

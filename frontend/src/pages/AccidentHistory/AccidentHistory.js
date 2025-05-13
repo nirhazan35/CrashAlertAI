@@ -1,26 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "../../authentication/AuthProvider";
-import { useAccidentLogs } from "../../context/AccidentContext";
 import { 
   Box,
   Button,
   Stack, 
   Container,
-  Title,
-  Group,
   Text,
   Loader,
   Alert as MantineAlert,
   Paper
 } from '@mantine/core';
-import { IconHistory, IconAlertCircle } from '@tabler/icons-react';
+import { IconAlertCircle } from '@tabler/icons-react';
 import FilterPanel from '../../components/FilterPanel/FilterPanel';
 import AccidentLog from '../../components/AccidentLogs/AccidentLog';
 import './AccidentHistory.css';
 
 const AccidentHistory = () => {
   const { user } = useAuth();
-  const { updateAccidentStatus } = useAccidentLogs();
   const [handledAccidents, setHandledAccidents] = useState([]);
   const [filteredAccidents, setFilteredAccidents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,20 +86,24 @@ const AccidentHistory = () => {
   };
   
   // Custom action renderer for AccidentLog component
-  const renderCustomActions = (log) => (
-    <Button
-      size="xs"
-      variant="outline"
-      color="blue"
-      radius="xl"
-      onClick={(e) => {
-        e.stopPropagation();
-        handleUnhandleAccident(log._id);
-      }}
-    >
-      Unhandle
-    </Button>
-  );
+ const renderCustomActions = (log) => {
+   if (log.assignedTo !== user?.username && user?.role !== "admin") return null;
+
+   return (
+     <Button
+       size="xs"
+       variant="outline"
+       color="blue"
+       radius="xl"
+       onClick={(e) => {
+         e.stopPropagation();
+         handleUnhandleAccident(log._id);
+       }}
+     >
+       Unhandle
+     </Button>
+   );
+ };
 
   // Handle filtered logs from FilterPanel
   const handleFilteredLogsChange = (logs) => {
@@ -150,12 +150,13 @@ const AccidentHistory = () => {
             onFilteredLogsChange={handleFilteredLogsChange}
             colSpan={{ base: 12, sm: 6, md: 4, lg: 1.7 }}
             initialLogs={handledAccidents}
+            isHistory={true}
           />
       
         <AccidentLog 
           filteredLogs={filteredAccidents} 
           renderActions={renderCustomActions}
-        isHistoryView={true}
+          isHistoryView={true}
       />
     </Stack>
   );

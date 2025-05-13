@@ -8,10 +8,11 @@ services:
     environment:
       - NODE_ENV=production
       - MONGO_URL=${MONGO_URL}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRATION=${JWT_EXPIRATION}
-      - EMAIL_USER=${EMAIL_USER}
+      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - EMAIL_ADDRESS=${EMAIL_ADDRESS}
       - EMAIL_PASS=${EMAIL_PASS}
+      - REACT_APP_URL_FRONTEND={REACT_APP_URL_FRONTEND}
     depends_on:
       - mongo
 
@@ -19,9 +20,9 @@ services:
     build:
       context: ./frontend
       args:
-        - REACT_APP_URL_BACKEND=https://crashalertai-backend.onrender.com
+        - REACT_APP_URL_BACKEND=${REACT_APP_URL_BACKEND}
     ports:
-      - "80:80"  # Match Nginx port
+      - "3000:80"  # Match Nginx port
     depends_on:
       - backend
 

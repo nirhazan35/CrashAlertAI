@@ -1,0 +1,134 @@
+.admin-page {
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f6f8fd 0%, #f1f4f9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-container {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.admin-welcome-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--mantine-radius-lg);
+  padding: 3rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-welcome-card::before,
+.admin-welcome-card::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(5px);
+  z-index: 0;
+}
+
+.admin-welcome-card::before {
+  width: 200px;
+  height: 200px;
+  top: -80px;
+  right: -80px;
+  background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(66, 153, 225, 0.05) 100%);
+}
+
+.admin-welcome-card::after {
+  width: 150px;
+  height: 150px;
+  bottom: -50px;
+  left: -50px;
+  background: linear-gradient(135deg, rgba(49, 130, 206, 0.1) 0%, rgba(49, 130, 206, 0.05) 100%);
+}
+
+.admin-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.admin-title {
+  color: var(--mantine-color-gray-8);
+  font-weight: 700 !important;
+  margin-bottom: 1rem !important;
+  font-size: 2.5rem !important;
+}
+
+.admin-subtitle {
+  color: var(--mantine-color-gray-6);
+  margin-bottom: 2.5rem !important;
+  font-size: 1.1rem !important;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.admin-button {
+  min-width: 200px !important;
+  padding: 0.75rem 2rem !important;
+  font-size: 1.1rem !important;
+  text-transform: none !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%) !important;
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.2) !important;
+  white-space: nowrap !important;
+}
+
+.admin-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(66, 153, 225, 0.3) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-page {
+    padding: 1rem;
+  }
+
+  .admin-welcome-card {
+    padding: 2rem;
+  }
+
+  .admin-title {
+    font-size: 2rem !important;
+  }
+
+  .admin-subtitle {
+    font-size: 1rem !important;
+  }
+
+  .admin-actions {
+    gap: 1rem;
+  }
+
+  .admin-button {
+    min-width: 160px !important;
+    padding: 0.6rem 1.5rem !important;
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-button {
+    width: 100% !important;
+  }
+} 

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
 import { useAuth } from "../authentication/AuthProvider";
 import { onNewAccident, onAccidentUpdate } from "../services/socket";
 import { onNotification } from "../services/socket";
@@ -8,12 +8,12 @@ const AccidentLogsContext = createContext();
 
 export const AccidentLogsProvider = ({ children }) => {
   const [accidentLogs, setAccidentLogs] = useState([]);
-  const [cameraLocations, setCameraLocations] = useState([]);
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const { user } = useAuth();
 
-  const fetchAccidents = async () => {
+  // Memoize fetchAccidents with useCallback
+  const fetchAccidents = useCallback(async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/active-accidents`, {
         method: "GET",
@@ -31,7 +31,7 @@ export const AccidentLogsProvider = ({ children }) => {
     } catch (error) {
       console.error("Error fetching accidents:", error.message);
     }
-  };
+  }, [user?.token]); // Only recreate when token changes
 
   const updateAccidentDetails = async (updateData) => {
     try {
@@ -94,14 +94,14 @@ export const AccidentLogsProvider = ({ children }) => {
         }
       });
     }
-  }, [user, selectedAlert]);
+  }, [user, selectedAlert, fetchAccidents]); // Added fetchAccidents to dependencies
 
   useEffect(() => {
     if(user?.role === 'admin'){
-        onNotification((notification) => {
-            console.log("New notification received:", notification);
-            setNotifications((prev) => [{ ...notification, read: false }, ...prev]);
-        });
+      onNotification((notification) => {
+        console.log("New notification received:", notification);
+        setNotifications((prev) => [{ ...notification, read: false }, ...prev]);
+      });
     }
   }, [user]);
 

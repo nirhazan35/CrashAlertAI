@@ -17,7 +17,7 @@ initSocket(server);
 
 // Middleware
 app.use(cors({
-  origin: process.env.REACT_APP_URL_FRONTEND,
+  origin: ['http://localhost:3000', 'http://localhost', process.env.REACT_APP_URL_FRONTEND],
   credentials: true,
   allowedHeaders: ['Authorization', 'Content-Type'], 
 }));
@@ -40,7 +40,7 @@ app.get('/', (req, res) => {
   res.send('CrashAlertAI Backend is running!');
 });
 
-// startFakeAccidentSimulation();
+//startFakeAccidentSimulation('handled');
 
 // Start server
 if (process.env.NODE_ENV !== "test") {
