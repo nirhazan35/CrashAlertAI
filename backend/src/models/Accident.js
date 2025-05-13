@@ -24,7 +24,7 @@ const accidentSchema = new Schema({
   },
   severity: {
     type: String,
-    enum: ['low', 'medium', 'high'],
+    enum: ['no severity', 'low', 'medium', 'high'],
     required: true,
   },
   video: {

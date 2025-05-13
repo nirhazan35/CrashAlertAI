@@ -23,8 +23,9 @@ import './AccidentLog.css';
 
 const AccidentLog = ({ 
   filteredLogs,
-  renderActions, // Add renderActions prop
-  isHistoryView = false // Add isHistoryView prop to disable blinking in history
+  renderActions,
+  isHistoryView = false,
+  handleRowDoubleClick: customHandleRowDoubleClick
 }) => {
   const { accidentLogs, updateAccidentStatus, handleRowDoubleClick: originalHandleRowDoubleClick } = useAccidentLogs();
   const { user } = useAuth();
@@ -33,12 +34,17 @@ const AccidentLog = ({
   // If filteredLogs not provided, use all logs from context
   const logsToDisplay = filteredLogs || accidentLogs;
 
-  // Custom double click handler that also scrolls to details
+  // Use custom handler if provided, otherwise use default with scroll behavior
   const handleRowDoubleClick = (log) => {
-    // Call the original handler
-    originalHandleRowDoubleClick(log);
+    if (customHandleRowDoubleClick) {
+      // Use the custom handler from props
+      customHandleRowDoubleClick(log);
+    } else {
+      // Use the original handler from context
+      originalHandleRowDoubleClick(log);
+    }
     
-    // Scroll to accident details
+    // Scroll to accident details regardless of which handler was used
     setTimeout(() => {
       const detailsElement = document.getElementById('accident-details');
       if (detailsElement) {
@@ -199,7 +205,7 @@ const AccidentLog = ({
                           )}
                         </Table.Td>
                       </Table.Tr>
-                      ))
+                    ))
                   ) : (
                     <Table.Tr>
                       <Table.Td colSpan={7}>
