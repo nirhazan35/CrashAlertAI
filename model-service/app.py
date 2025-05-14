@@ -10,23 +10,28 @@ FastAPI micro-service that
 """
 
 import os, time, uuid, cv2, requests, json
+from ultralytics import YOLO
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from uploader import trim_video_ffmpeg, upload_to_drive         # your script
 # ──────────────────────────────────────────────────────────────
-#  Load YOLO model once at start-up – replace with your own code
-#  (here we assume a custom Ultralytics-YOLOv8 model trained on "accident" class)
+#  Load YOLO model once at start-up
 # ──────────────────────────────────────────────────────────────
 import torch
 MODEL_WEIGHTS = os.getenv("YOLO_WEIGHTS", "/app/weights/best.pt")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
+
 try:
-    model = torch.hub.load("ultralytics/yolo11n", "custom", path=MODEL_WEIGHTS)
+    # Load the YOLO model
+    model = YOLO(MODEL_WEIGHTS)
     model.to(device)  # Move model to GPU if available
+    print(f"✅ Successfully loaded YOLO model from {MODEL_WEIGHTS}")
 except Exception as e:
-    print("⚠️  Could not load YOLO model:", e)
+    print(f"⚠️  Could not load YOLO model: {str(e)}")
+    print("Please ensure the model file exists and is compatible with ultralytics version 8.2.26")
     model = None
+
 THRESHOLD = float(os.getenv("ACCIDENT_THRESHOLD", "0.7"))
 # ──────────────────────────────────────────────────────────────
 

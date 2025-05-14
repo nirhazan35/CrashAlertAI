@@ -30,7 +30,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    # profiles line can stay or be removed; not required now
     environment:
       - INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL}
       - INTERNAL_SECRET=${INTERNAL_SECRET}
