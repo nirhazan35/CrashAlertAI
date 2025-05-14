@@ -77,7 +77,7 @@ def analyse_video(video_path: str, meta: dict, accident_time: float):
             timeout=10
         )
         logger.info("accident alert sent")
-        if response.success:
+        if response.status_code == 201:
             logger.info("Accident alert sent successfully")
         else:
             logger.error("Accident alert sent failed at backend")
