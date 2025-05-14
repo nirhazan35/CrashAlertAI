@@ -43,13 +43,13 @@ const AccidentLog = ({
       // Use the original handler from context
       originalHandleRowDoubleClick(log);
     }
-    
+
     // Scroll to accident details regardless of which handler was used
     setTimeout(() => {
       const detailsElement = document.getElementById('accident-details');
       if (detailsElement) {
-        detailsElement.scrollIntoView({ 
-          behavior: 'smooth', 
+        detailsElement.scrollIntoView({
+          behavior: 'smooth',
           block: 'start'
         });
       }
@@ -84,7 +84,7 @@ const AccidentLog = ({
         {/* Visual design elements */}
         <Box className="bg-bubble-1" />
         <Box className="bg-bubble-2" />
-        
+
         <Box style={{ position: 'relative', zIndex: 1, width: '100%' }}>
 
           {/* Accident Logs Table */}
@@ -111,10 +111,10 @@ const AccidentLog = ({
                       <Table.Tr
                         key={index}
                           className={`accident-row ${selectedRowIndex === index ? 'accident-row-selected' : ''} ${
-                            isHistoryView 
-                              ? 'accident-row-handled' 
-                              : log.status === "assigned" 
-                                ? 'accident-row-assigned' 
+                            isHistoryView
+                              ? 'accident-row-handled'
+                              : log.status === "assigned"
+                                ? 'accident-row-assigned'
                                 : 'accident-row-active'
                           }`}
                         onClick={() => handleRowClick(index)}
@@ -122,12 +122,12 @@ const AccidentLog = ({
                       >
                         <Table.Td>
                           <Tooltip label="View video" position="top">
-                            <ActionIcon 
-                              component="a" 
-                              href={log.video} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              variant="light" 
+                            <ActionIcon
+                              component="a"
+                              href={log.video}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              variant="light"
                               color="blue"
                               radius="xl"
                             >
@@ -145,7 +145,7 @@ const AccidentLog = ({
                           <Text>{log.displayTime}</Text>
                         </Table.Td>
                         <Table.Td>
-                          <Badge 
+                          <Badge
                             color={getSeverityColor(log.severity)}
                             radius="xl"
                             size="sm"
@@ -171,10 +171,10 @@ const AccidentLog = ({
                             // Default action column
                             <>
                               {log.status === "assigned" && log.assignedTo !== user?.username ? (
-                                <Button 
-                                  size="xs" 
-                                  variant="subtle" 
-                                  color="gray" 
+                                <Button
+                                  size="xs"
+                                  variant="subtle"
+                                  color="gray"
                                   disabled
                                   radius="xl"
                                   fz="11px"
@@ -190,6 +190,9 @@ const AccidentLog = ({
                                   fz="11px"
                                   onClick={(e) => {
                                     e.stopPropagation();
+                                    if (log.status === "active") {
+                                        handleRowDoubleClick(log);
+                                    }
                                     updateAccidentStatus(
                                       log._id,
                                       log.status === "assigned" ? "active" : "assigned"
