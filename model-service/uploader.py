@@ -89,8 +89,10 @@ def upload_to_drive(file_path: str) -> str:
     drive_service.permissions().create(
         fileId=file["id"], body={"role": "reader", "type": "anyone"}, fields="id"
     ).execute()
-
-    return f"https://drive.google.com/file/d/{file['id']}/view"
+    
+    link = f"https://drive.google.com/file/d/{file['id']}/view"
+    print(f"link: {link}")
+    return link
 
 
 if __name__ == "__main__":

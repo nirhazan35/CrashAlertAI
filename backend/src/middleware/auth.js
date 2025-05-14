@@ -16,6 +16,14 @@ const verifyToken = (req, res, next) => {
     }
 };
 
+const verifyInternalSecret = (req, res, next) => {
+    const secret = req.headers['x-internal-secret'];
+    if (secret !== process.env.INTERNAL_SECRET) {
+        return res.status(403).json({ message: "Unauthorized" });
+    }
+    next();
+}
+
 // Middleware to authorize roles
 function hasPermission(roles) {
   return async (req, res, next) => {
@@ -35,4 +43,4 @@ function hasPermission(roles) {
   };
 }
 
-module.exports = { verifyToken, hasPermission };
+module.exports = { verifyToken, hasPermission, verifyInternalSecret };
