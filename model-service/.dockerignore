@@ -1,0 +1,6 @@
+videos/ 
+secrets/ 
+weights/ 
+.env 
+.gitignore
+.git

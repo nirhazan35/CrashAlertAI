@@ -14,18 +14,14 @@ const cameraSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  activeAccidents: [{
-    type: Schema.Types.ObjectId,
-    ref: "Accident",
-  }],
-  accidentHistory: [{
-    type: Schema.Types.ObjectId,
-    ref: "Accident",
-  }],
   users: [{
     type: Schema.Types.ObjectId,
     ref: "User",
     }],
+  demoVideo: {
+    type: String,
+    default: null,
+  },
 });
 
 const Camera = model("Camera", cameraSchema);
