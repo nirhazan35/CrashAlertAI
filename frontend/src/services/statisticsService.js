@@ -134,9 +134,10 @@ const calculateTimeBasedTrends = (accidents) => {
     return acc;
   }, {});
 
-  // Time of Day Analysis
+  // Time of Day Analysis - Using UTC hours
   const hourlyTrends = accidents.reduce((acc, accident) => {
-    const hour = format(new Date(accident.date), 'HH');
+    const date = new Date(accident.date);
+    const hour = date.getUTCHours(); 
     acc[hour] = (acc[hour] || 0) + 1;
     return acc;
   }, {});

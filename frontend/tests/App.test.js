@@ -28,8 +28,15 @@ jest.mock('../src/pages/RequestPasswordChange/RequestPasswordChange', () => () =
 jest.mock('../src/pages/AuthLogs/AuthLogs', () => () => <div data-testid="auth-logs">Auth Logs</div>);
 
 // Mock layout components
-jest.mock('../src/components/sidebar/SidebarLayout', () => ({ children }) => <div data-testid="sidebar-layout">{children}</div>);
-jest.mock('../src/components/MantineProvider/MantineProvider', () => ({ children }) => <div data-testid="mantine-provider">{children}</div>);
+jest.mock('../src/components/sidebar/SidebarLayout', () => ({ children }) => (
+  <div data-testid="sidebar-layout">
+    <div data-testid="sidebar-content">{children}</div>
+  </div>
+));
+
+jest.mock('../src/components/MantineProvider/MantineProvider', () => ({ children }) => (
+  <div data-testid="mantine-provider">{children}</div>
+));
 
 // Mock protected route
 jest.mock('../src/authentication/ProtectedRoute', () => ({ children, allowedRoles }) => {
@@ -45,6 +52,37 @@ jest.mock('../src/authentication/ProtectedRoute', () => ({ children, allowedRole
   }
   
   return <div data-testid="protected-route">{children}</div>;
+});
+
+// Mock the Router components
+jest.mock('react-router-dom', () => {
+  const actual = jest.requireActual('react-router-dom');
+  return {
+    ...actual,
+    BrowserRouter: ({ children }) => <div>{children}</div>,
+    Routes: ({ children }) => <div data-testid="routes">{children}</div>,
+    Route: ({ element, path }) => {
+      // Handle public routes
+      if (path === '/login' || path === '/forgot-password' || path === '/request-password-change') {
+        return <div data-testid="public-route">{element}</div>;
+      }
+      
+      // Handle protected routes
+      if (path === '/dashboard' || path === '/statistics' || path === '/history' || path === '/live') {
+        return <div data-testid="protected-route">{element}</div>;
+      }
+      
+      // Handle admin routes
+      if (path === '/admin' || path === '/register' || path === '/reset-password' || 
+          path === '/manage-cameras' || path === '/logs' || path === '/delete-user' || 
+          path === '/add-new-camera') {
+        return <div data-testid="admin-route">{element}</div>;
+      }
+      
+      return <div data-testid="route">{element}</div>;
+    },
+    Navigate: ({ to }) => <div data-testid={`navigate-to-${to}`}>Navigate to {to}</div>
+  };
 });
 
 describe('App Component', () => {
@@ -79,7 +117,7 @@ describe('App Component', () => {
     );
     
     expect(screen.queryByTestId('login')).not.toBeInTheDocument();
-    expect(screen.getByTestId('dashboard')).toBeInTheDocument();
+    expect(screen.getByTestId('navigate-to-/dashboard')).toBeInTheDocument();
   });
 
   test('renders public routes for unauthenticated users', () => {

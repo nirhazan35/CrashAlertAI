@@ -90,12 +90,26 @@ describe('AccidentLogsContext', () => {
     useAuth.mockReturnValue({ user: mockUser });
     
     // Mock fetch response for initial accidents
-    global.fetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ 
-        success: true, 
-        data: mockAccidents 
-      })
+    global.fetch.mockImplementation((url) => {
+      if (url.includes('/active-accidents')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ 
+            success: true, 
+            data: mockAccidents 
+          })
+        });
+      }
+      if (url.includes('/accident-status-update')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            _id: 'accident123',
+            status: 'handled'
+          })
+        });
+      }
+      return Promise.reject(new Error('Not found'));
     });
     
     // Mock socket listeners
@@ -136,7 +150,6 @@ describe('AccidentLogsContext', () => {
   });
 
   it('handles adding a new accident through socket', async () => {
-    // Setup the test component
     render(
       <AccidentLogsProvider>
         <TestComponent />
@@ -172,7 +185,6 @@ describe('AccidentLogsContext', () => {
   });
 
   it('handles updating an accident through socket', async () => {
-    // Setup the test component
     render(
       <AccidentLogsProvider>
         <TestComponent />
@@ -215,15 +227,6 @@ describe('AccidentLogsContext', () => {
   });
 
   it('removes handled accidents', async () => {
-    // Mock the API response for updateAccidentStatus
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        _id: 'accident123',
-        status: 'handled'
-      })
-    });
-    
     render(
       <AccidentLogsProvider>
         <TestComponent />

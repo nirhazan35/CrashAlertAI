@@ -1,11 +1,27 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Sidebar from '../../src/components/sidebar/sidebar';
 import { useAuth } from '../../src/authentication/AuthProvider';
+import { renderWithMantine } from '../utils/test-utils';
+
+// Mock Mantine components
+jest.mock('@mantine/core', () => ({
+  ...jest.requireActual('@mantine/core'),
+  Navbar: ({ children, ...props }) => <div data-testid="mantine-navbar" {...props}>{children}</div>,
+  Stack: ({ children, ...props }) => <div {...props}>{children}</div>,
+  Group: ({ children, ...props }) => <div {...props}>{children}</div>,
+  Text: ({ children, ...props }) => <div {...props}>{children}</div>,
+  UnstyledButton: ({ children, onClick, ...props }) => (
+    <button onClick={onClick} {...props}>{children}</button>
+  ),
+  ThemeIcon: ({ children, ...props }) => <div {...props}>{children}</div>,
+  Divider: () => <hr />,
+  Box: ({ children, ...props }) => <div {...props}>{children}</div>
+}));
 
 // Mock the auth hook
-jest.mock('../../authentication/AuthProvider', () => ({
+jest.mock('../../src/authentication/AuthProvider', () => ({
   useAuth: jest.fn()
 }));
 
@@ -23,7 +39,7 @@ describe('Sidebar Component', () => {
   });
 
   test('renders correctly for user role', () => {
-    render(
+    renderWithMantine(
       <BrowserRouter>
         <Sidebar />
       </BrowserRouter>
@@ -45,7 +61,7 @@ describe('Sidebar Component', () => {
       logout: mockLogout
     });
     
-    render(
+    renderWithMantine(
       <BrowserRouter>
         <Sidebar />
       </BrowserRouter>
@@ -60,7 +76,7 @@ describe('Sidebar Component', () => {
   });
 
   test('handles logout correctly', () => {
-    render(
+    renderWithMantine(
       <BrowserRouter>
         <Sidebar />
       </BrowserRouter>
@@ -75,7 +91,7 @@ describe('Sidebar Component', () => {
   });
 
   test('navigation links have correct hrefs', () => {
-    render(
+    renderWithMantine(
       <BrowserRouter>
         <Sidebar />
       </BrowserRouter>

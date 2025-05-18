@@ -1,19 +1,57 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../../src/authentication/AuthProvider';
+import { AccidentProvider } from '../../src/context/AccidentContext';
 import { MantineProvider } from '@mantine/core';
 import theme from '../../src/theme/mantineTheme';
 
-// Mock AuthProvider implementation
-jest.mock('../../src/authentication/AuthProvider', () => {
-  const originalModule = jest.requireActual('../../src/authentication/AuthProvider');
-  return {
-    ...originalModule,
-    AuthProvider: ({ children }) => <div data-testid="auth-provider">{children}</div>,
-    useAuth: jest.fn()
-  };
-});
+// Mock the useNavigate hook
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => jest.fn(),
+}));
+
+// Mock the useAuth hook
+jest.mock('../../src/authentication/AuthProvider', () => ({
+  ...jest.requireActual('../../src/authentication/AuthProvider'),
+  useAuth: () => ({
+    user: { username: 'testuser', role: 'user' },
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
+// Mock the useAccidentLogs hook
+jest.mock('../../src/context/AccidentContext', () => ({
+  ...jest.requireActual('../../src/context/AccidentContext'),
+  useAccidentLogs: () => ({
+    accidentLogs: [],
+    setAccidentLogs: jest.fn(),
+    selectedAlert: null,
+    setSelectedAlert: jest.fn(),
+    notifications: [],
+    setNotifications: jest.fn(),
+    updateAccidentStatus: jest.fn(),
+  }),
+}));
+
+const AllTheProviders = ({ children }) => {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AccidentProvider>
+          <MantineProvider>
+            {children}
+          </MantineProvider>
+        </AccidentProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+};
+
+const customRender = (ui, options) =>
+  render(ui, { wrapper: AllTheProviders, ...options });
 
 /**
  * Custom render function that wraps components with necessary providers
@@ -30,11 +68,11 @@ const renderWithProviders = (
   } = {}
 ) => {
   const Wrapper = ({ children }) => (
-    <MemoryRouter initialEntries={[initialRoute]}>
+    <BrowserRouter initialEntries={[initialRoute]}>
       <AuthProvider>
         {children}
       </AuthProvider>
-    </MemoryRouter>
+    </BrowserRouter>
   );
 
   return render(ui, { wrapper: Wrapper, ...renderOptions });
@@ -73,13 +111,13 @@ const renderWithAllProviders = (
   } = {}
 ) => {
   const Wrapper = ({ children }) => (
-    <MemoryRouter initialEntries={[initialRoute]}>
+    <BrowserRouter initialEntries={[initialRoute]}>
       <MantineProvider theme={theme} defaultColorScheme="light">
         <AuthProvider>
           {children}
         </AuthProvider>
       </MantineProvider>
-    </MemoryRouter>
+    </BrowserRouter>
   );
 
   return render(ui, { wrapper: Wrapper, ...renderOptions });
@@ -113,6 +151,12 @@ const mockApiResponse = (data, status = 200, ok = true) => {
     json: () => Promise.resolve(data)
   };
 };
+
+// re-export everything
+export * from '@testing-library/react';
+
+// override render method
+export { customRender as render };
 
 export {
   renderWithProviders,

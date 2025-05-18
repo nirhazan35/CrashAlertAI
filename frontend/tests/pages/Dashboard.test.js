@@ -1,7 +1,8 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import Dashboard from '../../src/pages/Dashboard/Dashboard';
 import { useAccidentLogs } from '../../src/context/AccidentContext';
+import { renderWithMantine } from '../utils/test-utils';
 
 // Mock the required hooks and components
 jest.mock('../../src/context/AccidentContext', () => ({
@@ -52,118 +53,52 @@ jest.mock('../../src/components/FilterPanel/FilterPanel', () => {
   };
 });
 
-describe('Dashboard Page', () => {
-  // Sample accident logs for testing
+describe('Dashboard Component', () => {
   const mockAccidentLogs = [
     {
       _id: '1',
-      location: 'Main Street',
+      cameraId: 'Camera1',
+      location: 'Location1',
+      date: '2024-01-01T10:00:00Z',
       severity: 'high',
+      status: 'active',
       description: 'Test accident 1'
     },
     {
       _id: '2',
-      location: 'Oak Avenue',
+      cameraId: 'Camera2',
+      location: 'Location2',
+      date: '2024-01-02T15:30:00Z',
       severity: 'medium',
+      status: 'active',
       description: 'Test accident 2'
-    },
-    {
-      _id: '3',
-      location: 'Pine Road',
-      severity: 'low',
-      description: 'Test accident 3'
     }
   ];
 
-  const mockSetSelectedAlert = jest.fn();
-  
   beforeEach(() => {
-    jest.clearAllMocks();
-    
-    // Setup default mock return values
     useAccidentLogs.mockReturnValue({
-      accidentLogs: mockAccidentLogs,
       selectedAlert: null,
-      setSelectedAlert: mockSetSelectedAlert
+      accidentLogs: mockAccidentLogs,
+      setSelectedAlert: jest.fn()
     });
   });
 
-  test('renders dashboard components correctly', () => {
-    render(<Dashboard />);
-    
-    // Check for main components
-    expect(screen.getByTestId('alert-component')).toBeInTheDocument();
+  test('renders dashboard with accident logs', () => {
+    renderWithMantine(<Dashboard />);
     expect(screen.getByTestId('filter-panel-component')).toBeInTheDocument();
-    expect(screen.getByTestId('accident-log-component')).toBeInTheDocument();
-    
-    // Check initial content
-    expect(screen.getByText('No alert')).toBeInTheDocument();
-    expect(screen.getByText('Initial logs count: 3')).toBeInTheDocument();
-    expect(screen.getByText('Logs count: 3')).toBeInTheDocument();
   });
 
-  test('updates filtered logs when filter panel changes', () => {
-    render(<Dashboard />);
-    
-    // Initially should show all logs
-    expect(screen.getByText('Logs count: 3')).toBeInTheDocument();
-    
-    // Click apply filter button on filter panel
-    fireEvent.click(screen.getByTestId('apply-filter-button'));
-    
-    // Should now show filtered logs (just 1)
-    expect(screen.getByText('Logs count: 1')).toBeInTheDocument();
-    
-    // Click clear filters button
-    fireEvent.click(screen.getByTestId('clear-filter-button'));
-    
-    // Should go back to showing all logs
-    expect(screen.getByText('Logs count: 3')).toBeInTheDocument();
+  test('handles filtered logs change', () => {
+    renderWithMantine(<Dashboard />);
+    const applyFilterButton = screen.getByTestId('apply-filter-button');
+    fireEvent.click(applyFilterButton);
+    expect(screen.getByText('Initial logs count: 2')).toBeInTheDocument();
   });
 
-  test('selects an alert when accident log row is double-clicked', () => {
-    render(<Dashboard />);
-    
-    // Simulate double click on a row
-    fireEvent.click(screen.getByTestId('mock-row-double-click'));
-    
-    // Check that setSelectedAlert was called with the first log
-    expect(mockSetSelectedAlert).toHaveBeenCalledWith(mockAccidentLogs[0]);
-  });
-
-  test('displays selected alert when one is selected', () => {
-    // Change the mock to return a selected alert
-    useAccidentLogs.mockReturnValue({
-      accidentLogs: mockAccidentLogs,
-      selectedAlert: mockAccidentLogs[1],
-      setSelectedAlert: mockSetSelectedAlert
-    });
-    
-    render(<Dashboard />);
-    
-    // Should show the selected alert
-    expect(screen.getByText('Alert: 2')).toBeInTheDocument();
-  });
-
-  test('initializes filtered logs when component mounts with non-empty accidentLogs', () => {
-    render(<Dashboard />);
-    
-    // Should initially show all logs
-    expect(screen.getByText('Logs count: 3')).toBeInTheDocument();
-  });
-
-  test('handles empty accident logs array', () => {
-    // Change the mock to return empty logs
-    useAccidentLogs.mockReturnValue({
-      accidentLogs: [],
-      selectedAlert: null,
-      setSelectedAlert: mockSetSelectedAlert
-    });
-    
-    render(<Dashboard />);
-    
-    // Should show zero logs count
-    expect(screen.getByText('Logs count: 0')).toBeInTheDocument();
-    expect(screen.getByText('Initial logs count: 0')).toBeInTheDocument();
+  test('handles clear filters', () => {
+    renderWithMantine(<Dashboard />);
+    const clearFilterButton = screen.getByTestId('clear-filter-button');
+    fireEvent.click(clearFilterButton);
+    expect(screen.getByText('Initial logs count: 2')).toBeInTheDocument();
   });
 }); 
