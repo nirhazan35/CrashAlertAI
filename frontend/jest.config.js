@@ -35,7 +35,13 @@ module.exports = {
 
   // Module name mapper to handle module aliases
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
+  },
+
+  // Transform configuration
+  transform: {
+    '^.+\\.(js|jsx)$': ['babel-jest', { presets: ['@babel/preset-env', '@babel/preset-react'] }]
   },
 
   // Indicates whether each individual test should be reported during the run
@@ -48,5 +54,10 @@ module.exports = {
   collectCoverage: false,
 
   // The directory where Jest should output its coverage files
-  coverageDirectory: 'coverage'
+  coverageDirectory: 'coverage',
+
+  // Transform ignore patterns
+  transformIgnorePatterns: [
+    '/node_modules/(?!(@mantine|@emotion|framer-motion)/)'
+  ]
 }; 

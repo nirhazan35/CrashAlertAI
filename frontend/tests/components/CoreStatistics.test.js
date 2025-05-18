@@ -1,16 +1,17 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CoreStatistics from '../../src/components/Statistics/CoreStatistics';
+import { renderWithMantine } from '../utils/test-utils';
 
 // Mock AdvancedFilters component to simplify testing
 jest.mock('../../src/components/Statistics/AdvancedFilters', () => {
-  return function MockAdvancedFilters({ 
+  const MockAdvancedFilters = ({ 
     onClose, 
     filters, 
     onFiltersChange, 
     onAdvancedFiltersChange 
-  }) {
+  }) => {
     return (
       <div data-testid="advanced-filters">
         <button 
@@ -30,6 +31,9 @@ jest.mock('../../src/components/Statistics/AdvancedFilters', () => {
       </div>
     );
   };
+  
+  // Make sure to return the component function
+  return MockAdvancedFilters;
 });
 
 describe('CoreStatistics Component', () => {
@@ -64,7 +68,7 @@ describe('CoreStatistics Component', () => {
   const mockHandleAdvancedFiltersChange = jest.fn();
 
   it('renders all statistics cards correctly', () => {
-    render(
+    renderWithMantine(
       <CoreStatistics 
         statistics={mockStatistics}
         availableLocations={mockLocations}
@@ -95,7 +99,9 @@ describe('CoreStatistics Component', () => {
     expect(screen.getByText('62')).toBeInTheDocument();
     expect(screen.getByText('49.6%')).toBeInTheDocument();
     
-    expect(screen.getByText('high', { exact: false })).toBeInTheDocument();
+    // Use a more specific selector for high severity
+    const highSeverityText = screen.getByText('high', { selector: '[transform="capitalize"]' });
+    expect(highSeverityText).toBeInTheDocument();
     expect(screen.getByText('18')).toBeInTheDocument();
     expect(screen.getByText('14.4%')).toBeInTheDocument();
     
@@ -110,7 +116,7 @@ describe('CoreStatistics Component', () => {
   });
 
   it('handles time filter changes', () => {
-    render(
+    renderWithMantine(
       <CoreStatistics 
         statistics={mockStatistics}
         timeFilter="all"
@@ -127,8 +133,8 @@ describe('CoreStatistics Component', () => {
     expect(mockHandleTimeFilterChange).toHaveBeenCalledWith('day');
   });
 
-  it('opens and closes advanced filters popover', () => {
-    render(
+  it('opens and closes advanced filters popover', async () => {
+    renderWithMantine(
       <CoreStatistics 
         statistics={mockStatistics}
         onTimeFilterChange={mockHandleTimeFilterChange}
@@ -143,20 +149,24 @@ describe('CoreStatistics Component', () => {
     // Click to open filters
     fireEvent.click(advancedFiltersButton);
     
-    // Advanced filters component should be visible
-    expect(screen.getByTestId('advanced-filters')).toBeInTheDocument();
+    // Wait for the popover content to appear
+    await waitFor(() => {
+      expect(screen.getByTestId('advanced-filters')).toBeInTheDocument();
+    });
     
     // Click close button to close filters
     const closeButton = screen.getByTestId('close-filters');
     fireEvent.click(closeButton);
     
     // Advanced filters should be closed now, but the button should still be there
-    expect(screen.queryByTestId('advanced-filters')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByTestId('advanced-filters')).not.toBeInTheDocument();
+    });
     expect(screen.getByText('Advanced Filters')).toBeInTheDocument();
   });
 
-  it('applies advanced filters', () => {
-    render(
+  it('applies advanced filters', async () => {
+    renderWithMantine(
       <CoreStatistics 
         statistics={mockStatistics}
         onTimeFilterChange={mockHandleTimeFilterChange}
@@ -167,6 +177,11 @@ describe('CoreStatistics Component', () => {
     // Open advanced filters
     const advancedFiltersButton = screen.getByText('Advanced Filters');
     fireEvent.click(advancedFiltersButton);
+    
+    // Wait for the popover content to appear
+    await waitFor(() => {
+      expect(screen.getByTestId('advanced-filters')).toBeInTheDocument();
+    });
     
     // Click apply filters button
     const applyButton = screen.getByTestId('apply-filters');
@@ -180,11 +195,13 @@ describe('CoreStatistics Component', () => {
     );
     
     // Popover should be closed after applying
-    expect(screen.queryByTestId('advanced-filters')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByTestId('advanced-filters')).not.toBeInTheDocument();
+    });
   });
 
   it('handles empty statistics gracefully', () => {
-    render(
+    renderWithMantine(
       <CoreStatistics 
         onTimeFilterChange={mockHandleTimeFilterChange}
         onAdvancedFiltersChange={mockHandleAdvancedFiltersChange}
@@ -193,12 +210,12 @@ describe('CoreStatistics Component', () => {
     
     // Even with no statistics, cards should render with default values
     expect(screen.getByText('Total Handled Accidents')).toBeInTheDocument();
-    expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.getAllByText('0')[0]).toBeInTheDocument();
     
     expect(screen.getByText('False Positive Rate')).toBeInTheDocument();
     expect(screen.getByText('0%')).toBeInTheDocument();
     
     expect(screen.getByText('Active Responders')).toBeInTheDocument();
-    expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.getAllByText('0')[1]).toBeInTheDocument();
   });
-}); 
+});

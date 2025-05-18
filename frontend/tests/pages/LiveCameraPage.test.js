@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { act } from 'react-dom/test-utils';
-import LiveCameraFeed from '../../src/pages/LiveCameraPage/LiveCameraPage';
+import LiveCameraPage from '../../src/pages/LiveCameraPage/LiveCameraPage';
 import { AuthProvider } from '../../src/authentication/AuthProvider';
 
 // Mock the modules
@@ -61,7 +61,7 @@ describe('LiveCameraPage Component', () => {
   it('renders the loading state initially', async () => {
     render(
       <BrowserRouter>
-        <LiveCameraFeed />
+        <LiveCameraPage />
       </BrowserRouter>
     );
     
@@ -71,7 +71,7 @@ describe('LiveCameraPage Component', () => {
   it('fetches and displays cameras', async () => {
     render(
       <BrowserRouter>
-        <LiveCameraFeed />
+        <LiveCameraPage />
       </BrowserRouter>
     );
     
@@ -105,7 +105,7 @@ describe('LiveCameraPage Component', () => {
   it('switches between grid and list view modes', async () => {
     render(
       <BrowserRouter>
-        <LiveCameraFeed />
+        <LiveCameraPage />
       </BrowserRouter>
     );
     
@@ -135,7 +135,7 @@ describe('LiveCameraPage Component', () => {
   it('filters cameras by location', async () => {
     render(
       <BrowserRouter>
-        <LiveCameraFeed />
+        <LiveCameraPage />
       </BrowserRouter>
     );
     
@@ -164,7 +164,7 @@ describe('LiveCameraPage Component', () => {
   it('filters cameras by status', async () => {
     render(
       <BrowserRouter>
-        <LiveCameraFeed />
+        <LiveCameraPage />
       </BrowserRouter>
     );
     
@@ -193,7 +193,7 @@ describe('LiveCameraPage Component', () => {
   it('resets filters properly', async () => {
     render(
       <BrowserRouter>
-        <LiveCameraFeed />
+        <LiveCameraPage />
       </BrowserRouter>
     );
     
@@ -234,7 +234,7 @@ describe('LiveCameraPage Component', () => {
   it('handles camera expansion', async () => {
     render(
       <BrowserRouter>
-        <LiveCameraFeed />
+        <LiveCameraPage />
       </BrowserRouter>
     );
     
@@ -263,7 +263,7 @@ describe('LiveCameraPage Component', () => {
   it('handles refresh functionality', async () => {
     render(
       <BrowserRouter>
-        <LiveCameraFeed />
+        <LiveCameraPage />
       </BrowserRouter>
     );
     
@@ -297,7 +297,7 @@ describe('LiveCameraPage Component', () => {
     
     render(
       <BrowserRouter>
-        <LiveCameraFeed />
+        <LiveCameraPage />
       </BrowserRouter>
     );
     

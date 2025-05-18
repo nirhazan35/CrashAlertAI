@@ -1,254 +1,156 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import StatisticsPage from '../../src/pages/StatisticsPage/StatisticsPage';
 import { useAuth } from '../../src/authentication/AuthProvider';
 import * as statisticsService from '../../src/services/statisticsService';
+import { renderWithMantine } from '../utils/test-utils';
 
 // Mock the modules
 jest.mock('../../src/authentication/AuthProvider', () => ({
-  useAuth: jest.fn(),
+  useAuth: jest.fn()
 }));
 
 jest.mock('../../src/services/statisticsService', () => ({
-  fetchStatisticsData: jest.fn(),
-  getChartOptions: jest.fn(),
+  getAccidentStatistics: jest.fn(),
+  getAccidentTrends: jest.fn(),
+  getLocationStatistics: jest.fn(),
+  getSeverityDistribution: jest.fn()
 }));
 
-// Mock charts components
-jest.mock('react-apexcharts', () => {
-  return function MockChart({ options, series, type, height }) {
-    return (
-      <div data-testid={`chart-${type}`} className="mock-chart">
-        <div>Chart Type: {type}</div>
-        <div>Series Count: {series.length}</div>
-        <div>Height: {height}</div>
-      </div>
-    );
-  };
-});
-
 describe('StatisticsPage Component', () => {
-  const mockUser = { token: 'mock-token' };
-  const mockStatisticsData = {
-    accidentsByLocation: [
-      { location: 'Main Street', count: 12 },
-      { location: 'Downtown', count: 8 },
-      { location: 'Highway', count: 15 }
-    ],
-    accidentsBySeverity: [
-      { severity: 'Low', count: 10 },
-      { severity: 'Medium', count: 18 },
-      { severity: 'High', count: 7 }
-    ],
-    accidentsByTime: [
-      { hour: '00:00', count: 2 },
-      { hour: '06:00', count: 5 },
-      { hour: '12:00', count: 10 },
-      { hour: '18:00', count: 8 }
-    ],
-    trendData: [
-      { date: '2023-01-01', count: 3 },
-      { date: '2023-01-02', count: 5 },
-      { date: '2023-01-03', count: 2 },
-      { date: '2023-01-04', count: 7 }
-    ]
+  const mockUser = {
+    username: 'testuser',
+    role: 'admin',
+    token: 'test-token'
   };
+
+  const mockStatistics = {
+    totalAccidents: 100,
+    handledAccidents: 80,
+    pendingAccidents: 20,
+    falsePositives: 10
+  };
+
+  const mockTrends = [
+    { date: '2024-01', count: 10 },
+    { date: '2024-02', count: 15 },
+    { date: '2024-03', count: 20 }
+  ];
+
+  const mockLocationStats = [
+    { location: 'Location1', count: 30 },
+    { location: 'Location2', count: 40 },
+    { location: 'Location3', count: 30 }
+  ];
+
+  const mockSeverityStats = [
+    { severity: 'low', count: 40 },
+    { severity: 'medium', count: 35 },
+    { severity: 'high', count: 25 }
+  ];
 
   beforeEach(() => {
     jest.clearAllMocks();
     useAuth.mockReturnValue({ user: mockUser });
-    statisticsService.fetchStatisticsData.mockResolvedValue(mockStatisticsData);
-    statisticsService.getChartOptions.mockImplementation((type) => ({
-      chart: { id: `${type}-chart` },
-      labels: ['Label 1', 'Label 2', 'Label 3']
-    }));
+    statisticsService.getAccidentStatistics.mockResolvedValue(mockStatistics);
+    statisticsService.getAccidentTrends.mockResolvedValue(mockTrends);
+    statisticsService.getLocationStatistics.mockResolvedValue(mockLocationStats);
+    statisticsService.getSeverityDistribution.mockResolvedValue(mockSeverityStats);
   });
 
-  it('renders loading state initially', async () => {
-    render(
+  test('renders statistics page with all sections', async () => {
+    renderWithMantine(
       <BrowserRouter>
         <StatisticsPage />
       </BrowserRouter>
     );
-    
-    expect(screen.getByText(/loading statistics/i)).toBeInTheDocument();
-  });
 
-  it('fetches and displays statistics data', async () => {
-    render(
-      <BrowserRouter>
-        <StatisticsPage />
-      </BrowserRouter>
-    );
-    
-    // Verify service was called with correct parameters
-    await waitFor(() => {
-      expect(statisticsService.fetchStatisticsData).toHaveBeenCalledWith(
-        mockUser.token,
-        expect.any(Object) // Date filter params
-      );
-    });
-    
-    // Check that loading is no longer displayed
-    await waitFor(() => {
-      expect(screen.queryByText(/loading statistics/i)).not.toBeInTheDocument();
-    });
-    
-    // Check that charts are rendered
-    expect(screen.getByTestId('chart-bar')).toBeInTheDocument();
-    expect(screen.getByTestId('chart-pie')).toBeInTheDocument();
-    expect(screen.getByTestId('chart-line')).toBeInTheDocument();
-    
-    // Check that statistics titles are displayed
-    expect(screen.getByText(/accidents by location/i)).toBeInTheDocument();
-    expect(screen.getByText(/accidents by severity/i)).toBeInTheDocument();
-    expect(screen.getByText(/accidents by time of day/i)).toBeInTheDocument();
+    // Check for main sections
+    expect(screen.getByText(/accident statistics/i)).toBeInTheDocument();
     expect(screen.getByText(/accident trends/i)).toBeInTheDocument();
-  });
+    expect(screen.getByText(/location distribution/i)).toBeInTheDocument();
+    expect(screen.getByText(/severity distribution/i)).toBeInTheDocument();
 
-  it('handles date filter changes', async () => {
-    render(
-      <BrowserRouter>
-        <StatisticsPage />
-      </BrowserRouter>
-    );
-    
-    // Wait for initial load
-    await waitFor(() => {
-      expect(screen.queryByText(/loading statistics/i)).not.toBeInTheDocument();
-    });
-    
-    // Reset mock call counts
-    statisticsService.fetchStatisticsData.mockClear();
-    
-    // Find and interact with date filters
-    const startDateInput = screen.getByLabelText(/start date/i);
-    fireEvent.change(startDateInput, { target: { value: '2023-01-01' } });
-    
-    const endDateInput = screen.getByLabelText(/end date/i);
-    fireEvent.change(endDateInput, { target: { value: '2023-01-31' } });
-    
-    // Find and click apply filters button
-    const applyButton = screen.getByText(/apply filters/i);
-    fireEvent.click(applyButton);
-    
-    // Verify service was called again with updated date range
-    await waitFor(() => {
-      expect(statisticsService.fetchStatisticsData).toHaveBeenCalledWith(
-        mockUser.token,
-        expect.objectContaining({
-          startDate: '2023-01-01',
-          endDate: '2023-01-31'
-        })
-      );
-    });
-  });
-
-  it('handles preset date range selections', async () => {
-    render(
-      <BrowserRouter>
-        <StatisticsPage />
-      </BrowserRouter>
-    );
-    
-    // Wait for initial load
-    await waitFor(() => {
-      expect(screen.queryByText(/loading statistics/i)).not.toBeInTheDocument();
-    });
-    
-    // Reset mock call counts
-    statisticsService.fetchStatisticsData.mockClear();
-    
-    // Find and click on preset ranges
-    const lastWeekButton = screen.getByText(/last 7 days/i);
-    fireEvent.click(lastWeekButton);
-    
-    // Verify service was called with correct date range
-    await waitFor(() => {
-      expect(statisticsService.fetchStatisticsData).toHaveBeenCalledWith(
-        mockUser.token,
-        expect.objectContaining({
-          startDate: expect.any(String),
-          endDate: expect.any(String)
-        })
-      );
-    });
-    
-    // Now try another preset
-    statisticsService.fetchStatisticsData.mockClear();
-    
-    const lastMonthButton = screen.getByText(/last 30 days/i);
-    fireEvent.click(lastMonthButton);
-    
-    await waitFor(() => {
-      expect(statisticsService.fetchStatisticsData).toHaveBeenCalledWith(
-        mockUser.token,
-        expect.objectContaining({
-          startDate: expect.any(String),
-          endDate: expect.any(String)
-        })
-      );
-    });
-  });
-
-  it('handles fetch errors gracefully', async () => {
-    // Mock a failed fetch
-    statisticsService.fetchStatisticsData.mockRejectedValueOnce(new Error('Failed to fetch statistics'));
-    
-    render(
-      <BrowserRouter>
-        <StatisticsPage />
-      </BrowserRouter>
-    );
-    
-    // Check for error message
-    await waitFor(() => {
-      expect(screen.getByText(/error loading statistics data/i)).toBeInTheDocument();
-    });
-    
-    // Check for retry button
-    const retryButton = screen.getByText(/retry/i);
-    expect(retryButton).toBeInTheDocument();
-    
-    // Reset mock and click retry
-    statisticsService.fetchStatisticsData.mockResolvedValueOnce(mockStatisticsData);
-    fireEvent.click(retryButton);
-    
-    // Should call the service again
-    await waitFor(() => {
-      expect(statisticsService.fetchStatisticsData).toHaveBeenCalledTimes(2);
-    });
-    
-    // Should display data after retry
-    await waitFor(() => {
-      expect(screen.queryByText(/error loading statistics data/i)).not.toBeInTheDocument();
-      expect(screen.getByTestId('chart-bar')).toBeInTheDocument();
-    });
-  });
-
-  it('allows exporting statistics data', async () => {
-    // Mock export function
-    const mockExportStats = jest.fn();
-    statisticsService.exportStatisticsToCSV = mockExportStats;
-    
-    render(
-      <BrowserRouter>
-        <StatisticsPage />
-      </BrowserRouter>
-    );
-    
     // Wait for data to load
     await waitFor(() => {
-      expect(screen.queryByText(/loading statistics/i)).not.toBeInTheDocument();
+      expect(screen.getByText('100')).toBeInTheDocument(); // Total accidents
+      expect(screen.getByText('80')).toBeInTheDocument(); // Handled accidents
+      expect(screen.getByText('20')).toBeInTheDocument(); // Pending accidents
+      expect(screen.getByText('10')).toBeInTheDocument(); // False positives
     });
-    
-    // Find and click export button
-    const exportButton = screen.getByText(/export data/i);
-    fireEvent.click(exportButton);
-    
-    // Check if export function was called with correct data
-    expect(mockExportStats).toHaveBeenCalledWith(mockStatisticsData);
+  });
+
+  test('loads and displays accident statistics', async () => {
+    renderWithMantine(
+      <BrowserRouter>
+        <StatisticsPage />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(statisticsService.getAccidentStatistics).toHaveBeenCalled();
+      expect(screen.getByText('100')).toBeInTheDocument();
+    });
+  });
+
+  test('loads and displays accident trends', async () => {
+    renderWithMantine(
+      <BrowserRouter>
+        <StatisticsPage />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(statisticsService.getAccidentTrends).toHaveBeenCalled();
+      expect(screen.getByText('2024-01')).toBeInTheDocument();
+      expect(screen.getByText('2024-02')).toBeInTheDocument();
+      expect(screen.getByText('2024-03')).toBeInTheDocument();
+    });
+  });
+
+  test('loads and displays location statistics', async () => {
+    renderWithMantine(
+      <BrowserRouter>
+        <StatisticsPage />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(statisticsService.getLocationStatistics).toHaveBeenCalled();
+      expect(screen.getByText('Location1')).toBeInTheDocument();
+      expect(screen.getByText('Location2')).toBeInTheDocument();
+      expect(screen.getByText('Location3')).toBeInTheDocument();
+    });
+  });
+
+  test('loads and displays severity distribution', async () => {
+    renderWithMantine(
+      <BrowserRouter>
+        <StatisticsPage />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(statisticsService.getSeverityDistribution).toHaveBeenCalled();
+      expect(screen.getByText('low')).toBeInTheDocument();
+      expect(screen.getByText('medium')).toBeInTheDocument();
+      expect(screen.getByText('high')).toBeInTheDocument();
+    });
+  });
+
+  test('handles error when loading statistics', async () => {
+    statisticsService.getAccidentStatistics.mockRejectedValueOnce(new Error('Failed to load statistics'));
+
+    renderWithMantine(
+      <BrowserRouter>
+        <StatisticsPage />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/failed to load statistics/i)).toBeInTheDocument();
+    });
   });
 }); 

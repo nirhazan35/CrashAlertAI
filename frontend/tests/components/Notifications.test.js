@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { NotificationProvider, useNotifications } from '../../src/components/notifications/NotificationContext';
-import Notifications from '../../src/components/notifications/Notifications';
+import Notifications from '../../src/components/notifications/notificationDropbox';
 
 // Mock component to trigger notifications
 const NotificationTrigger = () => {

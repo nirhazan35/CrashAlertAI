@@ -1,12 +1,13 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import Login from '../../src/pages/Login/Login';
 import { useAuth } from '../../src/authentication/AuthProvider';
+import { renderWithMantine } from '../utils/test-utils';
 
 // Mock useAuth hook
-jest.mock('../../authentication/AuthProvider', () => ({
+jest.mock('../../src/authentication/AuthProvider', () => ({
   useAuth: jest.fn()
 }));
 
@@ -20,136 +21,91 @@ jest.mock('react-router-dom', () => ({
 // Mock fetch API
 global.fetch = jest.fn();
 
-describe('Login Page', () => {
+describe('Login Component', () => {
   const mockLogin = jest.fn();
-  
+  const mockNavigate = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Mock auth context
     useAuth.mockReturnValue({
-      login: mockLogin
+      login: mockLogin,
+      user: null
     });
-    
-    // Set environment variable
-    process.env.REACT_APP_URL_BACKEND = 'http://localhost:8080';
   });
 
-  test('renders login form with all required elements', () => {
-    render(
+  test('renders login form', () => {
+    renderWithMantine(
       <MemoryRouter>
         <Login />
       </MemoryRouter>
     );
-    
-    // Check page title
-    expect(screen.getByText('CrashAlert AI')).toBeInTheDocument();
-    
-    // Check form inputs
-    expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
+
+    expect(screen.getByRole('textbox', { name: /username/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    
-    // Check submit button
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
-    
-    // Check forgot password link
-    expect(screen.getByText(/forgot your password/i)).toBeInTheDocument();
-    expect(screen.getByText(/request password change/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
   });
 
-  test('handles input changes correctly', async () => {
-    const user = userEvent.setup();
-    
-    render(
+  test('handles login submission', async () => {
+    mockLogin.mockResolvedValueOnce({ success: true });
+
+    renderWithMantine(
       <MemoryRouter>
         <Login />
       </MemoryRouter>
     );
-    
-    // Enter username and password
-    await user.type(screen.getByLabelText(/username/i), 'testuser');
-    await user.type(screen.getByLabelText(/password/i), 'password123');
-    
-    // Verify input values
-    expect(screen.getByLabelText(/username/i)).toHaveValue('testuser');
-    expect(screen.getByLabelText(/password/i)).toHaveValue('password123');
+
+    const usernameInput = screen.getByRole('textbox', { name: /username/i });
+    const passwordInput = screen.getByLabelText(/password/i);
+    const loginButton = screen.getByRole('button', { name: /login/i });
+
+    await userEvent.type(usernameInput, 'testuser');
+    await userEvent.type(passwordInput, 'password123');
+    await userEvent.click(loginButton);
+
+    expect(mockLogin).toHaveBeenCalledWith('testuser', 'password123');
   });
 
-  test('submits form and handles successful login', async () => {
-    // Mock successful API response
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ 
-        accessToken: 'test-token',
-        session: { id: '123', createdAt: new Date().toISOString() }
-      })
-    });
-    
-    const user = userEvent.setup();
-    
-    render(
+  test('shows error message on login failure', async () => {
+    mockLogin.mockRejectedValueOnce(new Error('Invalid credentials'));
+
+    renderWithMantine(
       <MemoryRouter>
         <Login />
       </MemoryRouter>
     );
-    
-    // Fill and submit form
-    await user.type(screen.getByLabelText(/username/i), 'testuser');
-    await user.type(screen.getByLabelText(/password/i), 'password123');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
-    
-    // Check fetch was called correctly
+
+    const usernameInput = screen.getByRole('textbox', { name: /username/i });
+    const passwordInput = screen.getByLabelText(/password/i);
+    const loginButton = screen.getByRole('button', { name: /login/i });
+
+    await userEvent.type(usernameInput, 'testuser');
+    await userEvent.type(passwordInput, 'wrongpassword');
+    await userEvent.click(loginButton);
+
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:8080/auth/login',
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: 'testuser', password: 'password123' }),
-          credentials: 'include'
-        })
-      );
-    });
-    
-    // Check login was called with token
-    await waitFor(() => {
-      expect(mockLogin).toHaveBeenCalledWith('test-token', expect.anything());
-    });
-    
-    // Check navigation to dashboard
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+      expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
     });
   });
 
-  test('handles login failure correctly', async () => {
-    // Mock failed API response
-    const errorMessage = 'Invalid username or password';
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ message: errorMessage })
-    });
-    
-    const user = userEvent.setup();
-    
-    render(
+  test('redirects to forgot password page', () => {
+    renderWithMantine(
       <MemoryRouter>
         <Login />
       </MemoryRouter>
     );
-    
-    // Fill and submit form
-    await user.type(screen.getByLabelText(/username/i), 'testuser');
-    await user.type(screen.getByLabelText(/password/i), 'wrongpassword');
-    await user.click(screen.getByRole('button', { name: /sign in/i }));
-    
-    // Check error message is displayed
-    await waitFor(() => {
-      expect(screen.getByText(errorMessage)).toBeInTheDocument();
-    });
-    
-    // Login and navigate should not be called
-    expect(mockLogin).not.toHaveBeenCalled();
-    expect(mockNavigate).not.toHaveBeenCalled();
+
+    const forgotPasswordLink = screen.getByRole('link', { name: /forgot password/i });
+    expect(forgotPasswordLink).toHaveAttribute('href', '/forgot-password');
+  });
+
+  test('redirects to register page', () => {
+    renderWithMantine(
+      <MemoryRouter>
+        <Login />
+      </MemoryRouter>
+    );
+
+    const registerLink = screen.getByRole('link', { name: /register/i });
+    expect(registerLink).toHaveAttribute('href', '/register');
   });
 }); 

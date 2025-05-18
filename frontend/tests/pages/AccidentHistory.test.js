@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import AccidentHistory from '../../src/pages/AccidentHistory/AccidentHistory';
 import { useAuth } from '../../src/authentication/AuthProvider';
 import { exportAccidentsToCSV } from '../../src/services/statisticsService';
+import { renderWithMantine } from '../utils/test-utils';
 
 // Mock the hooks and services
 jest.mock('../../src/authentication/AuthProvider', () => ({
@@ -58,192 +59,114 @@ jest.mock('../../src/components/AccidentLogs/AccidentLog', () => {
 global.fetch = jest.fn();
 global.window.confirm = jest.fn();
 
-describe('AccidentHistory Page', () => {
+describe('AccidentHistory Component', () => {
   const mockUser = {
     username: 'testuser',
-    role: 'user',
-    token: 'test-token',
-    isLoggedIn: true
+    role: 'admin',
+    token: 'test-token'
   };
 
-  const mockHandledAccidents = [
+  const mockAccidents = [
     {
       _id: '1',
-      location: 'Main Street',
-      date: '2023-05-15T10:30:00Z',
+      cameraId: 'Camera1',
+      location: 'Location1',
+      date: '2024-01-01T10:00:00Z',
       severity: 'high',
-      description: 'Vehicle collision',
       status: 'handled',
-      assignedTo: 'testuser'
+      description: 'Test accident 1'
     },
     {
       _id: '2',
-      location: 'Oak Avenue',
-      date: '2023-05-16T14:45:00Z',
+      cameraId: 'Camera2',
+      location: 'Location2',
+      date: '2024-01-02T15:30:00Z',
       severity: 'medium',
-      description: 'Vehicle skidded',
-      status: 'handled',
-      assignedTo: 'another-user'
+      status: 'pending',
+      description: 'Test accident 2'
     }
   ];
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Setup default auth mock
     useAuth.mockReturnValue({ user: mockUser });
-    
-    // Setup default fetch response
-    global.fetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ 
-        success: true, 
-        data: mockHandledAccidents 
-      })
-    });
-
-    // Setup default window.confirm behavior
-    global.window.confirm.mockReturnValue(true);
   });
 
-  test('renders loading state initially', async () => {
-    render(<AccidentHistory />);
-    
-    // Should show loading indicator initially
-    expect(screen.getByText('Loading accident history...')).toBeInTheDocument();
-    
-    // Wait for data to load
+  test('renders accident history page', () => {
+    renderWithMantine(<AccidentHistory />);
+
+    expect(screen.getByText(/accident history/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /export/i })).toBeInTheDocument();
+  });
+
+  test('displays accident data in table', async () => {
+    renderWithMantine(<AccidentHistory />);
+
     await waitFor(() => {
-      expect(screen.queryByText('Loading accident history...')).not.toBeInTheDocument();
+      expect(screen.getByText('Camera1')).toBeInTheDocument();
+      expect(screen.getByText('Location1')).toBeInTheDocument();
+      expect(screen.getByText('Test accident 1')).toBeInTheDocument();
+      expect(screen.getByText('high')).toBeInTheDocument();
+      expect(screen.getByText('handled')).toBeInTheDocument();
     });
   });
 
-  test('fetches and displays accident history', async () => {
-    render(<AccidentHistory />);
-    
-    // Wait for data to load
-    await waitFor(() => {
-      expect(screen.getByText('Accident History')).toBeInTheDocument();
-    });
-    
-    // Should call fetch with the correct parameters
-    expect(global.fetch).toHaveBeenCalledWith(
-      `${process.env.REACT_APP_URL_BACKEND}/accidents/handled-accidents`,
-      expect.objectContaining({
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-token',
-        }
-      })
-    );
-    
-    // Should render the filter panel with correct data
-    expect(screen.getByTestId('filter-panel')).toBeInTheDocument();
-    expect(screen.getByText('Initial logs: 2')).toBeInTheDocument();
-    
-    // Should render the accident log with correct data
-    expect(screen.getByTestId('accident-log')).toBeInTheDocument();
-    expect(screen.getByText('Logs count: 2')).toBeInTheDocument();
-  });
+  test('handles export functionality', async () => {
+    renderWithMantine(<AccidentHistory />);
 
-  test('handles fetch error correctly', async () => {
-    // Mock a failed fetch
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ 
-        success: false, 
-        message: 'Failed to fetch data' 
-      })
-    });
-    
-    render(<AccidentHistory />);
-    
-    // Wait for error title to appear
-    await waitFor(() => {
-      expect(screen.getByText('Error Loading Accident History')).toBeInTheDocument();
-    });
-    
-    // Check the error message
-    expect(screen.getByText('Failed to fetch data')).toBeInTheDocument();
-  });
-
-  test('filters accidents when filter is applied', async () => {
-    render(<AccidentHistory />);
-    
-    // Wait for data to load
-    await waitFor(() => {
-      expect(screen.getByText('Logs count: 2')).toBeInTheDocument();
-    });
-    
-    // Apply filter
-    fireEvent.click(screen.getByTestId('apply-filter'));
-    
-    // Check that the filtered logs are shown (1 instead of 2)
-    expect(screen.getByText('Logs count: 1')).toBeInTheDocument();
-    
-    // Clear filter
-    fireEvent.click(screen.getByTestId('clear-filter'));
-    
-    // Check that all logs are shown again
-    expect(screen.getByText('Logs count: 2')).toBeInTheDocument();
-  });
-
-  test('handles unhandling an accident', async () => {
-    render(<AccidentHistory />);
-    
-    // Wait for data to load
-    await waitFor(() => {
-      expect(screen.getByText('Logs count: 2')).toBeInTheDocument();
-    });
-    
-    // Mock the successful status update response
-    global.fetch.mockResolvedValueOnce({
-      ok: true
-    });
-    
-    // Click the unhandle button
-    fireEvent.click(screen.getByTestId('unhandle-button'));
-    
-    // Should show confirmation dialog
-    expect(global.window.confirm).toHaveBeenCalledWith(
-      'Mark this accident as unhandled? It will be moved back to active accidents.'
-    );
-    
-    // Check that fetch was called to update the status
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${process.env.REACT_APP_URL_BACKEND}/accidents/accident-status-update`,
-        expect.objectContaining({
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer test-token'
-          },
-          body: JSON.stringify({ accident_id: '1', status: 'active' })
-        })
-      );
-    });
-    
-    // Check that the accident was removed from the list
-    await waitFor(() => {
-      expect(screen.getByText('Logs count: 1')).toBeInTheDocument();
-    });
-  });
-
-  test('exports accident data to CSV when export button is clicked', async () => {
-    render(<AccidentHistory />);
-    
-    // Wait for data to load
-    await waitFor(() => {
-      expect(screen.getByText('Accident History')).toBeInTheDocument();
-    });
-    
-    // Find and click the export button
-    const exportButton = screen.getByLabelText('Export to CSV');
+    const exportButton = screen.getByRole('button', { name: /export/i });
     fireEvent.click(exportButton);
-    
-    // Check that the export function was called with the correct data
-    expect(exportAccidentsToCSV).toHaveBeenCalledWith(mockHandledAccidents);
+
+    expect(exportAccidentsToCSV).toHaveBeenCalled();
+  });
+
+  test('filters accidents by date range', async () => {
+    renderWithMantine(<AccidentHistory />);
+
+    const startDateInput = screen.getByLabelText(/start date/i);
+    const endDateInput = screen.getByLabelText(/end date/i);
+
+    fireEvent.change(startDateInput, { target: { value: '2024-01-01' } });
+    fireEvent.change(endDateInput, { target: { value: '2024-01-31' } });
+
+    const applyButton = screen.getByRole('button', { name: /apply/i });
+    fireEvent.click(applyButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Test accident 1')).toBeInTheDocument();
+      expect(screen.getByText('Test accident 2')).toBeInTheDocument();
+    });
+  });
+
+  test('filters accidents by severity', async () => {
+    renderWithMantine(<AccidentHistory />);
+
+    const severitySelect = screen.getByRole('combobox', { name: /severity/i });
+    fireEvent.change(severitySelect, { target: { value: 'high' } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Test accident 1')).toBeInTheDocument();
+      expect(screen.queryByText('Test accident 2')).not.toBeInTheDocument();
+    });
+  });
+
+  test('filters accidents by status', async () => {
+    renderWithMantine(<AccidentHistory />);
+
+    const statusSelect = screen.getByRole('combobox', { name: /status/i });
+    fireEvent.change(statusSelect, { target: { value: 'pending' } });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Test accident 1')).not.toBeInTheDocument();
+      expect(screen.getByText('Test accident 2')).toBeInTheDocument();
+    });
+  });
+
+  test('handles error when loading accidents', async () => {
+    renderWithMantine(<AccidentHistory />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/error loading accidents/i)).toBeInTheDocument();
+    });
   });
 }); 

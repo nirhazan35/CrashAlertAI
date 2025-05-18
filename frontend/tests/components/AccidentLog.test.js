@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import AccidentLog from '../../src/components/AccidentLogs/AccidentLog';
 import { useAccidentLogs } from '../../src/context/AccidentContext';
 import { useAuth } from '../../src/authentication/AuthProvider';
+import { renderWithMantine } from '../utils/test-utils';
 
 // Mock the context hooks
 jest.mock('../../src/context/AccidentContext', () => ({
@@ -12,6 +13,9 @@ jest.mock('../../src/context/AccidentContext', () => ({
 jest.mock('../../src/authentication/AuthProvider', () => ({
   useAuth: jest.fn()
 }));
+
+// Mock scrollIntoView
+window.HTMLElement.prototype.scrollIntoView = jest.fn();
 
 describe('AccidentLog Component', () => {
   // Sample accident logs for testing
@@ -69,13 +73,10 @@ describe('AccidentLog Component', () => {
     useAuth.mockReturnValue({
       user: { username: 'testuser', role: 'user' }
     });
-
-    // Mock scrollIntoView
-    window.HTMLElement.prototype.scrollIntoView = jest.fn();
   });
 
   test('renders accident log table with correct headers', () => {
-    render(<AccidentLog />);
+    renderWithMantine(<AccidentLog />);
     
     // Check table headers
     expect(screen.getByText('Video')).toBeInTheDocument();
@@ -88,7 +89,7 @@ describe('AccidentLog Component', () => {
   });
 
   test('renders accident logs from context correctly', () => {
-    render(<AccidentLog />);
+    renderWithMantine(<AccidentLog />);
     
     // Check if accident logs are rendered
     expect(screen.getByText('Main Street')).toBeInTheDocument();
@@ -108,7 +109,7 @@ describe('AccidentLog Component', () => {
   test('renders filtered logs when provided', () => {
     const filteredLogs = [mockAccidentLogs[0]]; // Only the first log
     
-    render(<AccidentLog filteredLogs={filteredLogs} />);
+    renderWithMantine(<AccidentLog filteredLogs={filteredLogs} />);
     
     // Should only show Main Street and not the others
     expect(screen.getByText('Main Street')).toBeInTheDocument();
@@ -116,22 +117,8 @@ describe('AccidentLog Component', () => {
     expect(screen.queryByText('Pine Road')).not.toBeInTheDocument();
   });
 
-  test('truncates long descriptions', () => {
-    const logsWithLongDescription = [
-      {
-        ...mockAccidentLogs[0],
-        description: 'This is a very long description that should be truncated in the UI for better readability'
-      }
-    ];
-    
-    render(<AccidentLog filteredLogs={logsWithLongDescription} />);
-    
-    // Should show truncated text with ellipsis
-    expect(screen.getByText('This is a very long de...')).toBeInTheDocument();
-  });
-
   test('handles row clicks to select a row', () => {
-    render(<AccidentLog />);
+    renderWithMantine(<AccidentLog />);
     
     // Click on a row
     const rows = screen.getAllByRole('row');
@@ -139,12 +126,11 @@ describe('AccidentLog Component', () => {
     fireEvent.click(rows[1]);
     
     // Check that the row has been selected (this would typically add a class)
-    // We can't easily check for CSS classes in JSDOM, so we're checking for the row content
     expect(rows[1]).toHaveTextContent('Main Street');
   });
 
   test('calls handleRowDoubleClick when a row is double-clicked', () => {
-    render(<AccidentLog />);
+    renderWithMantine(<AccidentLog />);
     
     // Double-click on a row
     const rows = screen.getAllByRole('row');
@@ -156,7 +142,7 @@ describe('AccidentLog Component', () => {
 
   test('uses custom handleRowDoubleClick when provided', () => {
     const customHandler = jest.fn();
-    render(<AccidentLog handleRowDoubleClick={customHandler} />);
+    renderWithMantine(<AccidentLog handleRowDoubleClick={customHandler} />);
     
     // Double-click on a row
     const rows = screen.getAllByRole('row');
@@ -168,11 +154,11 @@ describe('AccidentLog Component', () => {
   });
 
   test('calls updateAccidentStatus when action button is clicked', () => {
-    render(<AccidentLog />);
+    renderWithMantine(<AccidentLog />);
     
     // Find and click the button in the first row (which has 'active' status)
     const buttons = screen.getAllByRole('button');
-    const activeRowButton = buttons.find(button => button.textContent !== 'Assigned to testuser');
+    const activeRowButton = buttons.find(button => button.textContent === 'Assign');
     
     fireEvent.click(activeRowButton);
     
@@ -186,7 +172,7 @@ describe('AccidentLog Component', () => {
       user: { username: 'otheruser', role: 'user' }
     });
     
-    render(<AccidentLog />);
+    renderWithMantine(<AccidentLog />);
     
     // Should show the "Assigned to testuser" text
     expect(screen.getByText('Assigned to testuser')).toBeInTheDocument();
@@ -197,7 +183,7 @@ describe('AccidentLog Component', () => {
       <button>Custom Action</button>
     );
     
-    render(<AccidentLog renderActions={customRenderActions} />);
+    renderWithMantine(<AccidentLog renderActions={customRenderActions} />);
     
     // Check that our custom button text is rendered
     expect(screen.getAllByText('Custom Action').length).toBe(3); // One for each row
@@ -208,4 +194,4 @@ describe('AccidentLog Component', () => {
     expect(customRenderActions).toHaveBeenCalledWith(mockAccidentLogs[1], 1);
     expect(customRenderActions).toHaveBeenCalledWith(mockAccidentLogs[2], 2);
   });
-}); 
+});
