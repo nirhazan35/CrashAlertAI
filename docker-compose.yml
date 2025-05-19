@@ -36,9 +36,9 @@ services:
     ports:
       - "8000:8000"
     environment:
+      - RUNNING_IN_DOCKER=1
       - INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL}
       - INTERNAL_SECRET=${INTERNAL_SECRET}
-      - ACCIDENT_THRESHOLD=${ACCIDENT_THRESHOLD:-0.7}
       - YOLO_WEIGHTS=/app/weights/best.pt
     volumes:
       - ./model-service/videos:/app/videos

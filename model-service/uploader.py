@@ -16,11 +16,16 @@ import datetime
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from dotenv import load_dotenv
+import logging
 
-# ─────────────────────────────────────────────────────────────
+logger = logging.getLogger("model-service.uploader")
 # Configuration
-# ─────────────────────────────────────────────────────────────
-SERVICE_ACCOUNT_FILE = "/app/credentials/drive_sa.json"
+if os.environ.get("RUNNING_IN_DOCKER") != "1":
+    dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
+    if os.path.exists(dotenv_path):
+        load_dotenv(dotenv_path)
+SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE", "/app/credentials/drive_sa.json")
 ROOT_FOLDER_ID       = "1ycXApVQxo6s2AGJnaEpjO_yVHiZs7WVX"   # your Drive root for CrashAlert clips
 
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
@@ -30,9 +35,7 @@ credentials  = service_account.Credentials.from_service_account_file(
 )
 drive_service = build("drive", "v3", credentials=credentials)
 
-# ─────────────────────────────────────────────────────────────
 # Helpers
-# ─────────────────────────────────────────────────────────────
 def trim_video_ffmpeg(
     input_video: str,
     start_time: float,
@@ -91,7 +94,6 @@ def upload_to_drive(file_path: str) -> str:
     ).execute()
     
     link = f"https://drive.google.com/file/d/{file['id']}/view"
-    print(f"link: {link}")
     return link
 
 
