@@ -23,7 +23,6 @@ global.fetch = jest.fn();
 
 describe('Login Component', () => {
   const mockLogin = jest.fn();
-  const mockNavigate = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -40,13 +39,23 @@ describe('Login Component', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('textbox', { name: /username/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByText('CrashAlert AI')).toBeInTheDocument();
+    expect(screen.getByText('Welcome back! Please enter your credentials to continue')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Enter your username')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Enter your password')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 
   test('handles login submission', async () => {
-    mockLogin.mockResolvedValueOnce({ success: true });
+    const mockResponse = {
+      accessToken: 'mock-token',
+      session: { id: '1', username: 'testuser' }
+    };
+
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockResponse)
+    });
 
     renderWithMantine(
       <MemoryRouter>
@@ -54,19 +63,33 @@ describe('Login Component', () => {
       </MemoryRouter>
     );
 
-    const usernameInput = screen.getByRole('textbox', { name: /username/i });
-    const passwordInput = screen.getByLabelText(/password/i);
-    const loginButton = screen.getByRole('button', { name: /login/i });
+    const usernameInput = screen.getByPlaceholderText('Enter your username');
+    const passwordInput = screen.getByPlaceholderText('Enter your password');
+    const loginButton = screen.getByRole('button', { name: /sign in/i });
 
     await userEvent.type(usernameInput, 'testuser');
     await userEvent.type(passwordInput, 'password123');
     await userEvent.click(loginButton);
 
-    expect(mockLogin).toHaveBeenCalledWith('testuser', 'password123');
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/auth/login'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: 'testuser', password: 'password123' })
+        })
+      );
+      expect(mockLogin).toHaveBeenCalledWith(mockResponse.accessToken, mockResponse.session);
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    });
   });
 
   test('shows error message on login failure', async () => {
-    mockLogin.mockRejectedValueOnce(new Error('Invalid credentials'));
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({ message: 'Invalid credentials' })
+    });
 
     renderWithMantine(
       <MemoryRouter>
@@ -74,38 +97,47 @@ describe('Login Component', () => {
       </MemoryRouter>
     );
 
-    const usernameInput = screen.getByRole('textbox', { name: /username/i });
-    const passwordInput = screen.getByLabelText(/password/i);
-    const loginButton = screen.getByRole('button', { name: /login/i });
+    const usernameInput = screen.getByPlaceholderText('Enter your username');
+    const passwordInput = screen.getByPlaceholderText('Enter your password');
+    const loginButton = screen.getByRole('button', { name: /sign in/i });
 
     await userEvent.type(usernameInput, 'testuser');
     await userEvent.type(passwordInput, 'wrongpassword');
     await userEvent.click(loginButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
+      expect(screen.getByText('Invalid credentials')).toBeInTheDocument();
     });
   });
 
-  test('redirects to forgot password page', () => {
+  test('shows loading state during login', async () => {
+    global.fetch.mockImplementationOnce(() => new Promise(resolve => setTimeout(resolve, 100)));
+
     renderWithMantine(
       <MemoryRouter>
         <Login />
       </MemoryRouter>
     );
 
-    const forgotPasswordLink = screen.getByRole('link', { name: /forgot password/i });
-    expect(forgotPasswordLink).toHaveAttribute('href', '/forgot-password');
+    const usernameInput = screen.getByPlaceholderText('Enter your username');
+    const passwordInput = screen.getByPlaceholderText('Enter your password');
+    const loginButton = screen.getByRole('button', { name: /sign in/i });
+
+    await userEvent.type(usernameInput, 'testuser');
+    await userEvent.type(passwordInput, 'password123');
+    await userEvent.click(loginButton);
+
+    expect(screen.getByText('Signing in...')).toBeInTheDocument();
   });
 
-  test('redirects to register page', () => {
+  test('redirects to password change request page', () => {
     renderWithMantine(
       <MemoryRouter>
         <Login />
       </MemoryRouter>
     );
 
-    const registerLink = screen.getByRole('link', { name: /register/i });
-    expect(registerLink).toHaveAttribute('href', '/register');
+    const forgotPasswordLink = screen.getByRole('link', { name: /request password change/i });
+    expect(forgotPasswordLink).toHaveAttribute('href', '/request-password-change');
   });
 }); 

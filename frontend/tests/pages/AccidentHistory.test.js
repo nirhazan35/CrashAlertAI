@@ -42,13 +42,10 @@ jest.mock('../../src/components/AccidentLogs/AccidentLog', () => {
     return (
       <div data-testid="accident-log">
         <div>Logs count: {filteredLogs?.length || 0}</div>
-        {filteredLogs?.length > 0 && (
-          <button 
-            data-testid="unhandle-button" 
-            onClick={() => renderActions && renderActions(filteredLogs[0])}
-          >
-            Test action
-          </button>
+        {filteredLogs?.length > 0 && renderActions && (
+          <div data-testid="action-buttons">
+            {renderActions(filteredLogs[0])}
+          </div>
         )}
       </div>
     );
@@ -74,7 +71,8 @@ describe('AccidentHistory Component', () => {
       date: '2024-01-01T10:00:00Z',
       severity: 'high',
       status: 'handled',
-      description: 'Test accident 1'
+      description: 'Test accident 1',
+      assignedTo: 'testuser'
     },
     {
       _id: '2',
@@ -83,90 +81,133 @@ describe('AccidentHistory Component', () => {
       date: '2024-01-02T15:30:00Z',
       severity: 'medium',
       status: 'pending',
-      description: 'Test accident 2'
+      description: 'Test accident 2',
+      assignedTo: 'otheruser'
     }
   ];
 
   beforeEach(() => {
     jest.clearAllMocks();
     useAuth.mockReturnValue({ user: mockUser });
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ success: true, data: mockAccidents })
+    });
+    global.window.confirm.mockReturnValue(true);
   });
 
-  test('renders accident history page', () => {
+  test('renders accident history page', async () => {
     renderWithMantine(<AccidentHistory />);
 
-    expect(screen.getByText(/accident history/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /export/i })).toBeInTheDocument();
+    // Check for loading state
+    expect(screen.getByText('Loading accident history...')).toBeInTheDocument();
+
+    // Wait for data to load
+    await waitFor(() => {
+      expect(screen.getByText('Accident History')).toBeInTheDocument();
+      expect(screen.getByTestId('filter-panel')).toBeInTheDocument();
+      expect(screen.getByTestId('accident-log')).toBeInTheDocument();
+    });
   });
 
   test('displays accident data in table', async () => {
     renderWithMantine(<AccidentHistory />);
 
     await waitFor(() => {
-      expect(screen.getByText('Camera1')).toBeInTheDocument();
-      expect(screen.getByText('Location1')).toBeInTheDocument();
-      expect(screen.getByText('Test accident 1')).toBeInTheDocument();
-      expect(screen.getByText('high')).toBeInTheDocument();
-      expect(screen.getByText('handled')).toBeInTheDocument();
+      expect(screen.getByText('Logs count: 2')).toBeInTheDocument();
+      expect(screen.getByText('Initial logs: 2')).toBeInTheDocument();
     });
   });
 
   test('handles export functionality', async () => {
     renderWithMantine(<AccidentHistory />);
 
-    const exportButton = screen.getByRole('button', { name: /export/i });
+    // Wait for data to load
+    await waitFor(() => {
+      expect(screen.getByText('Logs count: 2')).toBeInTheDocument();
+    });
+
+    // Find and click the export button using the correct selector
+    const exportButton = screen.getByTestId('export-button');
     fireEvent.click(exportButton);
 
-    expect(exportAccidentsToCSV).toHaveBeenCalled();
+    expect(exportAccidentsToCSV).toHaveBeenCalledWith(mockAccidents);
   });
 
-  test('filters accidents by date range', async () => {
+  test('handles filter application', async () => {
     renderWithMantine(<AccidentHistory />);
 
-    const startDateInput = screen.getByLabelText(/start date/i);
-    const endDateInput = screen.getByLabelText(/end date/i);
-
-    fireEvent.change(startDateInput, { target: { value: '2024-01-01' } });
-    fireEvent.change(endDateInput, { target: { value: '2024-01-31' } });
-
-    const applyButton = screen.getByRole('button', { name: /apply/i });
-    fireEvent.click(applyButton);
-
     await waitFor(() => {
-      expect(screen.getByText('Test accident 1')).toBeInTheDocument();
-      expect(screen.getByText('Test accident 2')).toBeInTheDocument();
+      const applyFilterButton = screen.getByTestId('apply-filter');
+      fireEvent.click(applyFilterButton);
+      expect(screen.getByText('Logs count: 1')).toBeInTheDocument();
     });
   });
 
-  test('filters accidents by severity', async () => {
+  test('handles filter clearing', async () => {
     renderWithMantine(<AccidentHistory />);
 
-    const severitySelect = screen.getByRole('combobox', { name: /severity/i });
-    fireEvent.change(severitySelect, { target: { value: 'high' } });
-
     await waitFor(() => {
-      expect(screen.getByText('Test accident 1')).toBeInTheDocument();
-      expect(screen.queryByText('Test accident 2')).not.toBeInTheDocument();
+      const clearFilterButton = screen.getByTestId('clear-filter');
+      fireEvent.click(clearFilterButton);
+      expect(screen.getByText('Logs count: 2')).toBeInTheDocument();
     });
   });
 
-  test('filters accidents by status', async () => {
+  test('handles unhandle action', async () => {
+    const mockResponse = { success: true };
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ success: true, data: mockAccidents })
+    }).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockResponse)
+    });
+
     renderWithMantine(<AccidentHistory />);
 
-    const statusSelect = screen.getByRole('combobox', { name: /status/i });
-    fireEvent.change(statusSelect, { target: { value: 'pending' } });
-
+    // Wait for data to load and component to update
     await waitFor(() => {
-      expect(screen.queryByText('Test accident 1')).not.toBeInTheDocument();
-      expect(screen.getByText('Test accident 2')).toBeInTheDocument();
+      expect(screen.getByText('Logs count: 2')).toBeInTheDocument();
+    });
+
+    // Find and click the unhandle button
+    const unhandleButton = screen.getByRole('button', { name: /unhandle/i });
+    fireEvent.click(unhandleButton);
+
+    // Verify confirm dialog was called
+    expect(global.window.confirm).toHaveBeenCalledWith(
+      'Mark this accident as unhandled? It will be moved back to active accidents.'
+    );
+
+    // Verify the API call
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/accidents/accident-status-update'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${mockUser.token}`
+          }),
+          body: JSON.stringify({ accident_id: '1', status: 'active' })
+        })
+      );
     });
   });
 
   test('handles error when loading accidents', async () => {
+    const errorMessage = 'Failed to fetch';
+    
+    // Reset mock for this specific test
+    global.fetch.mockReset();
+    global.fetch.mockRejectedValueOnce(new Error(errorMessage));
+
     renderWithMantine(<AccidentHistory />);
 
     await waitFor(() => {
-      expect(screen.getByText(/error loading accidents/i)).toBeInTheDocument();
+      expect(screen.getByText('Error Loading Accident History')).toBeInTheDocument();
+      expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
   });
-}); 
+});

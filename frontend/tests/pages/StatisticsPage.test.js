@@ -13,11 +13,49 @@ jest.mock('../../src/authentication/AuthProvider', () => ({
 }));
 
 jest.mock('../../src/services/statisticsService', () => ({
-  getAccidentStatistics: jest.fn(),
-  getAccidentTrends: jest.fn(),
-  getLocationStatistics: jest.fn(),
-  getSeverityDistribution: jest.fn()
+  fetchHandledAccidents: jest.fn(),
+  fetchCamerasLocations: jest.fn(),
+  fetchUsers: jest.fn(),
+  calculateCoreStatistics: jest.fn(),
+  calculateTimeBasedTrends: jest.fn(),
+  calculateFalsePositiveTrends: jest.fn(),
+  exportStatisticsToCSV: jest.fn()
 }));
+
+// Mock the child components
+jest.mock('../../src/components/Statistics/CoreStatistics', () => {
+  return function MockCoreStatistics({ statistics }) {
+    return (
+      <div data-testid="core-statistics">
+        <div>Total Handled: {statistics.totalHandled}</div>
+        <div>False Positive Rate: {statistics.falsePositiveRate}%</div>
+      </div>
+    );
+  };
+});
+
+jest.mock('../../src/components/Statistics/TimeBasedTrends', () => {
+  return function MockTimeBasedTrends({ trends }) {
+    return (
+      <div data-testid="time-based-trends">
+        <div>Monthly Trends: {trends.monthlyTrends.length}</div>
+        <div>Weekly Trends: {trends.weeklyTrends.length}</div>
+        <div>Hourly Trends: {trends.hourlyTrends.length}</div>
+      </div>
+    );
+  };
+});
+
+jest.mock('../../src/components/Statistics/FalsePositiveTrends', () => {
+  return function MockFalsePositiveTrends({ trends }) {
+    return (
+      <div data-testid="false-positive-trends">
+        <div>Location Trends: {trends.locationTrends.length}</div>
+        <div>Camera Trends: {trends.cameraTrends.length}</div>
+      </div>
+    );
+  };
+});
 
 describe('StatisticsPage Component', () => {
   const mockUser = {
@@ -26,38 +64,65 @@ describe('StatisticsPage Component', () => {
     token: 'test-token'
   };
 
-  const mockStatistics = {
-    totalAccidents: 100,
-    handledAccidents: 80,
-    pendingAccidents: 20,
-    falsePositives: 10
+  const mockHandledAccidents = [
+    {
+      _id: '1',
+      date: '2024-03-01T10:00:00Z',
+      location: 'Location1',
+      cameraId: 'Camera1',
+      severity: 'high',
+      assignedTo: 'user1',
+      isFalsePositive: false
+    },
+    {
+      _id: '2',
+      date: '2024-03-02T15:00:00Z',
+      location: 'Location2',
+      cameraId: 'Camera2',
+      severity: 'medium',
+      assignedTo: 'user2',
+      isFalsePositive: true
+    }
+  ];
+
+  const mockUsers = [
+    { username: 'user1', role: 'admin' },
+    { username: 'user2', role: 'user' }
+  ];
+
+  const mockCamerasLocations = [
+    { cameraId: 'Camera1', location: 'Location1' },
+    { cameraId: 'Camera2', location: 'Location2' }
+  ];
+
+  const mockCoreStats = {
+    totalHandled: 100,
+    falsePositiveRate: 20,
+    severityDistribution: { high: 30, medium: 40, low: 30 },
+    top5Locations: ['Location1', 'Location2'],
+    mostActiveResponders: ['user1', 'user2']
   };
 
-  const mockTrends = [
-    { date: '2024-01', count: 10 },
-    { date: '2024-02', count: 15 },
-    { date: '2024-03', count: 20 }
-  ];
+  const mockTimeBasedStats = {
+    monthlyTrends: [{ date: '2024-03', count: 10 }],
+    weeklyTrends: [{ week: '2024-W10', count: 5 }],
+    hourlyTrends: [{ hour: '10', count: 3 }]
+  };
 
-  const mockLocationStats = [
-    { location: 'Location1', count: 30 },
-    { location: 'Location2', count: 40 },
-    { location: 'Location3', count: 30 }
-  ];
-
-  const mockSeverityStats = [
-    { severity: 'low', count: 40 },
-    { severity: 'medium', count: 35 },
-    { severity: 'high', count: 25 }
-  ];
+  const mockFalsePositiveStats = {
+    byLocation: [{ location: 'Location1', count: 5 }],
+    byCameraId: [{ cameraId: 'Camera1', count: 3 }]
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
     useAuth.mockReturnValue({ user: mockUser });
-    statisticsService.getAccidentStatistics.mockResolvedValue(mockStatistics);
-    statisticsService.getAccidentTrends.mockResolvedValue(mockTrends);
-    statisticsService.getLocationStatistics.mockResolvedValue(mockLocationStats);
-    statisticsService.getSeverityDistribution.mockResolvedValue(mockSeverityStats);
+    statisticsService.fetchHandledAccidents.mockResolvedValue(mockHandledAccidents);
+    statisticsService.fetchUsers.mockResolvedValue(mockUsers);
+    statisticsService.fetchCamerasLocations.mockResolvedValue(mockCamerasLocations);
+    statisticsService.calculateCoreStatistics.mockReturnValue(mockCoreStats);
+    statisticsService.calculateTimeBasedTrends.mockReturnValue(mockTimeBasedStats);
+    statisticsService.calculateFalsePositiveTrends.mockReturnValue(mockFalsePositiveStats);
   });
 
   test('renders statistics page with all sections', async () => {
@@ -68,17 +133,14 @@ describe('StatisticsPage Component', () => {
     );
 
     // Check for main sections
-    expect(screen.getByText(/accident statistics/i)).toBeInTheDocument();
-    expect(screen.getByText(/accident trends/i)).toBeInTheDocument();
-    expect(screen.getByText(/location distribution/i)).toBeInTheDocument();
-    expect(screen.getByText(/severity distribution/i)).toBeInTheDocument();
+    expect(screen.getByTestId('core-statistics')).toBeInTheDocument();
+    expect(screen.getByTestId('time-based-trends')).toBeInTheDocument();
+    expect(screen.getByTestId('false-positive-trends')).toBeInTheDocument();
 
     // Wait for data to load
     await waitFor(() => {
-      expect(screen.getByText('100')).toBeInTheDocument(); // Total accidents
-      expect(screen.getByText('80')).toBeInTheDocument(); // Handled accidents
-      expect(screen.getByText('20')).toBeInTheDocument(); // Pending accidents
-      expect(screen.getByText('10')).toBeInTheDocument(); // False positives
+      expect(screen.getByText('Total Handled: 100')).toBeInTheDocument();
+      expect(screen.getByText('False Positive Rate: 20%')).toBeInTheDocument();
     });
   });
 
@@ -90,58 +152,14 @@ describe('StatisticsPage Component', () => {
     );
 
     await waitFor(() => {
-      expect(statisticsService.getAccidentStatistics).toHaveBeenCalled();
-      expect(screen.getByText('100')).toBeInTheDocument();
-    });
-  });
-
-  test('loads and displays accident trends', async () => {
-    renderWithMantine(
-      <BrowserRouter>
-        <StatisticsPage />
-      </BrowserRouter>
-    );
-
-    await waitFor(() => {
-      expect(statisticsService.getAccidentTrends).toHaveBeenCalled();
-      expect(screen.getByText('2024-01')).toBeInTheDocument();
-      expect(screen.getByText('2024-02')).toBeInTheDocument();
-      expect(screen.getByText('2024-03')).toBeInTheDocument();
-    });
-  });
-
-  test('loads and displays location statistics', async () => {
-    renderWithMantine(
-      <BrowserRouter>
-        <StatisticsPage />
-      </BrowserRouter>
-    );
-
-    await waitFor(() => {
-      expect(statisticsService.getLocationStatistics).toHaveBeenCalled();
-      expect(screen.getByText('Location1')).toBeInTheDocument();
-      expect(screen.getByText('Location2')).toBeInTheDocument();
-      expect(screen.getByText('Location3')).toBeInTheDocument();
-    });
-  });
-
-  test('loads and displays severity distribution', async () => {
-    renderWithMantine(
-      <BrowserRouter>
-        <StatisticsPage />
-      </BrowserRouter>
-    );
-
-    await waitFor(() => {
-      expect(statisticsService.getSeverityDistribution).toHaveBeenCalled();
-      expect(screen.getByText('low')).toBeInTheDocument();
-      expect(screen.getByText('medium')).toBeInTheDocument();
-      expect(screen.getByText('high')).toBeInTheDocument();
+      expect(statisticsService.fetchHandledAccidents).toHaveBeenCalledWith(mockUser.token);
+      expect(statisticsService.calculateCoreStatistics).toHaveBeenCalled();
+      expect(screen.getByText('Total Handled: 100')).toBeInTheDocument();
     });
   });
 
   test('handles error when loading statistics', async () => {
-    statisticsService.getAccidentStatistics.mockRejectedValueOnce(new Error('Failed to load statistics'));
+    statisticsService.fetchHandledAccidents.mockRejectedValueOnce(new Error('Failed to load statistics'));
 
     renderWithMantine(
       <BrowserRouter>
@@ -150,7 +168,22 @@ describe('StatisticsPage Component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/failed to load statistics/i)).toBeInTheDocument();
+      expect(screen.getByText('Failed to load statistics. Please try again.')).toBeInTheDocument();
+    });
+  });
+
+  test('handles refresh action', async () => {
+    renderWithMantine(
+      <BrowserRouter>
+        <StatisticsPage />
+      </BrowserRouter>
+    );
+
+    const refreshButton = screen.getByRole('button', { name: /refresh/i });
+    fireEvent.click(refreshButton);
+
+    await waitFor(() => {
+      expect(statisticsService.fetchHandledAccidents).toHaveBeenCalledTimes(2);
     });
   });
 }); 

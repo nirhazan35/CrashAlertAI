@@ -38,59 +38,85 @@ jest.mock('@mantine/charts', () => ({
 }));
 
 describe('TimeBasedTrends Component', () => {
-  const mockData = {
-    accidentCount: [
-      { date: '2024-03-01', count: 5 },
-      { date: '2024-03-02', count: 8 },
-      { date: '2024-03-03', count: 3 }
+  const mockTrends = {
+    monthlyTrends: [
+      { date: '2024-03', count: 5 },
+      { date: '2024-02', count: 8 },
+      { date: '2024-01', count: 3 }
     ],
-    severityDistribution: [
-      { date: '2024-03-01', high: 2, medium: 2, low: 1 },
-      { date: '2024-03-02', high: 3, medium: 4, low: 1 },
-      { date: '2024-03-03', high: 1, medium: 1, low: 1 }
+    weeklyTrends: [
+      { week: '2024-W10', count: 2 },
+      { week: '2024-W09', count: 4 },
+      { week: '2024-W08', count: 1 }
+    ],
+    hourlyTrends: [
+      { hour: '00', count: 1 },
+      { hour: '01', count: 2 },
+      { hour: '02', count: 3 }
     ]
   };
 
   test('renders time-based trends with correct title', () => {
-    renderWithMantine(<TimeBasedTrends data={mockData} />);
-    expect(screen.getByText(/time-based trends/i)).toBeInTheDocument();
+    renderWithMantine(<TimeBasedTrends trends={mockTrends} />);
+    expect(screen.getByText('Monthly Accident Trends')).toBeInTheDocument();
+    expect(screen.getByText('Weekly Accident Trends')).toBeInTheDocument();
+    expect(screen.getByText('Time of Day Analysis')).toBeInTheDocument();
   });
 
-  test('displays accident count chart', () => {
-    renderWithMantine(<TimeBasedTrends data={mockData} />);
-    const chart = screen.getByTestId('line-chart-accidentCount');
+  test('displays monthly trends chart', () => {
+    renderWithMantine(<TimeBasedTrends trends={mockTrends} />);
+    const chart = screen.getByTestId('line-chart-month');
     expect(chart).toBeInTheDocument();
     
-    const chartData = screen.getByTestId('chart-data-accidentCount');
-    expect(JSON.parse(chartData.textContent)).toEqual(mockData.accidentCount);
-  });
-
-  test('displays severity distribution chart', () => {
-    renderWithMantine(<TimeBasedTrends data={mockData} />);
-    const chart = screen.getByTestId('line-chart-severityDistribution');
-    expect(chart).toBeInTheDocument();
-    
-    const chartData = screen.getByTestId('chart-data-severityDistribution');
-    expect(JSON.parse(chartData.textContent)).toEqual(mockData.severityDistribution);
-  });
-
-  test('handles time range changes', () => {
-    const onTimeRangeChange = jest.fn();
-    renderWithMantine(
-      <TimeBasedTrends 
-        data={mockData} 
-        onTimeRangeChange={onTimeRangeChange}
-      />
+    const chartData = screen.getByTestId('chart-data-month');
+    expect(JSON.parse(chartData.textContent)).toEqual(
+      mockTrends.monthlyTrends.map(item => ({
+        month: expect.any(String),
+        accidents: item.count
+      }))
     );
+  });
+
+  test('displays weekly trends chart', () => {
+    renderWithMantine(<TimeBasedTrends trends={mockTrends} />);
+    const chart = screen.getByTestId('line-chart-week');
+    expect(chart).toBeInTheDocument();
     
-    const weekButton = screen.getByText('Week');
-    fireEvent.click(weekButton);
+    const chartData = screen.getByTestId('chart-data-week');
+    expect(JSON.parse(chartData.textContent)).toEqual(
+      mockTrends.weeklyTrends.map(item => ({
+        week: expect.any(String),
+        accidents: item.count
+      }))
+    );
+  });
+
+  test('displays hourly trends chart', () => {
+    renderWithMantine(<TimeBasedTrends trends={mockTrends} />);
+    const chart = screen.getByTestId('line-chart-hour');
+    expect(chart).toBeInTheDocument();
     
-    expect(onTimeRangeChange).toHaveBeenCalledWith('week');
+    const chartData = screen.getByTestId('chart-data-hour');
+    expect(JSON.parse(chartData.textContent)).toEqual(
+      mockTrends.hourlyTrends.map(item => ({
+        hour: expect.any(String),
+        accidents: item.count
+      }))
+    );
   });
 
   test('handles empty data gracefully', () => {
-    renderWithMantine(<TimeBasedTrends data={{ accidentCount: [], severityDistribution: [] }} />);
-    expect(screen.getByText(/no data available/i)).toBeInTheDocument();
+    renderWithMantine(
+      <TimeBasedTrends 
+        trends={{
+          monthlyTrends: [],
+          weeklyTrends: [],
+          hourlyTrends: []
+        }} 
+      />
+    );
+    expect(screen.getByText('Monthly Accident Trends')).toBeInTheDocument();
+    expect(screen.getByText('Weekly Accident Trends')).toBeInTheDocument();
+    expect(screen.getByText('Time of Day Analysis')).toBeInTheDocument();
   });
 }); 

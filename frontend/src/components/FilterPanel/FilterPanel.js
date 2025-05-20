@@ -95,9 +95,10 @@ export default function FilterPanel({
               <Box style={{ color: theme.colors.brand[5] }}>
                 <IconCamera size={16} />
               </Box>
-              <Text className="filter-label">Camera ID</Text>
+              <Text component="label" htmlFor="camera-select" className="filter-label">Camera ID</Text>
             </Group>
             <Select
+              id="camera-select"
               placeholder="All"
               data={[{ value: '', label: 'All' }, ...cameraOptions]}
               value={filters.cameraId}
@@ -125,9 +126,10 @@ export default function FilterPanel({
               <Box style={{ color: theme.colors.brand[5] }}>
                 <IconMapPin size={16} />
               </Box>
-              <Text className="filter-label">Location</Text>
+              <Text component="label" htmlFor="location-select" className="filter-label">Location</Text>
             </Group>
             <Select
+              id="location-select"
               placeholder="All"
               data={[{ value: '', label: 'All' }, ...locationOptions]}
               value={filters.location}
@@ -155,9 +157,10 @@ export default function FilterPanel({
               <Box style={{ color: theme.colors.brand[5] }}>
                 <IconAlertTriangle size={16} />
               </Box>
-              <Text className="filter-label">Severity</Text>
+              <Text component="label" htmlFor="severity-select" className="filter-label">Severity</Text>
             </Group>
             <Select
+              id="severity-select"
               placeholder="All"
               data={[
                 { value: '', label: 'All' },
@@ -190,9 +193,10 @@ export default function FilterPanel({
               <Box style={{ color: theme.colors.brand[5] }}>
                 <IconCalendar size={16} />
               </Box>
-              <Text className="filter-label">Start Date</Text>
+              <Text component="label" htmlFor="start-date" className="filter-label">Start Date</Text>
             </Group>
             <input
+              id="start-date"
               type="date"
               className="native-date-input"
               value={filters.startDate || ''}
@@ -208,9 +212,10 @@ export default function FilterPanel({
               <Box style={{ color: theme.colors.brand[5] }}>
                 <IconCalendar size={16} />
               </Box>
-              <Text className="filter-label">End Date</Text>
+              <Text component="label" htmlFor="end-date" className="filter-label">End Date</Text>
             </Group>
             <input
+              id="end-date"
               type="date"
               className="native-date-input"
               value={filters.endDate || ''}
@@ -226,9 +231,10 @@ export default function FilterPanel({
               <Box style={{ color: theme.colors.brand[5] }}>
                 <IconClock size={16} />
               </Box>
-              <Text className="filter-label">Start Time</Text>
+              <Text component="label" htmlFor="start-time" className="filter-label">Start Time</Text>
             </Group>
             <Select
+              id="start-time"
               placeholder="All"
               data={[{ value: '', label: 'All' }, ...timeOptions]}
               value={filters.startTime}
@@ -255,9 +261,10 @@ export default function FilterPanel({
               <Box style={{ color: theme.colors.brand[5] }}>
                 <IconClock size={16} />
               </Box>
-              <Text className="filter-label">End Time</Text>
+              <Text component="label" htmlFor="end-time" className="filter-label">End Time</Text>
             </Group>
             <Select
+              id="end-time"
               placeholder="All"
               data={[{ value: '', label: 'All' }, ...timeOptions]}
               value={filters.endTime}

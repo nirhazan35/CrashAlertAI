@@ -35,10 +35,11 @@ describe('Register Component', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByRole('textbox', { name: /username/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+    expect(screen.getByText(/create an account/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/enter your username/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/enter your email/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/confirm your password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument();
   });
 
@@ -51,10 +52,10 @@ describe('Register Component', () => {
       </BrowserRouter>
     );
 
-    const usernameInput = screen.getByRole('textbox', { name: /username/i });
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
-    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+    const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+    const emailInput = screen.getByPlaceholderText(/enter your email/i);
+    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
+    const confirmPasswordInput = screen.getByPlaceholderText(/confirm your password/i);
     const registerButton = screen.getByRole('button', { name: /register/i });
 
     await fireEvent.change(usernameInput, { target: { value: 'testuser' } });
@@ -63,10 +64,13 @@ describe('Register Component', () => {
     await fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
     await fireEvent.click(registerButton);
 
-    expect(mockRegister).toHaveBeenCalledWith({
-      username: 'testuser',
-      email: 'test@example.com',
-      password: 'password123'
+    await waitFor(() => {
+      expect(mockRegister).toHaveBeenCalledWith({
+        username: 'testuser',
+        email: 'test@example.com',
+        password: 'password123'
+      });
+      expect(mockNavigate).toHaveBeenCalledWith('/login');
     });
   });
 
@@ -79,10 +83,10 @@ describe('Register Component', () => {
       </BrowserRouter>
     );
 
-    const usernameInput = screen.getByRole('textbox', { name: /username/i });
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
-    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+    const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+    const emailInput = screen.getByPlaceholderText(/enter your email/i);
+    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
+    const confirmPasswordInput = screen.getByPlaceholderText(/confirm your password/i);
     const registerButton = screen.getByRole('button', { name: /register/i });
 
     await fireEvent.change(usernameInput, { target: { value: 'testuser' } });
@@ -103,8 +107,8 @@ describe('Register Component', () => {
       </BrowserRouter>
     );
 
-    const passwordInput = screen.getByLabelText(/password/i);
-    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
+    const confirmPasswordInput = screen.getByPlaceholderText(/confirm your password/i);
     const registerButton = screen.getByRole('button', { name: /register/i });
 
     await fireEvent.change(passwordInput, { target: { value: 'password123' } });
@@ -112,6 +116,61 @@ describe('Register Component', () => {
     await fireEvent.click(registerButton);
 
     expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
+  });
+
+  test('validates required fields', async () => {
+    renderWithMantine(
+      <BrowserRouter>
+        <Register />
+      </BrowserRouter>
+    );
+
+    const registerButton = screen.getByRole('button', { name: /register/i });
+    await fireEvent.click(registerButton);
+
+    expect(screen.getByText(/username is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/password is required/i)).toBeInTheDocument();
+  });
+
+  test('validates email format', async () => {
+    renderWithMantine(
+      <BrowserRouter>
+        <Register />
+      </BrowserRouter>
+    );
+
+    const emailInput = screen.getByPlaceholderText(/enter your email/i);
+    const registerButton = screen.getByRole('button', { name: /register/i });
+
+    await fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+    await fireEvent.click(registerButton);
+
+    expect(screen.getByText(/invalid email format/i)).toBeInTheDocument();
+  });
+
+  test('shows loading state during registration', async () => {
+    mockRegister.mockImplementationOnce(() => new Promise(resolve => setTimeout(resolve, 100)));
+
+    renderWithMantine(
+      <BrowserRouter>
+        <Register />
+      </BrowserRouter>
+    );
+
+    const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+    const emailInput = screen.getByPlaceholderText(/enter your email/i);
+    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
+    const confirmPasswordInput = screen.getByPlaceholderText(/confirm your password/i);
+    const registerButton = screen.getByRole('button', { name: /register/i });
+
+    await fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    await fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    await fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    await fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
+    await fireEvent.click(registerButton);
+
+    expect(screen.getByText(/registering/i)).toBeInTheDocument();
   });
 
   test('redirects to login page', () => {

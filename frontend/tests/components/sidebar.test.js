@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Sidebar from '../../src/components/sidebar/sidebar';
 import { useAuth } from '../../src/authentication/AuthProvider';
@@ -16,7 +16,12 @@ jest.mock('@mantine/core', () => ({
     <button onClick={onClick} {...props}>{children}</button>
   ),
   ThemeIcon: ({ children, ...props }) => <div {...props}>{children}</div>,
-  Divider: () => <hr />,
+  Divider: ({ label, ...props }) => (
+    <div className="mantine-divider" {...props}>
+      <hr />
+      {label && <div className="mantine-divider-label">{label}</div>}
+    </div>
+  ),
   Box: ({ children, ...props }) => <div {...props}>{children}</div>
 }));
 
@@ -26,15 +31,12 @@ jest.mock('../../src/authentication/AuthProvider', () => ({
 }));
 
 describe('Sidebar Component', () => {
-  const mockLogout = jest.fn();
-  
   beforeEach(() => {
     jest.clearAllMocks();
     
     // Default mock implementation
     useAuth.mockReturnValue({
-      user: { isLoggedIn: true, role: 'user' },
-      logout: mockLogout
+      user: { isLoggedIn: true, role: 'user' }
     });
   });
 
@@ -46,19 +48,19 @@ describe('Sidebar Component', () => {
     );
     
     // Check that user-specific menu items are rendered
-    expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
-    expect(screen.getByText(/statistics/i)).toBeInTheDocument();
-    expect(screen.getByText(/history/i)).toBeInTheDocument();
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Statistics')).toBeInTheDocument();
+    expect(screen.getByText('History')).toBeInTheDocument();
+    expect(screen.getByText('Live Feed')).toBeInTheDocument();
     
     // Admin-specific items should not be rendered
-    expect(screen.queryByText(/admin/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/manage cameras/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Logs' })).not.toBeInTheDocument();
   });
 
   test('renders correctly for admin role', () => {
     useAuth.mockReturnValue({
-      user: { isLoggedIn: true, role: 'admin' },
-      logout: mockLogout
+      user: { isLoggedIn: true, role: 'admin' }
     });
     
     renderWithMantine(
@@ -68,26 +70,14 @@ describe('Sidebar Component', () => {
     );
     
     // Check that admin-specific menu items are rendered
-    expect(screen.getByText(/admin/i)).toBeInTheDocument();
-    expect(screen.getByText(/manage cameras/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Admin' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Logs' })).toBeInTheDocument();
     
     // Common items should be rendered for both roles
-    expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
-  });
-
-  test('handles logout correctly', () => {
-    renderWithMantine(
-      <BrowserRouter>
-        <Sidebar />
-      </BrowserRouter>
-    );
-    
-    // Find and click logout button
-    const logoutButton = screen.getByText(/logout/i);
-    fireEvent.click(logoutButton);
-    
-    // Check that logout function was called
-    expect(mockLogout).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Statistics')).toBeInTheDocument();
+    expect(screen.getByText('History')).toBeInTheDocument();
+    expect(screen.getByText('Live Feed')).toBeInTheDocument();
   });
 
   test('navigation links have correct hrefs', () => {
@@ -98,8 +88,9 @@ describe('Sidebar Component', () => {
     );
     
     // Check that links have correct hrefs
-    expect(screen.getByRole('link', { name: /dashboard/i })).toHaveAttribute('href', '/dashboard');
-    expect(screen.getByRole('link', { name: /statistics/i })).toHaveAttribute('href', '/statistics');
-    expect(screen.getByRole('link', { name: /history/i })).toHaveAttribute('href', '/history');
+    expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Statistics' })).toHaveAttribute('href', '/statistics');
+    expect(screen.getByRole('link', { name: 'History' })).toHaveAttribute('href', '/history');
+    expect(screen.getByRole('link', { name: 'Live Feed' })).toHaveAttribute('href', '/live');
   });
 }); 

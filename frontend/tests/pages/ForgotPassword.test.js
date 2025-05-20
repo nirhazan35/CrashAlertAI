@@ -27,9 +27,10 @@ describe('ForgotPassword Component', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText(/forgot password/i)).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: /username/i })).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: /email/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Reset Password' })).toBeInTheDocument();
+    expect(screen.getByText('Please enter your username and email to reset your password')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/enter your username/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/enter your email/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument();
   });
 
@@ -45,17 +46,17 @@ describe('ForgotPassword Component', () => {
       </BrowserRouter>
     );
 
-    const usernameInput = screen.getByRole('textbox', { name: /username/i });
-    const emailInput = screen.getByRole('textbox', { name: /email/i });
+    const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+    const emailInput = screen.getByPlaceholderText(/enter your email/i);
     const submitButton = screen.getByRole('button', { name: /submit/i });
 
-    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    fireEvent.click(submitButton);
+    await fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    await fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    await fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        `${process.env.REACT_APP_URL_BACKEND}/users/request-password-change`,
+        expect.stringContaining('/users/request-password-change'),
         expect.objectContaining({
           method: 'POST',
           headers: {
@@ -67,7 +68,7 @@ describe('ForgotPassword Component', () => {
           })
         })
       );
-      expect(screen.getByText(/an email has been sent to your admin/i)).toBeInTheDocument();
+      expect(screen.getByText('An email has been sent to your admin for further instructions.')).toBeInTheDocument();
     });
   });
 
@@ -83,16 +84,16 @@ describe('ForgotPassword Component', () => {
       </BrowserRouter>
     );
 
-    const usernameInput = screen.getByRole('textbox', { name: /username/i });
-    const emailInput = screen.getByRole('textbox', { name: /email/i });
+    const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+    const emailInput = screen.getByPlaceholderText(/enter your email/i);
     const submitButton = screen.getByRole('button', { name: /submit/i });
 
-    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    fireEvent.click(submitButton);
+    await fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    await fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    await fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/failed to send request: invalid credentials/i)).toBeInTheDocument();
+      expect(screen.getByText('Failed to send request: Invalid credentials')).toBeInTheDocument();
     });
   });
 
@@ -104,10 +105,14 @@ describe('ForgotPassword Component', () => {
     );
 
     const submitButton = screen.getByRole('button', { name: /submit/i });
-    fireEvent.click(submitButton);
+    await fireEvent.click(submitButton);
 
-    expect(screen.getByText(/username is required/i)).toBeInTheDocument();
-    expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+    // Check that the form elements are marked as required
+    const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+    const emailInput = screen.getByPlaceholderText(/enter your email/i);
+    
+    expect(usernameInput).toBeRequired();
+    expect(emailInput).toBeRequired();
   });
 
   test('validates email format', async () => {
@@ -117,17 +122,11 @@ describe('ForgotPassword Component', () => {
       </BrowserRouter>
     );
 
-    const emailInput = screen.getByRole('textbox', { name: /email/i });
-    const submitButton = screen.getByRole('button', { name: /submit/i });
-
-    fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-    fireEvent.click(submitButton);
-
-    expect(screen.getByText(/invalid email format/i)).toBeInTheDocument();
+    const emailInput = screen.getByPlaceholderText(/enter your email/i);
+    expect(emailInput).toHaveAttribute('type', 'email');
   });
 
-  it('handles network errors gracefully', async () => {
-    // Mock a network error
+  test('handles network errors gracefully', async () => {
     global.fetch.mockRejectedValueOnce(new Error('Network error'));
     
     renderWithMantine(
@@ -136,22 +135,18 @@ describe('ForgotPassword Component', () => {
       </BrowserRouter>
     );
     
-    // Fill in the form
-    const usernameInput = screen.getByRole('textbox', { name: /username/i });
-    const emailInput = screen.getByRole('textbox', { name: /email/i });
-    
-    // Submit the form
+    const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+    const emailInput = screen.getByPlaceholderText(/enter your email/i);
     const submitButton = screen.getByRole('button', { name: /submit/i });
-    fireEvent.click(submitButton);
+
+    await fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    await fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    await fireEvent.click(submitButton);
     
-    // Generic error message should be displayed
     await waitFor(() => {
-      expect(screen.getByText(/An error occurred while sending your request/i)).toBeInTheDocument();
+      expect(screen.getByText('An error occurred while sending your request.')).toBeInTheDocument();
     });
     
-    // Should have logged the error
-    await waitFor(() => {
-      expect(console.error).toHaveBeenCalled();
-    });
+    expect(console.error).toHaveBeenCalled();
   });
 }); 

@@ -2,14 +2,21 @@ import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import NotificationCenter from '../../src/components/notifications/notificationDropbox';
-import { useAuth } from '../../src/authentication/AuthProvider';
-import { useAccidentLogs } from '../../src/context/AccidentContext';
-import { renderWithMantine } from '../utils/test-utils';
+import { renderWithAllProviders } from '../utils/test-utils';
 
 // Mock Mantine components
 jest.mock('@mantine/core', () => ({
   ...jest.requireActual('@mantine/core'),
-  Menu: ({ children, ...props }) => <div data-testid="mantine-menu" {...props}>{children}</div>,
+  Menu: ({ children, ...props }) => (
+    <div data-testid="mantine-menu" {...props}>
+      {children}
+    </div>
+  ),
+  MenuTarget: ({ children }) => <div>{children}</div>,
+  MenuDropdown: ({ children }) => <div>{children}</div>,
+  MenuItem: ({ children, onClick, ...props }) => (
+    <button onClick={onClick} {...props}>{children}</button>
+  ),
   UnstyledButton: ({ children, onClick, ...props }) => (
     <button onClick={onClick} {...props}>{children}</button>
   ),
@@ -20,17 +27,19 @@ jest.mock('@mantine/core', () => ({
   ActionIcon: ({ children, onClick, ...props }) => (
     <button onClick={onClick} {...props}>{children}</button>
   ),
-  Tooltip: ({ children, ...props }) => <div {...props}>{children}</div>
+  Tooltip: ({ children, ...props }) => <div {...props}>{children}</div>,
+  Indicator: ({ children, label, ...props }) => (
+    <div {...props}>
+      {label && <span>{label}</span>}
+      {children}
+    </div>
+  ),
+  Divider: ({ children, ...props }) => <hr {...props}>{children}</hr>
 }));
 
-// Mock the hooks
-jest.mock('../../src/authentication/AuthProvider', () => ({
-  useAuth: jest.fn()
-}));
-
-jest.mock('../../src/context/AccidentContext', () => ({
-  useAccidentLogs: jest.fn()
-}));
+// Mock the hooks in the test file, not in test-utils
+jest.mock('../../src/authentication/AuthProvider');
+jest.mock('../../src/context/AccidentContext');
 
 describe('NotificationCenter Component', () => {
   const mockUser = {
@@ -56,21 +65,32 @@ describe('NotificationCenter Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Setup mocks directly in the test file
+    const { useAuth } = require('../../src/authentication/AuthProvider');
     useAuth.mockReturnValue({ user: mockUser });
+    
+    const { useAccidentLogs } = require('../../src/context/AccidentContext');
     useAccidentLogs.mockReturnValue({
+      accidentLogs: [],
+      selectedAlert: null,
+      setSelectedAlert: jest.fn(),
+      updateAccidentDetails: jest.fn(),
+      clearSelectedAlert: jest.fn(),
+      updateAccidentStatus: jest.fn(),
+      handleRowDoubleClick: jest.fn(),
       notifications: mockNotifications,
-      markNotificationAsRead: jest.fn(),
-      clearNotifications: jest.fn()
+      setNotifications: jest.fn()
     });
   });
 
   test('renders notification center with unread count', () => {
-    renderWithMantine(<NotificationCenter />);
+    renderWithAllProviders(<NotificationCenter />);
     expect(screen.getByText('2')).toBeInTheDocument(); // Unread count
   });
 
   test('displays notifications when menu is opened', () => {
-    renderWithMantine(<NotificationCenter />);
+    renderWithAllProviders(<NotificationCenter />);
     const menuButton = screen.getByRole('button');
     fireEvent.click(menuButton);
     
@@ -79,38 +99,56 @@ describe('NotificationCenter Component', () => {
   });
 
   test('marks notification as read when clicked', () => {
-    const mockMarkAsRead = jest.fn();
+    const mockSetSelectedAlert = jest.fn();
+    const mockSetNotifications = jest.fn();
+
+    const { useAccidentLogs } = require('../../src/context/AccidentContext');
     useAccidentLogs.mockReturnValue({
+      accidentLogs: [],
+      selectedAlert: null,
+      setSelectedAlert: mockSetSelectedAlert,
+      updateAccidentDetails: jest.fn(),
+      clearSelectedAlert: jest.fn(),
+      updateAccidentStatus: jest.fn(),
+      handleRowDoubleClick: jest.fn(),
       notifications: mockNotifications,
-      markNotificationAsRead: mockMarkAsRead,
-      clearNotifications: jest.fn()
+      setNotifications: mockSetNotifications
     });
 
-    renderWithMantine(<NotificationCenter />);
+    renderWithAllProviders(<NotificationCenter />);
     const menuButton = screen.getByRole('button');
     fireEvent.click(menuButton);
     
     const notification = screen.getByText('New accident detected at Main Street');
     fireEvent.click(notification);
     
-    expect(mockMarkAsRead).toHaveBeenCalledWith('1');
+    expect(mockSetNotifications).toHaveBeenCalled();
+    expect(mockSetSelectedAlert).toHaveBeenCalled();
   });
 
   test('clears all notifications when clear button is clicked', () => {
-    const mockClearNotifications = jest.fn();
+    const mockSetNotifications = jest.fn();
+
+    const { useAccidentLogs } = require('../../src/context/AccidentContext');
     useAccidentLogs.mockReturnValue({
+      accidentLogs: [],
+      selectedAlert: null,
+      setSelectedAlert: jest.fn(),
+      updateAccidentDetails: jest.fn(),
+      clearSelectedAlert: jest.fn(),
+      updateAccidentStatus: jest.fn(),
+      handleRowDoubleClick: jest.fn(),
       notifications: mockNotifications,
-      markNotificationAsRead: jest.fn(),
-      clearNotifications: mockClearNotifications
+      setNotifications: mockSetNotifications
     });
 
-    renderWithMantine(<NotificationCenter />);
+    renderWithAllProviders(<NotificationCenter />);
     const menuButton = screen.getByRole('button');
     fireEvent.click(menuButton);
     
     const clearButton = screen.getByText(/clear all/i);
     fireEvent.click(clearButton);
     
-    expect(mockClearNotifications).toHaveBeenCalled();
+    expect(mockSetNotifications).toHaveBeenCalledWith([]);
   });
-}); 
+});

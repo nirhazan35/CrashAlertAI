@@ -12,36 +12,13 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn(),
 }));
 
-// Mock the useAuth hook
-jest.mock('../../src/authentication/AuthProvider', () => ({
-  ...jest.requireActual('../../src/authentication/AuthProvider'),
-  useAuth: () => ({
-    user: { username: 'testuser', role: 'user' },
-    login: jest.fn(),
-    logout: jest.fn(),
-  }),
-}));
-
-// Mock the useAccidentLogs hook
-jest.mock('../../src/context/AccidentContext', () => ({
-  ...jest.requireActual('../../src/context/AccidentContext'),
-  useAccidentLogs: () => ({
-    accidentLogs: [],
-    setAccidentLogs: jest.fn(),
-    selectedAlert: null,
-    setSelectedAlert: jest.fn(),
-    notifications: [],
-    setNotifications: jest.fn(),
-    updateAccidentStatus: jest.fn(),
-  }),
-}));
-
+// Create a separate file for the mock implementations
 const AllTheProviders = ({ children }) => {
   return (
     <BrowserRouter>
       <AuthProvider>
         <AccidentProvider>
-          <MantineProvider>
+          <MantineProvider theme={theme} defaultColorScheme="light">
             {children}
           </MantineProvider>
         </AccidentProvider>
@@ -114,7 +91,9 @@ const renderWithAllProviders = (
     <BrowserRouter initialEntries={[initialRoute]}>
       <MantineProvider theme={theme} defaultColorScheme="light">
         <AuthProvider>
-          {children}
+          <AccidentProvider>
+            {children}
+          </AccidentProvider>
         </AuthProvider>
       </MantineProvider>
     </BrowserRouter>
@@ -152,6 +131,53 @@ const mockApiResponse = (data, status = 200, ok = true) => {
   };
 };
 
+// Mock the useAccidentLogs hook
+jest.mock('../../src/context/AccidentContext', () => {
+  const originalModule = jest.requireActual('../../src/context/AccidentContext');
+  
+  return {
+    ...originalModule,
+    useAccidentLogs: () => ({
+      accidentLogs: [],
+      selectedAlert: null,
+      setSelectedAlert: jest.fn(),
+      updateAccidentDetails: jest.fn(),
+      clearSelectedAlert: jest.fn(),
+      updateAccidentStatus: jest.fn(),
+      handleRowDoubleClick: jest.fn(),
+      notifications: [
+        {
+          accidentId: '1',
+          msg: 'New accident detected at Main Street',
+          read: false,
+          timestamp: '2024-03-20T10:00:00Z'
+        },
+        {
+          accidentId: '2',
+          msg: 'Accident at Oak Avenue has been handled',
+          read: true,
+          timestamp: '2024-03-20T09:00:00Z'
+        }
+      ],
+      setNotifications: jest.fn()
+    }),
+  };
+});
+
+// Mock the useAuth hook
+jest.mock('../../src/authentication/AuthProvider', () => {
+  const originalModule = jest.requireActual('../../src/authentication/AuthProvider');
+  
+  return {
+    ...originalModule,
+    useAuth: () => ({
+      user: { username: 'testuser', role: 'user' },
+      login: jest.fn(),
+      logout: jest.fn(),
+    }),
+  };
+});
+
 // re-export everything
 export * from '@testing-library/react';
 
@@ -164,4 +190,4 @@ export {
   renderWithAllProviders,
   mockAuthenticatedUser,
   mockApiResponse
-}; 
+};
