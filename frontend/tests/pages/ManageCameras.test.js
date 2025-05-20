@@ -13,9 +13,10 @@ jest.mock('../../src/authentication/AuthProvider', () => ({
 }));
 
 jest.mock('../../src/pages/AdminPage/AdminActions', () => ({
+  fetchUsers: jest.fn(),
   fetchCameras: jest.fn(),
-  deleteCamera: jest.fn(),
-  updateCamera: jest.fn()
+  fetchAssignedCameras: jest.fn(),
+  updateAssignedCameras: jest.fn()
 }));
 
 describe('ManageCameras Component', () => {
@@ -25,9 +26,23 @@ describe('ManageCameras Component', () => {
     token: 'test-token'
   };
 
+  const mockUsers = [
+    {
+      _id: '1',
+      username: 'user1',
+      role: 'user'
+    },
+    {
+      _id: '2',
+      username: 'user2',
+      role: 'user'
+    }
+  ];
+
   const mockCameras = [
     {
       _id: '1',
+      cameraId: 'CAM001',
       name: 'Camera1',
       location: 'Location1',
       status: 'active',
@@ -35,6 +50,7 @@ describe('ManageCameras Component', () => {
     },
     {
       _id: '2',
+      cameraId: 'CAM002',
       name: 'Camera2',
       location: 'Location2',
       status: 'inactive',
@@ -42,10 +58,15 @@ describe('ManageCameras Component', () => {
     }
   ];
 
+  const mockAssignedCameras = ['CAM001'];
+
   beforeEach(() => {
     jest.clearAllMocks();
     useAuth.mockReturnValue({ user: mockUser });
+    AdminActions.fetchUsers.mockResolvedValue(mockUsers);
     AdminActions.fetchCameras.mockResolvedValue(mockCameras);
+    AdminActions.fetchAssignedCameras.mockResolvedValue(mockAssignedCameras);
+    AdminActions.updateAssignedCameras.mockResolvedValue({ success: true });
   });
 
   test('renders manage cameras page', () => {
@@ -55,11 +76,11 @@ describe('ManageCameras Component', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText(/manage cameras/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /add new camera/i })).toBeInTheDocument();
+    expect(screen.getByText('User Selection')).toBeInTheDocument();
+    expect(screen.getByText('Select a User')).toBeInTheDocument();
   });
 
-  test('displays camera data in table', async () => {
+  test('loads and displays users in select dropdown', async () => {
     renderWithMantine(
       <BrowserRouter>
         <ManageCameras />
@@ -67,15 +88,78 @@ describe('ManageCameras Component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Camera1')).toBeInTheDocument();
-      expect(screen.getByText('Location1')).toBeInTheDocument();
-      expect(screen.getByText('192.168.1.1')).toBeInTheDocument();
-      expect(screen.getByText('active')).toBeInTheDocument();
+      expect(screen.getByText('user1')).toBeInTheDocument();
+      expect(screen.getByText('user2')).toBeInTheDocument();
     });
   });
 
-  test('handles camera deletion', async () => {
-    AdminActions.deleteCamera.mockResolvedValueOnce({ success: true });
+  test('loads and displays cameras when user is selected', async () => {
+    renderWithMantine(
+      <BrowserRouter>
+        <ManageCameras />
+      </BrowserRouter>
+    );
+
+    // Wait for users to load
+    await waitFor(() => {
+      expect(screen.getByText('user1')).toBeInTheDocument();
+    });
+
+    // Select a user
+    const select = screen.getByTestId('user-select');
+    fireEvent.mouseDown(select);
+    const option = screen.getByText('user1');
+    fireEvent.click(option);
+
+    // Wait for cameras to load
+    await waitFor(() => {
+      expect(screen.getByText('Assign Cameras')).toBeInTheDocument();
+      expect(screen.getByText('Camera1')).toBeInTheDocument();
+      expect(screen.getByText('Camera2')).toBeInTheDocument();
+      expect(screen.getByText('1 cameras assigned')).toBeInTheDocument();
+    });
+  });
+
+  test('handles camera assignment changes', async () => {
+    renderWithMantine(
+      <BrowserRouter>
+        <ManageCameras />
+      </BrowserRouter>
+    );
+
+    // Wait for users to load
+    await waitFor(() => {
+      expect(screen.getByText('user1')).toBeInTheDocument();
+    });
+
+    // Select a user
+    const select = screen.getByTestId('user-select');
+    fireEvent.mouseDown(select);
+    const option = screen.getByText('user1');
+    fireEvent.click(option);
+
+    // Wait for cameras to load
+    await waitFor(() => {
+      expect(screen.getByText('Camera1')).toBeInTheDocument();
+    });
+
+    // Toggle camera assignment
+    const checkbox = screen.getByTestId('camera-checkbox-CAM001');
+    fireEvent.click(checkbox);
+
+    // Save changes
+    const saveButton = screen.getByTestId('save-changes-button');
+    fireEvent.click(saveButton);
+
+    expect(AdminActions.updateAssignedCameras).toHaveBeenCalledWith(
+      mockUser,
+      '1',
+      []
+    );
+  });
+
+  test('handles error when loading users', async () => {
+    AdminActions.fetchUsers.mockRejectedValueOnce(new Error('Failed to load users'));
 
     renderWithMantine(
       <BrowserRouter>
@@ -84,56 +168,48 @@ describe('ManageCameras Component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Camera1')).toBeInTheDocument();
+      expect(screen.getByText('Failed to load users')).toBeInTheDocument();
     });
-
-    const deleteButton = screen.getAllByRole('button', { name: /delete/i })[0];
-    fireEvent.click(deleteButton);
-
-    expect(AdminActions.deleteCamera).toHaveBeenCalledWith('1');
-  });
-
-  test('handles camera status update', async () => {
-    AdminActions.updateCamera.mockResolvedValueOnce({ success: true });
-
-    renderWithMantine(
-      <BrowserRouter>
-        <ManageCameras />
-      </BrowserRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('Camera1')).toBeInTheDocument();
-    });
-
-    const statusToggle = screen.getAllByRole('switch')[0];
-    fireEvent.click(statusToggle);
-
-    expect(AdminActions.updateCamera).toHaveBeenCalledWith('1', { status: 'inactive' });
-  });
-
-  test('navigates to add new camera page', () => {
-    renderWithMantine(
-      <BrowserRouter>
-        <ManageCameras />
-      </BrowserRouter>
-    );
-
-    const addButton = screen.getByRole('button', { name: /add new camera/i });
-    expect(addButton).toHaveAttribute('href', '/add-camera');
   });
 
   test('handles error when loading cameras', async () => {
-    AdminActions.fetchCameras.mockRejectedValueOnce(new Error('Failed to load cameras'));
-
+    // First render with successful user fetch
     renderWithMantine(
       <BrowserRouter>
         <ManageCameras />
       </BrowserRouter>
     );
 
+    // Wait for users to load
     await waitFor(() => {
-      expect(screen.getByText(/failed to load cameras/i)).toBeInTheDocument();
+      expect(screen.getByText('user1')).toBeInTheDocument();
     });
+
+    // Select a user
+    const select = screen.getByTestId('user-select');
+    fireEvent.mouseDown(select);
+    const option = screen.getByText('user1');
+    fireEvent.click(option);
+
+    // Wait for initial camera load
+    await waitFor(() => {
+      expect(screen.getByText('Assign Cameras')).toBeInTheDocument();
+    });
+
+    // Mock camera fetch failure
+    AdminActions.fetchAssignedCameras.mockRejectedValueOnce(new Error('Failed to load cameras'));
+
+    // Clear the selected user by clicking the clear button
+    const clearButton = screen.getByTestId('clear-user-button');
+    fireEvent.click(clearButton);
+
+    // Select the user again to trigger the error
+    fireEvent.mouseDown(select);
+    fireEvent.click(option);
+
+    // Wait for error message
+    await waitFor(() => {
+      expect(screen.getByText('Failed to load cameras')).toBeInTheDocument();
+    }, { timeout: 3000 });
   });
 }); 

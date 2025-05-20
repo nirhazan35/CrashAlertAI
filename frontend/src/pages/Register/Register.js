@@ -47,7 +47,7 @@ const Register = () => {
   };
 
   return (
-    <Box className="auth-page">
+    <Box className="auth-page" data-testid="register-page">
       <Container size="xs">
         <div className="auth-container">
           <Title order={2} style={{ textAlign: 'center' }}>Register New User</Title>
@@ -56,9 +56,12 @@ const Register = () => {
           </div>
 
           {message && (
-            <div className={`auth-message ${
-              message.includes("successful") ? "auth-message-success" : "auth-message-error"
-            }`}>
+            <div 
+              className={`auth-message ${
+                message.includes("successful") ? "auth-message-success" : "auth-message-error"
+              }`}
+              data-testid="register-message"
+            >
               {message}
             </div>
           )}
@@ -75,6 +78,7 @@ const Register = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   className="auth-input"
                   required
+                  data-testid="username-input"
                 />
               </div>
             </div>
@@ -90,6 +94,7 @@ const Register = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="auth-input"
                   required
+                  data-testid="email-input"
                 />
               </div>
             </div>
@@ -105,6 +110,7 @@ const Register = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="auth-input"
                   required
+                  data-testid="password-input"
                 />
               </div>
             </div>
@@ -117,6 +123,7 @@ const Register = () => {
                   onChange={(e) => setRole(e.target.value)}
                   className="auth-input"
                   required
+                  data-testid="role-select"
                 >
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
@@ -129,6 +136,7 @@ const Register = () => {
               fullWidth
               loading={isLoading}
               size="md"
+              data-testid="register-button"
             >
               {isLoading ? "Registering..." : "Register User"}
             </Button>

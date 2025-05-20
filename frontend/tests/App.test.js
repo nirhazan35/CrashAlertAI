@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../src/App';
 import { AuthProvider } from '../src/authentication/AuthProvider';
@@ -30,7 +30,7 @@ jest.mock('../src/pages/AuthLogs/AuthLogs', () => () => <div data-testid="auth-l
 // Mock layout components
 jest.mock('../src/components/sidebar/SidebarLayout', () => ({ children }) => (
   <div data-testid="sidebar-layout">
-    <div data-testid="sidebar-content">{children}</div>
+    {children}
   </div>
 ));
 
@@ -61,7 +61,11 @@ jest.mock('react-router-dom', () => {
     ...actual,
     BrowserRouter: ({ children }) => <div>{children}</div>,
     Routes: ({ children }) => <div data-testid="routes">{children}</div>,
-    Route: ({ element, path }) => {
+    Route: ({ element, path, children }) => {
+      if (children) {
+        return <div data-testid="nested-route">{children}</div>;
+      }
+      
       // Handle public routes
       if (path === '/login' || path === '/forgot-password' || path === '/request-password-change') {
         return <div data-testid="public-route">{element}</div>;
@@ -145,7 +149,13 @@ describe('App Component', () => {
       </MemoryRouter>
     );
     
-    expect(screen.getByTestId('dashboard')).toBeInTheDocument();
+    // Find all protected routes and get the one containing the dashboard
+    const protectedRoutes = screen.getAllByTestId('protected-route');
+    const dashboardRoute = protectedRoutes.find(route => 
+      within(route).queryByTestId('dashboard')
+    );
+    expect(dashboardRoute).toBeTruthy();
+    expect(within(dashboardRoute).getByTestId('dashboard')).toBeInTheDocument();
   });
 
   test('renders admin routes only for admin users', () => {

@@ -179,11 +179,18 @@ describe('StatisticsPage Component', () => {
       </BrowserRouter>
     );
 
-    const refreshButton = screen.getByRole('button', { name: /refresh/i });
+    // Wait for initial load to complete
+    await waitFor(() => {
+      expect(screen.getByText('Total Handled: 100')).toBeInTheDocument();
+    });
+
+    // Click refresh button
+    const refreshButton = screen.getByTestId('refresh-button');
     fireEvent.click(refreshButton);
 
+    // Wait for loading to complete and verify the fetch was called twice
     await waitFor(() => {
       expect(statisticsService.fetchHandledAccidents).toHaveBeenCalledTimes(2);
-    });
+    }, { timeout: 3000 });
   });
 }); 

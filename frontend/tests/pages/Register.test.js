@@ -16,66 +16,47 @@ jest.mock('../../src/authentication/AuthProvider', () => ({
   useAuth: jest.fn()
 }));
 
+// Mock fetch globally
+global.fetch = jest.fn();
+
 describe('Register Component', () => {
-  const mockRegister = jest.fn();
-  const mockNavigate = jest.fn();
+  const mockUser = {
+    token: 'test-token'
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
     useAuth.mockReturnValue({
-      register: mockRegister,
-      user: null
+      user: mockUser
     });
+    global.fetch.mockClear();
   });
 
-  test('renders registration form', () => {
+  test('renders registration form', async () => {
     renderWithMantine(
       <BrowserRouter>
         <Register />
       </BrowserRouter>
     );
 
-    expect(screen.getByText(/create an account/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/enter your username/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/enter your email/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/confirm your password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument();
-  });
-
-  test('handles registration submission', async () => {
-    mockRegister.mockResolvedValueOnce({ success: true });
-
-    renderWithMantine(
-      <BrowserRouter>
-        <Register />
-      </BrowserRouter>
-    );
-
-    const usernameInput = screen.getByPlaceholderText(/enter your username/i);
-    const emailInput = screen.getByPlaceholderText(/enter your email/i);
-    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
-    const confirmPasswordInput = screen.getByPlaceholderText(/confirm your password/i);
-    const registerButton = screen.getByRole('button', { name: /register/i });
-
-    await fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-    await fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    await fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    await fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
-    await fireEvent.click(registerButton);
-
+    // Wait for the page to render
     await waitFor(() => {
-      expect(mockRegister).toHaveBeenCalledWith({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'password123'
-      });
-      expect(mockNavigate).toHaveBeenCalledWith('/login');
+      expect(screen.getByTestId('register-page')).toBeInTheDocument();
     });
+
+    expect(screen.getByText('Register New User')).toBeInTheDocument();
+    expect(screen.getByTestId('username-input')).toBeInTheDocument();
+    expect(screen.getByTestId('email-input')).toBeInTheDocument();
+    expect(screen.getByTestId('password-input')).toBeInTheDocument();
+    expect(screen.getByTestId('role-select')).toBeInTheDocument();
+    expect(screen.getByTestId('register-button')).toBeInTheDocument();
   });
 
-  test('shows error message on registration failure', async () => {
-    mockRegister.mockRejectedValueOnce(new Error('Registration failed'));
+  test('handles successful registration', async () => {
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ message: 'User registered successfully' })
+    });
 
     renderWithMantine(
       <BrowserRouter>
@@ -83,39 +64,155 @@ describe('Register Component', () => {
       </BrowserRouter>
     );
 
-    const usernameInput = screen.getByPlaceholderText(/enter your username/i);
-    const emailInput = screen.getByPlaceholderText(/enter your email/i);
-    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
-    const confirmPasswordInput = screen.getByPlaceholderText(/confirm your password/i);
-    const registerButton = screen.getByRole('button', { name: /register/i });
-
-    await fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-    await fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    await fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    await fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
-    await fireEvent.click(registerButton);
-
+    // Wait for the page to render
     await waitFor(() => {
-      expect(screen.getByText(/registration failed/i)).toBeInTheDocument();
+      expect(screen.getByTestId('register-page')).toBeInTheDocument();
+    });
+
+    // Fill in the form
+    fireEvent.change(screen.getByTestId('username-input'), {
+      target: { value: 'testuser' }
+    });
+    fireEvent.change(screen.getByTestId('email-input'), {
+      target: { value: 'test@example.com' }
+    });
+    fireEvent.change(screen.getByTestId('password-input'), {
+      target: { value: 'password123' }
+    });
+    fireEvent.change(screen.getByTestId('role-select'), {
+      target: { value: 'admin' }
+    });
+
+    // Submit the form
+    fireEvent.click(screen.getByTestId('register-button'));
+
+    // Verify the fetch call
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/auth/register'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer test-token'
+          }),
+          body: JSON.stringify({
+            username: 'testuser',
+            email: 'test@example.com',
+            password: 'password123',
+            role: 'admin'
+          })
+        })
+      );
+    });
+
+    // Verify success message
+    await waitFor(() => {
+      expect(screen.getByTestId('register-message')).toHaveTextContent('Registration successful!');
     });
   });
 
-  test('validates password match', async () => {
+  test('handles registration failure', async () => {
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({ message: 'Username already exists' })
+    });
+
     renderWithMantine(
       <BrowserRouter>
         <Register />
       </BrowserRouter>
     );
 
-    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
-    const confirmPasswordInput = screen.getByPlaceholderText(/confirm your password/i);
-    const registerButton = screen.getByRole('button', { name: /register/i });
+    // Wait for the page to render
+    await waitFor(() => {
+      expect(screen.getByTestId('register-page')).toBeInTheDocument();
+    });
 
-    await fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    await fireEvent.change(confirmPasswordInput, { target: { value: 'different' } });
-    await fireEvent.click(registerButton);
+    // Fill in the form
+    fireEvent.change(screen.getByTestId('username-input'), {
+      target: { value: 'testuser' }
+    });
+    fireEvent.change(screen.getByTestId('email-input'), {
+      target: { value: 'test@example.com' }
+    });
+    fireEvent.change(screen.getByTestId('password-input'), {
+      target: { value: 'password123' }
+    });
 
-    expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
+    // Submit the form
+    fireEvent.click(screen.getByTestId('register-button'));
+
+    // Verify error message
+    await waitFor(() => {
+      expect(screen.getByTestId('register-message')).toHaveTextContent('Registration failed: Username already exists');
+    });
+  });
+
+  test('handles network error', async () => {
+    global.fetch.mockRejectedValueOnce(new Error('Network error'));
+
+    renderWithMantine(
+      <BrowserRouter>
+        <Register />
+      </BrowserRouter>
+    );
+
+    // Wait for the page to render
+    await waitFor(() => {
+      expect(screen.getByTestId('register-page')).toBeInTheDocument();
+    });
+
+    // Fill in the form
+    fireEvent.change(screen.getByTestId('username-input'), {
+      target: { value: 'testuser' }
+    });
+    fireEvent.change(screen.getByTestId('email-input'), {
+      target: { value: 'test@example.com' }
+    });
+    fireEvent.change(screen.getByTestId('password-input'), {
+      target: { value: 'password123' }
+    });
+
+    // Submit the form
+    fireEvent.click(screen.getByTestId('register-button'));
+
+    // Verify error message
+    await waitFor(() => {
+      expect(screen.getByTestId('register-message')).toHaveTextContent('An error occurred while registering. Please try again later.');
+    });
+  });
+
+  test('shows loading state during registration', async () => {
+    global.fetch.mockImplementationOnce(() => new Promise(resolve => setTimeout(resolve, 100)));
+
+    renderWithMantine(
+      <BrowserRouter>
+        <Register />
+      </BrowserRouter>
+    );
+
+    // Wait for the page to render
+    await waitFor(() => {
+      expect(screen.getByTestId('register-page')).toBeInTheDocument();
+    });
+
+    // Fill in the form
+    fireEvent.change(screen.getByTestId('username-input'), {
+      target: { value: 'testuser' }
+    });
+    fireEvent.change(screen.getByTestId('email-input'), {
+      target: { value: 'test@example.com' }
+    });
+    fireEvent.change(screen.getByTestId('password-input'), {
+      target: { value: 'password123' }
+    });
+
+    // Submit the form
+    fireEvent.click(screen.getByTestId('register-button'));
+
+    // Verify loading state
+    expect(screen.getByTestId('register-button')).toHaveTextContent('Registering...');
   });
 
   test('validates required fields', async () => {
@@ -125,62 +222,15 @@ describe('Register Component', () => {
       </BrowserRouter>
     );
 
-    const registerButton = screen.getByRole('button', { name: /register/i });
-    await fireEvent.click(registerButton);
+    // Wait for the page to render
+    await waitFor(() => {
+      expect(screen.getByTestId('register-page')).toBeInTheDocument();
+    });
 
-    expect(screen.getByText(/username is required/i)).toBeInTheDocument();
-    expect(screen.getByText(/email is required/i)).toBeInTheDocument();
-    expect(screen.getByText(/password is required/i)).toBeInTheDocument();
-  });
+    // Submit the form without filling required fields
+    fireEvent.click(screen.getByTestId('register-button'));
 
-  test('validates email format', async () => {
-    renderWithMantine(
-      <BrowserRouter>
-        <Register />
-      </BrowserRouter>
-    );
-
-    const emailInput = screen.getByPlaceholderText(/enter your email/i);
-    const registerButton = screen.getByRole('button', { name: /register/i });
-
-    await fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-    await fireEvent.click(registerButton);
-
-    expect(screen.getByText(/invalid email format/i)).toBeInTheDocument();
-  });
-
-  test('shows loading state during registration', async () => {
-    mockRegister.mockImplementationOnce(() => new Promise(resolve => setTimeout(resolve, 100)));
-
-    renderWithMantine(
-      <BrowserRouter>
-        <Register />
-      </BrowserRouter>
-    );
-
-    const usernameInput = screen.getByPlaceholderText(/enter your username/i);
-    const emailInput = screen.getByPlaceholderText(/enter your email/i);
-    const passwordInput = screen.getByPlaceholderText(/enter your password/i);
-    const confirmPasswordInput = screen.getByPlaceholderText(/confirm your password/i);
-    const registerButton = screen.getByRole('button', { name: /register/i });
-
-    await fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-    await fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-    await fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    await fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
-    await fireEvent.click(registerButton);
-
-    expect(screen.getByText(/registering/i)).toBeInTheDocument();
-  });
-
-  test('redirects to login page', () => {
-    renderWithMantine(
-      <BrowserRouter>
-        <Register />
-      </BrowserRouter>
-    );
-
-    const loginLink = screen.getByRole('link', { name: /login/i });
-    expect(loginLink).toHaveAttribute('href', '/login');
+    // Verify that fetch was not called
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 }); 
