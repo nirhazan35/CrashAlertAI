@@ -1,4 +1,4 @@
-import os, time, uuid, cv2, requests, logging, threading, subprocess, 
+import os, time, uuid, cv2, requests, logging, threading, subprocess
 from ultralytics import YOLO
 from datetime import datetime, timedelta
 from fastapi import FastAPI, BackgroundTasks, HTTPException
