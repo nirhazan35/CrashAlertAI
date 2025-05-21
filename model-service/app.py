@@ -1,6 +1,6 @@
-import os, time, uuid, cv2, requests, logging
+import os, time, uuid, cv2, requests, logging, threading, subprocess, 
 from ultralytics import YOLO
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from uploader import trim_video_ffmpeg, upload_to_drive
@@ -38,92 +38,171 @@ class RunRequest(BaseModel):
     cameraId: str
     location: str
 
-def analyse_video(video_path: str, meta: dict):
-
-    # Get video metadata
+def predict_video(video_path, metadata):
+    """
+    Process a video for accident detection using YOLOv11m and broadcast accidents
+    
+    Args:
+        video_path (str): Path to the video file to analyze
+        metadata (dict): Dictionary containing camera metadata including cameraId and location
+    """
+    # Set up logging
+    logger = logging.getLogger(__name__)
+    
+    # Configuration parameters
+    CONFIDENCE_THRESHOLD = 0.5  # Confidence threshold for detection
+    ACCIDENT_CLASS_ID = 0       # Class ID for accident
+    
+    # Load the pre-trained YOLOv11m model for accident detection
+    model = YOLO('yolov11m_accident_detection.pt')  # Path to your trained model
+    
+    # Get video properties using OpenCV temporarily
     cap = cv2.VideoCapture(video_path)
-    fps = cap.get(cv2.CAP_PROP_FPS) or 30
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    cap.release()
-
-    # Process video with YOLO11
-    results = model.predict(
-        source=video_path,
-        stream=True,
-        imgsz=640,
-        conf=THRESHOLD,
-        classes=[0],  # Assuming class 0 is 'accident'
-        verbose=False,
-        device=device
-    )
-
-    detection_time = None
-    accident_sent = False
-
-    # Process predictions in chronological order
-    for frame_idx, result in enumerate(results):
-        if not result:
-            continue
-        current_time = frame_idx / fps
+    if not cap.isOpened():
+        logger.error(f"Error: Could not open video file {video_path}")
+        return
+    
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    cap.release()  # Release as we'll use YOLO's built-in video processing
+    
+    # Initialize variables for accident detection and cooldown
+    last_detection_time = None
+    cooldown_period = timedelta(seconds=30)
+    
+    # Process the video using YOLO's stream feature for better performance
+    frame_count = 0
+    
+    logger.info(f"Starting accident detection on video: {video_path}")
+    
+    # Use YOLO's built-in video processing for better performance
+    for results in model.track(source=video_path, stream=True, conf=CONFIDENCE_THRESHOLD):
+        # Calculate current timestamp in the video
+        current_time = timedelta(seconds=frame_count / fps)
+        current_time_seconds = int(current_time.total_seconds())
+        frame_count += 1
         
-        # Skip processing if within cooldown period
-        if detection_time and current_time < detection_time + COOLDOWN_SECONDS:
-            continue
-
-        if len(result.boxes) > 0:
-            # Get first detection in frame
-            box = result.boxes[0]
-            conf = box.conf.item()
-            cls = int(box.cls.item())
-            logger.info(f"Detection found at {current_time}s, confidence: {conf}, class: {cls}")
-
-            if conf >= THRESHOLD and cls == 0:
-                try:
-                    # Trim video around detection
-                    clip_path = f"/tmp/clip_{uuid.uuid4().hex}.mp4"
-                    trim_video_ffmpeg(
-                        input_video=video_path,
-                        start_time=max(0, current_time - 7),
-                        duration=15,
-                        output_video=clip_path
-                    )
-                    gdrive_link = upload_to_drive(clip_path)
-                except Exception as e:
-                    logger.info(f"❌ Error trimming video: {str(e)}")
-                    continue
+        # Check if an accident was detected
+        detections = results.boxes
+        
+        for detection in detections:
+            # Get class ID and confidence
+            cls_id = int(detection.cls.item())
+            confidence = detection.conf.item()
+            
+            # Check if the detection is an accident with sufficient confidence
+            if cls_id == ACCIDENT_CLASS_ID and confidence >= CONFIDENCE_THRESHOLD:
+                # Check if we're outside the cooldown period
+                current_datetime = datetime.now()
                 
-                accident_doc = {
-                    "cameraId": meta["cameraId"],
-                    "location": meta["location"],
-                    "date": datetime.now().isoformat(),
-                    "displayDate": None,
-                    "displayTime": None,
-                    "severity": "no severity",
-                    "video": gdrive_link,
-                    "description": f"{conf:.2f}",
-                    "assignedTo": None,
-                    "status": "active",
-                    "falsePositive": False,
-                }
-                try:
-                    response = requests.post(
-                        BACKEND_URL,
-                        headers={SECRET_HEADER_NAME: SECRET},
-                        json=accident_doc,
-                        timeout=10
-                    )
-                    if response.status_code == 201:
-                        logger.info("✅ Accident alert sent successfully")
-                        accident_sent = True
-                        detection_time = current_time
-                        break
-                    else:
-                        logger.info(" ❌ Accident alert sent but failed at backend")
-                except Exception as e:
-                    logger.info(f"❌ Backend communication failed: {str(e)}")
-                        
-    if not accident_sent:
-        logger.info("ℹ️  No accidents detected in video")
+                if last_detection_time is None or (current_datetime - last_detection_time) > cooldown_period:
+                    # Update the last detection time
+                    last_detection_time = current_datetime
+                    
+                    # Create timestamp string (MM:SS format)
+                    minutes = int(current_time.total_seconds() // 60)
+                    seconds = int(current_time.total_seconds() % 60)
+                    timestamp_str = f"{minutes:02d}:{seconds:02d}"
+                    
+                    logger.info(f"🔍 Accident detected at {timestamp_str} with confidence {confidence:.2f}")
+                    
+                    # Start a new thread to broadcast the accident alert
+                    threading.Thread(
+                        target=broadcast,
+                        args=(video_path, timestamp_str, metadata, confidence)
+                    ).start()
+    
+    logger.info(f"Completed accident detection on video: {video_path}")
+
+def trim_video_ffmpeg(input_video, start_time, duration, output_video):
+    """
+    Trim a section of video using ffmpeg
+    
+    Args:
+        input_video (str): Path to the input video file
+        start_time (int): Start time in seconds
+        duration (int): Duration of clip in seconds
+        output_video (str): Path for the output video file
+    """
+    # Format start time to HH:MM:SS format
+    hours = start_time // 3600
+    minutes = (start_time % 3600) // 60
+    seconds = start_time % 60
+    start_time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    
+    # Execute ffmpeg command
+    command = [
+        "ffmpeg",
+        "-i", input_video,
+        "-ss", start_time_str,
+        "-t", str(duration),
+        "-c", "copy",  # Use copy codec for fast trimming
+        "-y",  # Overwrite output file if it exists
+        output_video
+    ]
+    
+    subprocess.run(command, check=True)
+    return output_video
+
+def broadcast(video_path, timestamp, metadata, confidence):
+    """
+    Broadcast an accident alert to the appropriate channels
+    
+    Args:
+        video_path (str): Path to the video where the accident was detected
+        timestamp (str): Timestamp in the video when the accident occurred
+        metadata (dict): Information about the camera (cameraId, location, etc.)
+        confidence (float): Confidence score of the detection
+    """
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Parse the timestamp to get seconds
+        minutes, seconds = map(int, timestamp.split(':'))
+        current_time_seconds = minutes * 60 + seconds
+        
+        # Trim video around detection (7 seconds before, 8 seconds after)
+        clip_path = f"/tmp/clip_{uuid.uuid4().hex}.mp4"
+        trim_video_ffmpeg(
+            input_video=video_path,
+            start_time=max(0, current_time_seconds - 7),
+            duration=15,
+            output_video=clip_path
+        )
+        
+        # Upload trimmed clip to Google Drive using existing function
+        gdrive_link = upload_to_drive(clip_path)
+        
+        # Prepare accident document
+        accident_doc = {
+            "cameraId": metadata.get("cameraId", "unknown"),
+            "location": metadata.get("location", "unknown"),
+            "date": datetime.now().isoformat(),
+            "displayDate": None,
+            "displayTime": None,
+            "severity": "no severity",
+            "video": gdrive_link,
+            "description": f"{confidence:.2f}",
+            "assignedTo": None,
+            "status": "active",
+            "falsePositive": False,
+        }
+        
+        # Send to backend using global configuration
+        response = requests.post(
+            BACKEND_URL,
+            headers={SECRET_HEADER_NAME: SECRET},
+            json=accident_doc,
+            timeout=10
+        )
+        
+        if response.status_code == 201:
+            logger.info("✅ Accident alert sent successfully")
+        else:
+            logger.info(f"❌ Accident alert sent but failed at backend: {response.status_code}")
+            
+    except Exception as e:
+        error_message = f"❌ Error in broadcast function: {str(e)}"
+        logger.error(error_message)
 
 @app.get("/videos")
 def list_videos():
