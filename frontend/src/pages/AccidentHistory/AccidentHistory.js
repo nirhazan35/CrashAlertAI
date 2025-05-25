@@ -159,6 +159,7 @@ const AccidentHistory = () => {
         <Text size="xl" weight={700}>Accident History</Text>
         <Tooltip label="Export to CSV">
           <ActionIcon
+            data-testid="export-button"
             variant="light"
             color="teal"
             size="lg"

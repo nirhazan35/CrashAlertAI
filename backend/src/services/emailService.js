@@ -55,4 +55,62 @@ const sendEmail = async (data) => {
   }
 };
 
-module.exports = { sendEmail };
+// Create reusable transporter
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+    }
+});
+
+/**
+ * Send a password change notification email
+ * @param {Object} userData - User data containing email and name
+ * @returns {Promise} Promise that resolves when email is sent
+ */
+const sendPasswordChangeEmail = async (userData) => {
+    const mailOptions = {
+        from: process.env.SMTP_FROM,
+        to: userData.email,
+        subject: 'Password Change Notification',
+        html: `
+            <h1>Password Change Notification</h1>
+            <p>Hello ${userData.name},</p>
+            <p>Your password has been changed successfully.</p>
+            <p>If you did not make this change, please contact support immediately.</p>
+        `
+    };
+
+    return transporter.sendMail(mailOptions);
+};
+
+/**
+ * Send an accident notification email
+ * @param {Object} userData - User data containing email and name
+ * @param {Object} accidentData - Accident data containing location and timestamp
+ * @returns {Promise} Promise that resolves when email is sent
+ */
+const sendAccidentNotification = async (userData, accidentData) => {
+    const mailOptions = {
+        from: process.env.SMTP_FROM,
+        to: userData.email,
+        subject: 'Accident Alert',
+        html: `
+            <h1>Accident Alert</h1>
+            <p>Hello ${userData.name},</p>
+            <p>An accident has been detected at ${accidentData.location}.</p>
+            <p>Time: ${accidentData.timestamp}</p>
+            <p>Please take necessary action.</p>
+        `
+    };
+
+    return transporter.sendMail(mailOptions);
+};
+
+module.exports = {
+    sendPasswordChangeEmail,
+    sendAccidentNotification
+};

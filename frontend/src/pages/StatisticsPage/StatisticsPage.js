@@ -281,6 +281,7 @@ export default function StatisticsPage() {
           </Tooltip>
           <Tooltip label="Refresh data">
             <ActionIcon
+              data-testid="refresh-button"
               variant="light"
               color="blue"
               size="lg"
