@@ -3,6 +3,9 @@
 // Import Jest DOM utilities for DOM testing
 import '@testing-library/jest-dom';
 
+// Suppress Node.js deprecation warnings during tests
+process.noDeprecation = true;
+
 // Add missing browser APIs in Node.js environment
 if (typeof window !== 'undefined') {
   // Mock window.matchMedia
@@ -37,7 +40,21 @@ console.error = (...args) => {
   if (
     // Filter out specific React error messages that are expected during testing
     /Warning.*not wrapped in act/i.test(args[0]) ||
-    /Warning.*A component is changing an uncontrolled input/i.test(args[0])
+    /Warning.*A component is changing an uncontrolled input/i.test(args[0]) ||
+    // Filter out ReactDOMTestUtils deprecation warning
+    /ReactDOMTestUtils\.act.*deprecated/i.test(args[0]) ||
+    // Filter out intentional test errors (like network errors in tests)
+    /Error.*Network error/i.test(args[0]) ||
+    // Filter out any error that contains "Error:" followed by an Error object (common in catch blocks)
+    (args[0] === 'Error:' && args[1] instanceof Error) ||
+    // Filter out React component errors during testing
+    /Element type is invalid/i.test(args[0]) ||
+    /The above error occurred in the/i.test(args[0]) ||
+    /Consider adding an error boundary/i.test(args[0]) ||
+    // Filter out uncaught errors that are expected in tests
+    /Uncaught.*Error.*Element type is invalid/i.test(args[0]) ||
+    // Filter out AuthProvider token refresh errors during testing
+    /Error during token refresh/i.test(args[0])
   ) {
     return;
   }

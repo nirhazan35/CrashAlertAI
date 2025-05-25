@@ -5,15 +5,31 @@ import NotificationCenter from '../../src/components/notifications/notificationD
 
 // Mock the useNavigate hook
 const mockNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate,
-}));
+
+// Mock react-router-dom before importing the component
+jest.mock('react-router-dom', () => {
+  const originalModule = jest.requireActual('react-router-dom');
+  return {
+    ...originalModule,
+    useNavigate: jest.fn(() => mockNavigate),
+  };
+});
 
 // Mock the useAccidentLogs hook
 const mockUseAccidentLogs = jest.fn();
 jest.mock('../../src/context/AccidentContext', () => ({
   useAccidentLogs: () => mockUseAccidentLogs(),
+  AccidentLogsProvider: ({ children }) => children, // Simple passthrough for provider
+}));
+
+// Mock the useAuth hook
+jest.mock('../../src/authentication/AuthProvider', () => ({
+  useAuth: () => ({
+    user: { username: 'testuser', role: 'user', token: 'test-token' },
+    login: jest.fn(),
+    logout: jest.fn(),
+  }),
+  AuthProvider: ({ children }) => children, // Simple passthrough for provider
 }));
 
 describe('NotificationCenter', () => {
@@ -95,8 +111,8 @@ describe('NotificationCenter', () => {
     // Should display both notification messages
     await waitFor(() => {
       expect(screen.getByText('New accident detected at Main Street')).toBeInTheDocument();
-      expect(screen.getByText('Accident at Oak Avenue has been handled')).toBeInTheDocument();
     });
+    expect(screen.getByText('Accident at Oak Avenue has been handled')).toBeInTheDocument();
     
     // Should also display the clear button
     expect(screen.getByText('Clear all notifications')).toBeInTheDocument();
@@ -113,8 +129,11 @@ describe('NotificationCenter', () => {
     const notification = await screen.findByText('New accident detected at Main Street');
     fireEvent.click(notification);
     
-    // Should set the selected alert
-    expect(mockSetSelectedAlert).toHaveBeenCalledWith(mockAccidentLogs[0]);
+    // Wait for async operations to complete
+    await waitFor(() => {
+      // Should set the selected alert
+      expect(mockSetSelectedAlert).toHaveBeenCalledWith(mockAccidentLogs[0]);
+    });
     
     // Should mark the notification as read
     expect(mockSetNotifications).toHaveBeenCalledWith(
