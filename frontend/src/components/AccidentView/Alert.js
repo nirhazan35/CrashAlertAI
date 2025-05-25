@@ -172,7 +172,7 @@ const Alert = () => {
               )}
               
               {/* Action buttons moved below video */}
-              {isEditable && (
+              {isEditable ? (
                 <Group mt="lg" className="video-action-buttons">
                   <Button
                     size="sm"
@@ -197,7 +197,25 @@ const Alert = () => {
                     </Button>
                   )}
                 </Group>
-              )}
+              ):
+                <Group mt="lg" className="video-action-buttons">
+                    <Button
+                        size="sm"
+                        color="blue"
+                        disabled
+                        radius="xl"
+                        fw={500}
+                        onClick={(e) => {
+                            updateAccidentStatus(
+                                selectedAlert._id,
+                                "assigned",
+                            );
+                        }}
+                    >
+                        Assign
+                    </Button>
+                </Group>
+              }
             </Grid.Col>
             
             {/* Details Column */}
