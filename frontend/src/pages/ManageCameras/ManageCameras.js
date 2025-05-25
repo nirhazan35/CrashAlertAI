@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Paper, Title, Select, Checkbox, Button, Stack, Text, Group } from '@mantine/core';
 import { fetchUsers, fetchCameras, fetchAssignedCameras, updateAssignedCameras } from "../AdminPage/AdminActions";
 import { useAuth } from '../../authentication/AuthProvider';
@@ -10,22 +10,32 @@ const ManageUserCameras = () => {
   const [cameras, setCameras] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [assignedCameras, setAssignedCameras] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
-      const usersData = await fetchUsers(user);
-      setUsers(usersData);
-      const camerasData = await fetchCameras(user);
-      setCameras(camerasData);
+      try {
+        const usersData = await fetchUsers(user);
+        setUsers(usersData);
+        const camerasData = await fetchCameras(user);
+        setCameras(camerasData);
+      } catch (err) {
+        setError(err.message);
+      }
     };
     loadData();
   }, [user]);
 
   const handleUserChange = async (value) => {
     setSelectedUser(value);
+    setError(null);
     if (value) {
-      const assignedData = await fetchAssignedCameras(user, value);
-      setAssignedCameras(assignedData);
+      try {
+        const assignedData = await fetchAssignedCameras(user, value);
+        setAssignedCameras(assignedData);
+      } catch (err) {
+        setError(err.message);
+      }
     }
   };
 
@@ -39,9 +49,13 @@ const ManageUserCameras = () => {
 
   const handleSaveChanges = async () => {
     if (!selectedUser) return;
-    await updateAssignedCameras(user, selectedUser, assignedCameras);
-    setSelectedUser(null);
-    setAssignedCameras([]);
+    try {
+      await updateAssignedCameras(user, selectedUser, assignedCameras);
+      setSelectedUser(null);
+      setAssignedCameras([]);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -51,6 +65,7 @@ const ManageUserCameras = () => {
           <Stack spacing="md">
             <Title order={3}>User Selection</Title>
             <Select
+              data-testid="user-select"
               label="Select a User"
               placeholder="Choose a user"
               value={selectedUser}
@@ -60,9 +75,11 @@ const ManageUserCameras = () => {
                 label: user.username
               }))}
               clearable
+              clearButtonProps={{ 'data-testid': 'clear-user-button' }}
             />
             {selectedUser && (
               <Button 
+                data-testid="save-changes-button"
                 onClick={handleSaveChanges}
                 variant="filled"
                 color="blue"
@@ -75,7 +92,11 @@ const ManageUserCameras = () => {
         </Paper>
 
         <Paper className="manage-cameras-main">
-          {selectedUser ? (
+          {error ? (
+            <Text color="red" size="lg" align="center" data-testid="error-message">
+              {error}
+            </Text>
+          ) : selectedUser ? (
             <Stack spacing="md">
               <Group position="apart" align="center">
                 <Title order={2} className="manage-cameras-subtitle">Assign Cameras</Title>
@@ -88,6 +109,7 @@ const ManageUserCameras = () => {
                   <div key={camera._id} className="camera-item">
                     <Text className="camera-id">Camera ID: {camera.cameraId}</Text>
                     <Checkbox
+                      data-testid={`camera-checkbox-${camera.cameraId}`}
                       label={camera.name}
                       checked={assignedCameras.includes(camera.cameraId)}
                       onChange={() => handleCameraToggle(camera.cameraId)}

@@ -50,7 +50,16 @@ const assignCameras = async (req, res) => {
         if (cameras.length !== cameraIds.length) {
             return res.status(400).json({ message: 'One or more cameras not found' });
         }
-
+        const old_cameras = user.assignedCameras;
+        for (const oldCameraId of old_cameras) {
+            if (!cameraIds.includes(oldCameraId)) {
+                const camera = await Camera.findOne({ cameraId: oldCameraId });
+                if (camera) {
+                    camera.users = camera.users.filter(user => user !== userId);
+                    await camera.save();
+                }
+            }
+        }
         user.assignedCameras = cameraIds;
         await user.save();
         res.status(200).json({ message: 'Cameras assigned successfully' });

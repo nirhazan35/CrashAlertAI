@@ -86,7 +86,6 @@ const AddCamera = () => {
                   value={cameraId}
                   onChange={(e) => setCameraId(e.target.value)}
                   className="auth-input"
-                  required
                 />
               </div>
             </div>
@@ -101,7 +100,6 @@ const AddCamera = () => {
                   value={location}
                   onChange={(e) => setLocation(e.currentTarget.value)}
                   className="auth-input"
-                  required
                 />
               </div>
             </div>
