@@ -48,6 +48,7 @@ const startFakeAccidentSimulation = async (initialStatus) => {
       startDate.setFullYear(endDate.getFullYear() - 1);
       const randomDate = getRandomDate(startDate, endDate);
 
+
       // Randomly select severity
       const randomSeverity = severityOptions[Math.floor(Math.random() * severityOptions.length)];
 
@@ -60,7 +61,8 @@ const startFakeAccidentSimulation = async (initialStatus) => {
       const fakeAccident = {
         cameraId: selectedCamera.cameraId,
         location: selectedCamera.location,
-        date: randomDate.toISOString(),
+        // date: randomDate.toISOString(),
+        date: new Date(),
         severity: randomSeverity,
         video: "",
         falsePositive: randomFalsePositive,
