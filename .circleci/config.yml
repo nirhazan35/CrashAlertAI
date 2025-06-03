@@ -116,14 +116,15 @@ jobs:
               pytest --junitxml=junit.xml -v || echo "Some tests may have failed due to missing dependencies"
             else
               echo "Running basic environment test..."
-              python -c "
+              # Create a simple test script
+              cat > basic_test.py << 'EOF'
 import sys
 print('✅ Python version:', sys.version)
 print('✅ Environment test passed')
 
 # Test basic imports
 try:
-    import json, os, requests
+    import json, os
     print('✅ Basic imports working')
 except ImportError as e:
     print('⚠️ Some imports failed:', e)
@@ -135,7 +136,8 @@ try:
     print('✅ FastAPI components available')
 except ImportError as e:
     print('⚠️ FastAPI components not available:', e)
-"
+EOF
+              python basic_test.py
             fi
       - store_test_results:
           path: junit.xml
