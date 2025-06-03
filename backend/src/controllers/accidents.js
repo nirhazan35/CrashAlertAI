@@ -93,19 +93,33 @@ const changeAccidentStatus = async (req, res) => {
   try {
     const { accident_id, status } = req.body;
     const username = (await User.findById(req.user.id)).get('username');
-    const assignedTo = username;
 
     if (!["active", "assigned", "handled"].includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
     }
+
+    // Prepare update object based on status
+    const updateData = { status };
+    
+    if (status === "assigned") {
+      // When assigning, set assignedTo to current user
+      updateData.assignedTo = username;
+    } else if (status === "active") {
+      // When making active (unassigning), clear assignedTo
+      updateData.assignedTo = null;
+    }
+    // For "handled" status, keep the current assignedTo value (don't modify it)
+
     const updatedAccident = await Accident.findByIdAndUpdate(
       accident_id,
-      { status, assignedTo },
+      updateData,
       { new: true }
     );
+    
     if (!updatedAccident) {
       return res.status(404).json({ message: "Accident not found" });
     }
+    
     // Notify clients
     emitAccidentUpdate(updatedAccident);
     res.status(200).json(updatedAccident);
