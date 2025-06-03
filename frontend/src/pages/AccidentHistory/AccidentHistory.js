@@ -8,11 +8,15 @@ import {
   Text,
   Loader,
   Alert as MantineAlert,
-  Paper
+  Paper,
+  Group,
+  ActionIcon,
+  Tooltip
 } from '@mantine/core';
-import { IconAlertCircle } from '@tabler/icons-react';
+import { IconAlertCircle, IconFileExport } from '@tabler/icons-react';
 import FilterPanel from '../../components/FilterPanel/FilterPanel';
 import AccidentLog from '../../components/AccidentLogs/AccidentLog';
+import { exportAccidentsToCSV } from '../../services/statisticsService';
 import './AccidentHistory.css';
 
 const AccidentHistory = () => {
@@ -110,6 +114,11 @@ const AccidentHistory = () => {
     setFilteredAccidents(logs);
   };
 
+  // Handle export to CSV
+  const handleExportCSV = () => {
+    exportAccidentsToCSV(filteredAccidents);
+  };
+
   if (loading) {
     return (
       <Container fluid p={0} className="history-container">
@@ -146,17 +155,33 @@ const AccidentHistory = () => {
 
   return (
     <Stack spacing="md" className="history-container">
-      <FilterPanel 
-            onFilteredLogsChange={handleFilteredLogsChange}
-            colSpan={{ base: 12, sm: 6, md: 4, lg: 1.7 }}
-            initialLogs={handledAccidents}
-            isHistory={true}
-          />
+      <Group position="apart" mb="sm">
+        <Text size="xl" weight={700}>Accident History</Text>
+        <Tooltip label="Export to CSV">
+          <ActionIcon
+            data-testid="export-button"
+            variant="light"
+            color="teal"
+            size="lg"
+            onClick={handleExportCSV}
+            disabled={loading || filteredAccidents.length === 0}
+          >
+            <IconFileExport size={20} />
+          </ActionIcon>
+        </Tooltip>
+      </Group>
       
-        <AccidentLog 
-          filteredLogs={filteredAccidents} 
-          renderActions={renderCustomActions}
-          isHistoryView={true}
+      <FilterPanel 
+        onFilteredLogsChange={handleFilteredLogsChange}
+        colSpan={{ base: 12, sm: 6, md: 4, lg: 1.7 }}
+        initialLogs={handledAccidents}
+        isHistory={true}
+      />
+      
+      <AccidentLog 
+        filteredLogs={filteredAccidents} 
+        renderActions={renderCustomActions}
+        isHistoryView={true}
       />
     </Stack>
   );

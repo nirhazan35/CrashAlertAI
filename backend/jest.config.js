@@ -1,5 +1,4 @@
 module.exports = {
   testEnvironment: "node",
-  setupFilesAfterEnv: ["./tests/setup.js"],
-  globalTeardown: "./tests/teardown.js",
+  setupFilesAfterEnv: ["./tests/setup.js"]
 };

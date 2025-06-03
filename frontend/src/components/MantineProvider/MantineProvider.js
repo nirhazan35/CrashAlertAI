@@ -1,3 +1,4 @@
+import React from 'react';
 import { MantineProvider as Provider } from '@mantine/core';
 import theme from '../../theme/mantineTheme';
 

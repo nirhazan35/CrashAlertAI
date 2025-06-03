@@ -1,7 +1,6 @@
-version: '3.8'
-
 services:
   backend:
+    image: crashalert-backend
     build: ./backend
     ports:
       - "3001:3001"
@@ -12,27 +11,52 @@ services:
       - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
       - EMAIL_ADDRESS=${EMAIL_ADDRESS}
       - EMAIL_PASS=${EMAIL_PASS}
-      - REACT_APP_URL_FRONTEND={REACT_APP_URL_FRONTEND}
+      - INTERNAL_SECRET=${INTERNAL_SECRET}
     depends_on:
       - mongo
+    restart: unless-stopped
 
   frontend:
+    image: crashalert-frontend
     build:
       context: ./frontend
       args:
-        - REACT_APP_URL_BACKEND=${REACT_APP_URL_BACKEND}
+        REACT_APP_URL_BACKEND: ${REACT_APP_URL_BACKEND}
     ports:
-      - "3000:80"  # Match Nginx port
+      - "3000:80"  # Matching Nginx port
     depends_on:
       - backend
+    restart: unless-stopped
 
-  # MongoDB (only for local testing; use Atlas in production)
+  model-service:
+    image: crashalert-model-service
+    build:
+      context: ./model-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL}
+      - INTERNAL_SECRET=${INTERNAL_SECRET}
+      - ACCIDENT_THRESHOLD=${ACCIDENT_THRESHOLD:-0.7}
+      - YOLO_WEIGHTS=/app/weights/best.pt
+    volumes:
+      - ./model-service/videos:/app/videos
+      - ./secrets/drive_sa.json:/app/credentials/drive_sa.json:ro
+      - ./weights/best.pt:/app/weights/best.pt:ro
+    depends_on:
+      - backend
+      - mongo
+    restart: unless-stopped
+
+  # MongoDB
   mongo:
     image: mongo:latest
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    restart: unless-stopped
 
 volumes:
   mongodb_data:

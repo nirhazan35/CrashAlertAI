@@ -27,7 +27,8 @@ const startFakeAccidentSimulation = async (initialStatus) => {
   }
 
   // Severity options
-  const severityOptions = ['high', 'medium', 'low'];
+  // const severityOptions = ['high', 'medium', 'low', 'null'];
+  const severityOptions = ['no severity'];
 
   // Function to generate a random date within a specific range
   const getRandomDate = (start, end) => {
@@ -47,6 +48,7 @@ const startFakeAccidentSimulation = async (initialStatus) => {
       startDate.setFullYear(endDate.getFullYear() - 1);
       const randomDate = getRandomDate(startDate, endDate);
 
+
       // Randomly select severity
       const randomSeverity = severityOptions[Math.floor(Math.random() * severityOptions.length)];
 
@@ -59,7 +61,8 @@ const startFakeAccidentSimulation = async (initialStatus) => {
       const fakeAccident = {
         cameraId: selectedCamera.cameraId,
         location: selectedCamera.location,
-        date: randomDate.toISOString(),
+        // date: randomDate.toISOString(),
+        date: new Date(),
         severity: randomSeverity,
         video: "",
         falsePositive: randomFalsePositive,

@@ -8,8 +8,9 @@ import {
   Alert,
   Group,
   ActionIcon,
+  Tooltip,
 } from '@mantine/core';
-import { IconRefresh, IconAlertCircle } from '@tabler/icons-react';
+import { IconRefresh, IconAlertCircle, IconFileExport } from '@tabler/icons-react';
 import CoreStatistics from '../../components/Statistics/CoreStatistics';
 import TimeBasedTrends from '../../components/Statistics/TimeBasedTrends';
 import FalsePositiveTrends from '../../components/Statistics/FalsePositiveTrends';
@@ -20,7 +21,8 @@ import {
   fetchUsers,
   calculateCoreStatistics,
   calculateTimeBasedTrends,
-  calculateFalsePositiveTrends
+  calculateFalsePositiveTrends,
+  exportStatisticsToCSV
 } from '../../services/statisticsService';
 import { 
   subDays, 
@@ -241,6 +243,11 @@ export default function StatisticsPage() {
     loadStatistics();
   };
 
+  const handleExportCSV = () => {
+    // Call the export function with just the statistics
+    exportStatisticsToCSV(statistics);
+  };
+
   const handleTimeFilterChange = (value) => {
     setTimeFilter(value);
   };
@@ -260,15 +267,31 @@ export default function StatisticsPage() {
       {/* Header */}
       <Group position="apart" mb="xl">
         <Text size="xl" weight={700}>Statistics Dashboard</Text>
-        <ActionIcon
-          variant="light"
-          color="blue"
-          size="lg"
-          onClick={handleRefresh}
-          loading={loading}
-        >
-          <IconRefresh size={20} />
-        </ActionIcon>
+        <Group spacing="xs">
+          <Tooltip label="Export to CSV">
+            <ActionIcon
+              variant="light"
+              color="teal"
+              size="lg"
+              onClick={handleExportCSV}
+              disabled={loading || !allAccidents.length}
+            >
+              <IconFileExport size={20} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="Refresh data">
+            <ActionIcon
+              data-testid="refresh-button"
+              variant="light"
+              color="blue"
+              size="lg"
+              onClick={handleRefresh}
+              loading={loading}
+            >
+              <IconRefresh size={20} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
       </Group>
 
       {error && (

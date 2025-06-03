@@ -1,0 +1,11 @@
+videos/ 
+secrets/ 
+weights/ 
+.env 
+.gitignore
+.git
+__pycache__/
+*.pyc
+venv/
+*.log
+*.mp4
