@@ -7,7 +7,7 @@ trim_video_ffmpeg(input_video, start_time, duration, output_video)
     → str  |  Path to the trimmed MP4.
 
 upload_to_drive(file_path)
-    → str  |  Public Google-Drive “/view” URL in a date-based sub-folder.
+    → str  |  Public Google-Drive "/view" URL in a date-based sub-folder.
 """
 
 import os
@@ -16,11 +16,15 @@ import datetime
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from dotenv import load_dotenv
+import logging
+
+load_dotenv()
 
 # ─────────────────────────────────────────────────────────────
 # Configuration
 # ─────────────────────────────────────────────────────────────
-SERVICE_ACCOUNT_FILE = "/app/credentials/drive_sa.json"
+SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE", "/app/credentials/drive_sa.json")
 ROOT_FOLDER_ID       = "1ycXApVQxo6s2AGJnaEpjO_yVHiZs7WVX"   # your Drive root for CrashAlert clips
 
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
@@ -55,7 +59,7 @@ def trim_video_ffmpeg(
         output_video,
         "-y"
     ]
-    subprocess.run(cmd, check=True)
+    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return output_video
 
 
@@ -78,7 +82,7 @@ def _get_or_create_today_folder() -> str:
     return drive_service.files().create(body=meta, fields="id").execute()["id"]
 
 
-def upload_to_drive(file_path: str) -> str:
+def upload_to_drive(logger: logging.Logger, file_path: str) -> str:
     """Upload MP4, set it public, and return the shareable /view link."""
     folder_id = _get_or_create_today_folder()
     media     = MediaFileUpload(file_path, mimetype="video/mp4")
@@ -91,7 +95,7 @@ def upload_to_drive(file_path: str) -> str:
     ).execute()
     
     link = f"https://drive.google.com/file/d/{file['id']}/view"
-    print(f"link: {link}")
+    logger.info(f"link: {link}")
     return link
 
 
