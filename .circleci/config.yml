@@ -48,7 +48,7 @@ jobs:
     # Deploy to Render using webhooks
     docker:
       - image: cimg/base:stable
-    steps:
+    steps: 
       - run:
           name: Deploy to Render
           command: |
