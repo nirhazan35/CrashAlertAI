@@ -14,6 +14,12 @@ build/
 env/
 venv/
 ENV/
+.DS_Store
+.vscode
+.idea
+.pytest_cache/
+.coverage
+venv1/
 
 # Weights file - should be downloaded separately
 weights/
