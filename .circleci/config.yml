@@ -31,7 +31,7 @@ jobs:
           name: Run backend tests
           command: npm test
 
-  build-frontend:
+  build-website:
     # Build frontend React app
     executor: node/default
     working_directory: ~/project/frontend
@@ -64,7 +64,7 @@ workflows:
     jobs:
       - test-frontend
       - test-backend
-      - build-frontend:
+      - build-website:
           requires:
             - test-frontend
           filters:
@@ -74,7 +74,7 @@ workflows:
           requires:
             - test-frontend
             - test-backend
-            - build-frontend
+            - build-website
           filters:
             branches:
               only: main
