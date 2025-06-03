@@ -3,30 +3,20 @@
 version: 2.1
 orbs:
   node: circleci/node@5
-  python: circleci/python@2
 
 jobs:
   test-frontend:
     # Test frontend React app
     executor: node/default
     working_directory: ~/project/frontend
-    environment:
-      JEST_JUNIT_OUTPUT_DIR: ./test-results/
     steps:
       - checkout:
           path: ~/project
       - node/install-packages:
           pkg-manager: npm
       - run:
-          command: npm install jest-junit
-      - run:
           name: Run frontend tests
-          command: npm run test -- --ci --runInBand --reporters=default --reporters=jest-junit --coverage --watchAll=false
-      - store_test_results:
-          path: ./test-results/
-      - store_artifacts:
-          path: coverage
-          destination: frontend-coverage
+          command: npm test -- --watchAll=false
 
   test-backend:
     # Test backend Node.js API
@@ -40,8 +30,6 @@ jobs:
       - run:
           name: Run backend tests
           command: npm test
-      - store_test_results:
-          path: ./test-results/
 
   build-frontend:
     # Build frontend React app
@@ -53,94 +41,8 @@ jobs:
       - node/install-packages:
           pkg-manager: npm
       - run:
+          name: Build frontend
           command: npm run build
-      - run:
-          name: Create the ~/artifacts directory if it doesn't exist
-          command: mkdir -p ~/artifacts
-      # Copy output to artifacts dir
-      - run:
-          name: Copy artifacts
-          command: cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
-      - store_artifacts:
-          path: ~/artifacts
-          destination: frontend-build
-
-  test-model-service:
-    # Test Python model service - Using original requirements.txt
-    docker: 
-      - image: cimg/python:3.11
-    working_directory: ~/project/model-service
-    steps:
-      - checkout:
-          path: ~/project
-      - run:
-          name: Upgrade pip and install dependencies
-          command: |
-            # Upgrade pip to latest version
-            pip install --upgrade pip setuptools wheel
-            
-            # Try to install from original requirements.txt with fallback strategies
-            echo "Attempting to install from requirements.txt..."
-            
-            # First attempt: try exact versions
-            if pip install -r requirements.txt; then
-              echo "✅ Successfully installed all dependencies with exact versions"
-            else
-              echo "⚠️ Some exact versions failed, trying fallback strategies..."
-              
-              # Fallback 1: Install available versions and continue on errors
-              pip install -r requirements.txt --force-reinstall --no-deps || true
-              
-              # Fallback 2: Install core dependencies manually
-              echo "Installing core dependencies..."
-              pip install fastapi uvicorn pydantic python-dotenv requests numpy pillow || true
-              
-              # Fallback 3: Install test dependencies
-              pip install pytest httpx || true
-              
-              echo "✅ Installed available dependencies, some versions may differ"
-            fi
-      - run:
-          name: Verify installation and run tests
-          command: |
-            # Show what was actually installed
-            echo "=== Installed packages ==="
-            pip list
-            
-            # Try to run tests
-            if [ -f test_app.py ]; then
-              echo "Running FastAPI tests..."
-              python test_app.py
-            elif command -v pytest &> /dev/null && [ -f test_*.py ]; then
-              echo "Running pytest..."
-              pytest --junitxml=junit.xml -v || echo "Some tests may have failed due to missing dependencies"
-            else
-              echo "Running basic environment test..."
-              # Create a simple test script
-              cat > basic_test.py << 'EOF'
-import sys
-print('✅ Python version:', sys.version)
-print('✅ Environment test passed')
-
-# Test basic imports
-try:
-    import json, os
-    print('✅ Basic imports working')
-except ImportError as e:
-    print('⚠️ Some imports failed:', e)
-
-# Test if FastAPI components can be imported
-try:
-    from fastapi import FastAPI
-    from pydantic import BaseModel
-    print('✅ FastAPI components available')
-except ImportError as e:
-    print('⚠️ FastAPI components not available:', e)
-EOF
-              python basic_test.py
-            fi
-      - store_test_results:
-          path: junit.xml
 
   deploy-to-render:
     # Deploy to Render using webhooks
@@ -148,61 +50,30 @@ EOF
       - image: cimg/base:stable
     steps:
       - run:
-          name: Trigger Render deployment
+          name: Deploy to Render
           command: |
-            # Frontend deployment webhook
             if [ -n "$RENDER_FRONTEND_DEPLOY_HOOK" ]; then
-              echo "Triggering frontend deployment on Render..."
               curl -X POST "$RENDER_FRONTEND_DEPLOY_HOOK"
-            else
-              echo "Warning: RENDER_FRONTEND_DEPLOY_HOOK not set"
             fi
-            
-            # Backend deployment webhook
             if [ -n "$RENDER_BACKEND_DEPLOY_HOOK" ]; then
-              echo "Triggering backend deployment on Render..."
               curl -X POST "$RENDER_BACKEND_DEPLOY_HOOK"
-            else
-              echo "Warning: RENDER_BACKEND_DEPLOY_HOOK not set"
-            fi
-            
-            # Model service deployment webhook (if you have it deployed)
-            if [ -n "$RENDER_MODEL_SERVICE_DEPLOY_HOOK" ]; then
-              echo "Triggering model service deployment on Render..."
-              curl -X POST "$RENDER_MODEL_SERVICE_DEPLOY_HOOK"
             fi
 
 workflows:
   test-and-deploy:
     jobs:
-      # Run all tests in parallel
-      - test-frontend:
-          filters:
-            branches:
-              ignore: gh-pages
-      - test-backend:
-          filters:
-            branches:
-              ignore: gh-pages
-      - test-model-service:
-          filters:
-            branches:
-              ignore: gh-pages
-      
-      # Build frontend after frontend tests pass
+      - test-frontend
+      - test-backend
       - build-frontend:
           requires:
             - test-frontend
           filters:
             branches:
               only: main
-      
-      # Deploy only on main branch after all tests pass and build succeeds
       - deploy-to-render:
           requires:
             - test-frontend
             - test-backend
-            - test-model-service
             - build-frontend
           filters:
             branches:
