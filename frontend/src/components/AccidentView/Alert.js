@@ -196,26 +196,59 @@ const Alert = () => {
                       Handled
                     </Button>
                   )}
-                </Group>
-              ):
-                <Group mt="lg" className="video-action-buttons">
+
+                  {/* Add Unassign button when assigned to current user */}
+                  {selectedAlert.status === "assigned" && selectedAlert.assignedTo === user?.username && (
                     <Button
-                        size="sm"
-                        color="blue"
-                        disabled
-                        radius="xl"
-                        fw={500}
-                        onClick={(e) => {
-                            updateAccidentStatus(
-                                selectedAlert._id,
-                                "assigned",
-                            );
-                        }}
+                      size="sm"
+                      variant="outline"
+                      color="red"
+                      radius="xl"
+                      fw={500}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateAccidentStatus(
+                          selectedAlert._id,
+                          "active"
+                        );
+                      }}
                     >
-                        Assign
+                      Unassign
                     </Button>
+                  )}
                 </Group>
-              }
+              ) : (
+                <Group mt="lg" className="video-action-buttons">
+                  {selectedAlert.status === "assigned" && selectedAlert.assignedTo !== user?.username ? (
+                    <Button
+                      size="sm"
+                      variant="subtle"
+                      color="gray"
+                      disabled
+                      radius="xl"
+                      fw={500}
+                    >
+                      Assigned to {selectedAlert.assignedTo}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      color="blue"
+                      radius="xl"
+                      fw={500}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateAccidentStatus(
+                          selectedAlert._id,
+                          "assigned"
+                        );
+                      }}
+                    >
+                      Assign
+                    </Button>
+                  )}
+                </Group>
+              )}
             </Grid.Col>
             
             {/* Details Column */}
