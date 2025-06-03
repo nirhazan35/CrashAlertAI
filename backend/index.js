@@ -35,12 +35,11 @@ app.use('/users', require('./src/routes/users'));
 app.use('/cameras', require('./src/routes/cameras'));
 app.use('/auth', require('./src/routes/auth'));
 
-
 app.get('/', (req, res) => {
   res.send('CrashAlertAI Backend is running!');
 });
 
-//startFakeAccidentSimulation('handled');
+// startFakeAccidentSimulation('active');
 
 // Start server
 if (process.env.NODE_ENV !== "test") {

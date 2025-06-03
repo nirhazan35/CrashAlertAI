@@ -172,7 +172,7 @@ const Alert = () => {
               )}
               
               {/* Action buttons moved below video */}
-              {isEditable && (
+              {isEditable ? (
                 <Group mt="lg" className="video-action-buttons">
                   <Button
                     size="sm"
@@ -194,6 +194,57 @@ const Alert = () => {
                       fw={500}
                     >
                       Handled
+                    </Button>
+                  )}
+
+                  {/* Add Unassign button when assigned to current user */}
+                  {selectedAlert.status === "assigned" && selectedAlert.assignedTo === user?.username && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      color="red"
+                      radius="xl"
+                      fw={500}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateAccidentStatus(
+                          selectedAlert._id,
+                          "active"
+                        );
+                      }}
+                    >
+                      Unassign
+                    </Button>
+                  )}
+                </Group>
+              ) : (
+                <Group mt="lg" className="video-action-buttons">
+                  {selectedAlert.status === "assigned" && selectedAlert.assignedTo !== user?.username ? (
+                    <Button
+                      size="sm"
+                      variant="subtle"
+                      color="gray"
+                      disabled
+                      radius="xl"
+                      fw={500}
+                    >
+                      Assigned to {selectedAlert.assignedTo}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      color="blue"
+                      radius="xl"
+                      fw={500}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateAccidentStatus(
+                          selectedAlert._id,
+                          "assigned"
+                        );
+                      }}
+                    >
+                      Assign
                     </Button>
                   )}
                 </Group>

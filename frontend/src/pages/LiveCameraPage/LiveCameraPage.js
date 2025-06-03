@@ -245,6 +245,7 @@ const LiveCameraFeed = () => {
                           variant="transparent"
                           color="white"
                           onClick={() => handleExpandCamera(camera)}
+                          data-testid="expand-camera-button"
                         >
                           <IconMaximize size={18} />
                         </ActionIcon>
@@ -434,6 +435,7 @@ const LiveCameraFeed = () => {
                   variant={viewMode === 'grid' ? "filled" : "outline"}
                   color="brand"
                   onClick={() => setViewMode('grid')}
+                  data-testid="grid-view-button"
                 >
                   <IconLayoutGrid size={18} />
                 </ActionIcon>
@@ -444,6 +446,7 @@ const LiveCameraFeed = () => {
                   variant={viewMode === 'list' ? "filled" : "outline"}
                   color="brand"
                   onClick={() => setViewMode('list')}
+                  data-testid="list-view-button"
                 >
                   <IconList size={18} />
                 </ActionIcon>

@@ -1,0 +1,29 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Local development
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Weights file - should be downloaded separately
+weights/
+
+# Secrets
+secrets/
+
+# Temporary files
+/tmp
+*.tmp
+
+# Video files
+videos/*

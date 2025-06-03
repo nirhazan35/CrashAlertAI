@@ -50,7 +50,16 @@ const assignCameras = async (req, res) => {
         if (cameras.length !== cameraIds.length) {
             return res.status(400).json({ message: 'One or more cameras not found' });
         }
-
+        // Update camera users lists
+        await Camera.updateMany(
+            { cameraId: { $in: cameraIds } },
+            { $addToSet: { users: userId } }
+        );
+        
+        await Camera.updateMany(
+            { cameraId: { $nin: cameraIds } },
+            { $pull: { users: userId } }
+        );
         user.assignedCameras = cameraIds;
         await user.save();
         res.status(200).json({ message: 'Cameras assigned successfully' });
