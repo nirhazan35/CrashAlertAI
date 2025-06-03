@@ -73,6 +73,7 @@ export const AccidentLogsProvider = ({ children }) => {
 
       onNewAccident((accident) => {
         console.log("New accident received:", accident);
+        playBeep(); // Play sound alert for new accident
         setAccidentLogs((prevLogs) => [accident, ...prevLogs]);
       });
 
