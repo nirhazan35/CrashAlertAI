@@ -67,7 +67,7 @@ jobs:
 
   test-model-service:
     # Test Python model service - Using original requirements.txt
-    docker:
+    docker: 
       - image: cimg/python:3.11
     working_directory: ~/project/model-service
     steps:
