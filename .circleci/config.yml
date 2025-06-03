@@ -4,9 +4,10 @@ version: 2.1
 orbs:
   node: circleci/node@5
   python: circleci/python@2
+
 jobs:
-  test-node:
-    # Install node dependencies and run tests
+  test-frontend:
+    # Test frontend React app
     executor: node/default
     working_directory: ~/project/frontend
     environment:
@@ -19,12 +20,31 @@ jobs:
       - run:
           command: npm install jest-junit
       - run:
-          name: Run tests
-          command: npm run test --ci --runInBand --reporters=default --reporters=jest-junit
+          name: Run frontend tests
+          command: npm run test -- --ci --runInBand --reporters=default --reporters=jest-junit --coverage --watchAll=false
       - store_test_results:
           path: ./test-results/
-  build-node:
-    # Build node project
+      - store_artifacts:
+          path: coverage
+          destination: frontend-coverage
+
+  test-backend:
+    # Test backend Node.js API
+    executor: node/default
+    working_directory: ~/project/backend
+    steps:
+      - checkout:
+          path: ~/project
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Run backend tests
+          command: npm test
+      - store_test_results:
+          path: ./test-results/
+
+  build-frontend:
+    # Build frontend React app
     executor: node/default
     working_directory: ~/project/frontend
     steps:
@@ -43,39 +63,86 @@ jobs:
           command: cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
       - store_artifacts:
           path: ~/artifacts
-          destination: node-build
-  test-python:
-    # Install dependencies and run tests
+          destination: frontend-build
+
+  test-model-service:
+    # Test Python model service - Fixed Python version
     docker:
-      - image: cimg/python:3.8-node
+      - image: cimg/python:3.9
     working_directory: ~/project/model-service
     steps:
       - checkout:
           path: ~/project
-      - python/install-packages
+      - python/install-packages:
+          pkg-manager: pip
       - run:
-          name: Run tests
+          name: Run model service tests
           command: pytest --junitxml=junit.xml || ((($? == 5)) && echo 'Did not find any tests to run.')
       - store_test_results:
           path: junit.xml
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
+
+  deploy-to-render:
+    # Deploy to Render using webhooks
     docker:
       - image: cimg/base:stable
     steps:
-      # Replace this with steps to deploy to users
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+          name: Trigger Render deployment
+          command: |
+            # Frontend deployment webhook
+            if [ -n "$RENDER_FRONTEND_DEPLOY_HOOK" ]; then
+              echo "Triggering frontend deployment on Render..."
+              curl -X POST "$RENDER_FRONTEND_DEPLOY_HOOK"
+            else
+              echo "Warning: RENDER_FRONTEND_DEPLOY_HOOK not set"
+            fi
+            
+            # Backend deployment webhook
+            if [ -n "$RENDER_BACKEND_DEPLOY_HOOK" ]; then
+              echo "Triggering backend deployment on Render..."
+              curl -X POST "$RENDER_BACKEND_DEPLOY_HOOK"
+            else
+              echo "Warning: RENDER_BACKEND_DEPLOY_HOOK not set"
+            fi
+            
+            # Model service deployment webhook (if you have it deployed)
+            if [ -n "$RENDER_MODEL_SERVICE_DEPLOY_HOOK" ]; then
+              echo "Triggering model service deployment on Render..."
+              curl -X POST "$RENDER_MODEL_SERVICE_DEPLOY_HOOK"
+            fi
+
 workflows:
-  build-and-test:
+  test-and-deploy:
     jobs:
-      - test-node
-      - build-node:
+      # Run all tests in parallel
+      - test-frontend:
+          filters:
+            branches:
+              ignore: gh-pages
+      - test-backend:
+          filters:
+            branches:
+              ignore: gh-pages
+      - test-model-service:
+          filters:
+            branches:
+              ignore: gh-pages
+      
+      # Build frontend after frontend tests pass
+      - build-frontend:
           requires:
-            - test-node
-            - test-python
-      - test-python
-    # - deploy:
-    #     requires:
-    #       - build-node
+            - test-frontend
+          filters:
+            branches:
+              only: main
+      
+      # Deploy only on main branch after all tests pass and build succeeds
+      - deploy-to-render:
+          requires:
+            - test-frontend
+            - test-backend
+            - test-model-service
+            - build-frontend
+          filters:
+            branches:
+              only: main
