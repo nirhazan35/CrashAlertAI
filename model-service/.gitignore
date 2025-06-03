@@ -26,4 +26,4 @@ secrets/
 *.tmp
 
 # Video files
-videos/*
+videos
