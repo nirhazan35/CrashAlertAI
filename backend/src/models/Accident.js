@@ -25,7 +25,7 @@ const accidentSchema = new Schema({
   severity: {
     type: String,
     enum: ['no severity', 'low', 'medium', 'high'],
-    required: true,
+    default: 'no severity',
   },
   video: {
     type: String, // Link to stored image/video of the detected event
