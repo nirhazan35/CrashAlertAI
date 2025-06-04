@@ -5,6 +5,10 @@ from fastapi import FastAPI, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from uploader import trim_video_ffmpeg, upload_to_drive
 import torch
+from dotenv import load_dotenv
+
+# Load environment variables from .env file (for local development)
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -18,8 +22,8 @@ MODEL_WEIGHTS = os.getenv("YOLO_WEIGHTS", "/app/weights/best.pt")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 THRESHOLD = 0.7
 COOLDOWN_SECONDS = 20
-VIDEO_DIR = "/app/videos"
-BACKEND_URL = os.environ["INTERNAL_BACKEND_URL"]
+VIDEO_DIR = os.getenv("VIDEO_DIR", "/app/videos")
+BACKEND_URL = os.getenv("INTERNAL_BACKEND_URL")
 SECRET_HEADER_NAME = "X-INTERNAL-SECRET"
 SECRET = os.environ["INTERNAL_SECRET"]
 
@@ -53,9 +57,6 @@ def predict_video(video_path, metadata):
     CONFIDENCE_THRESHOLD = 0.5  # Confidence threshold for detection
     ACCIDENT_CLASS_ID = 0       # Class ID for accident
     
-    # Load the pre-trained YOLOv11m model for accident detection
-    model = YOLO('yolov11m_accident_detection.pt')  # Path to your trained model
-    
     # Get video properties using OpenCV temporarily
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -75,7 +76,7 @@ def predict_video(video_path, metadata):
     logger.info(f"Starting accident detection on video: {video_path}")
     
     # Use YOLO's built-in video processing for better performance
-    for results in model.track(source=video_path, stream=True, conf=CONFIDENCE_THRESHOLD):
+    for results in model.track(source=video_path, stream=True, conf=CONFIDENCE_THRESHOLD, verbose=False):
         # Calculate current timestamp in the video
         current_time = timedelta(seconds=frame_count / fps)
         current_time_seconds = int(current_time.total_seconds())
@@ -113,36 +114,6 @@ def predict_video(video_path, metadata):
     
     logger.info(f"Completed accident detection on video: {video_path}")
 
-def trim_video_ffmpeg(input_video, start_time, duration, output_video):
-    """
-    Trim a section of video using ffmpeg
-    
-    Args:
-        input_video (str): Path to the input video file
-        start_time (int): Start time in seconds
-        duration (int): Duration of clip in seconds
-        output_video (str): Path for the output video file
-    """
-    # Format start time to HH:MM:SS format
-    hours = start_time // 3600
-    minutes = (start_time % 3600) // 60
-    seconds = start_time % 60
-    start_time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-    
-    # Execute ffmpeg command
-    command = [
-        "ffmpeg",
-        "-i", input_video,
-        "-ss", start_time_str,
-        "-t", str(duration),
-        "-c", "copy",  # Use copy codec for fast trimming
-        "-y",  # Overwrite output file if it exists
-        output_video
-    ]
-    
-    subprocess.run(command, check=True)
-    return output_video
-
 def broadcast(video_path, timestamp, metadata, confidence):
     """
     Broadcast an accident alert to the appropriate channels
@@ -170,7 +141,7 @@ def broadcast(video_path, timestamp, metadata, confidence):
         )
         
         # Upload trimmed clip to Google Drive using existing function
-        gdrive_link = upload_to_drive(clip_path)
+        gdrive_link = upload_to_drive(logger, clip_path)
         
         # Prepare accident document
         accident_doc = {
@@ -209,14 +180,34 @@ def list_videos():
     vids = [f for f in os.listdir(VIDEO_DIR) if f.endswith(".mp4")]
     return [{"id": v.split(".")[0], "file": v} for v in vids]
 
+@app.get("/test")
+def test():
+    
+    return {"status": "healthy"}
+
 @app.post("/run")
 def process_video(req: RunRequest, bg: BackgroundTasks):
     file_path = os.path.join(VIDEO_DIR, f"{req.videoId}.mp4")
+    logger.info(f"Processing video: {file_path}")
+    logger.info(f"Camera ID: {req.cameraId}")
+    logger.info(f"Location: {req.location}")
     if not os.path.isfile(file_path):
         raise HTTPException(404, detail="Video file not found")
     
-    bg.add_task(analyse_video, file_path, {
+    bg.add_task(predict_video, file_path, {
         "cameraId": req.cameraId,
         "location": req.location
     })
     return {"status": "processing_started", "video": req.videoId} 
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy", 
+        "model_loaded": model is not None,
+        "config": {
+            "video_dir": VIDEO_DIR,
+            "model_weights": MODEL_WEIGHTS,
+            "backend_url": BACKEND_URL
+        }
+    }

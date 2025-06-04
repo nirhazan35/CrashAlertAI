@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export function useFilterLogs(initialLogs = []) {
   const [filters, setFilters] = useState({
@@ -11,13 +11,29 @@ export function useFilterLogs(initialLogs = []) {
     endTime: '',
   });
   const [filteredLogs, setFilteredLogs] = useState(initialLogs);
+  const hasFiltersApplied = useRef(false);
 
-  // whenever the source logs change, reset the filtered set
+  // Only reset filtered logs when initialLogs change if no filters are applied
   useEffect(() => {
-    setFilteredLogs(initialLogs);
-  }, [initialLogs]);
+    // Check if any filters are currently active (inline to avoid dependency issues)
+    const areFiltersActive = !!(
+      filters.cameraId ||
+      filters.location ||
+      filters.startDate ||
+      filters.endDate ||
+      filters.severity ||
+      filters.startTime ||
+      filters.endTime
+    );
+    
+    // Only reset if this is the first load or if no filters are currently applied
+    if (!hasFiltersApplied.current || !areFiltersActive) {
+      setFilteredLogs(initialLogs);
+    }
+  }, [initialLogs, filters]);
 
   const applyFilters = () => {
+    hasFiltersApplied.current = true;
     const newFiltered = initialLogs.filter((log) => {
       // cameraId
       const matchesCamera =
@@ -77,6 +93,7 @@ export function useFilterLogs(initialLogs = []) {
   };
 
   const clearFilters = () => {
+    hasFiltersApplied.current = false;
     setFilters({
       cameraId: '',
       location: '',
