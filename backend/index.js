@@ -17,7 +17,7 @@ initSocket(server);
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost', process.env.REACT_APP_URL_FRONTEND],
+  origin: '*',
   credentials: true,
   allowedHeaders: ['Authorization', 'Content-Type'], 
 }));
