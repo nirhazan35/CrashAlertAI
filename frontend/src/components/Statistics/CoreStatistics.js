@@ -143,7 +143,7 @@ const CoreStatistics = ({
             <Text size="sm" weight={500} mb="md">Severity Distribution</Text>
             <Grid>
               {Object.entries(severityDistribution).map(([severity, data]) => (
-                <Grid.Col span={4} key={severity}>
+                <Grid.Col span={3} key={severity}>
                   <Stack spacing="xs">
                     <Text size="xs" color="dimmed" transform="capitalize">{severity}</Text>
                     <Group position="apart">
@@ -183,6 +183,7 @@ const CoreStatistics = ({
             </List>
           </Paper>
         </Grid.Col>
+
         <Grid.Col span={12}>
           <Paper shadow="sm" p="md" radius="md">
             <Text size="sm" weight={500} mb="md">Top Locations</Text>

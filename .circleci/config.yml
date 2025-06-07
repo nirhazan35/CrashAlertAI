@@ -44,7 +44,7 @@ jobs:
           name: Build frontend
           command: npm run build
 
-  deploy-to-render:
+  deploy-to-server:
     # Deploy to Render using webhooks
     docker:
       - image: cimg/base:stable
@@ -70,7 +70,7 @@ workflows:
           filters:
             branches:
               only: main
-      - deploy-to-render:
+      - deploy-to-server:
           requires:
             - test-frontend
             - test-backend

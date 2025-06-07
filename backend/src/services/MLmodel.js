@@ -1,3 +1,5 @@
+// This file is used to simulate fake accidents for the testing purposes
+
 const { emitNewAccident } = require("./socketService");
 const { saveNewAccident } = require("../controllers/accidents");
 const Camera = require("../models/Camera");
@@ -27,8 +29,8 @@ const startFakeAccidentSimulation = async (initialStatus) => {
   }
 
   // Severity options
-  // const severityOptions = ['high', 'medium', 'low', 'null'];
-  const severityOptions = ['no severity'];
+  const severityOptions = ['high', 'medium', 'low', 'no severity'];
+  // const severityOptions = ['no severity'];
 
   // Function to generate a random date within a specific range
   const getRandomDate = (start, end) => {
@@ -53,7 +55,7 @@ const startFakeAccidentSimulation = async (initialStatus) => {
       const randomSeverity = severityOptions[Math.floor(Math.random() * severityOptions.length)];
 
       // Randomly select whether it's a false positive
-      const randomFalsePositive = Math.random() < 0.5; // 50% chance
+      const randomFalsePositive = Math.random() < 0.10; // 10% chance
 
       // Always assign to a random user
       const assignedTo = users[Math.floor(Math.random() * users.length)].username;
@@ -61,8 +63,8 @@ const startFakeAccidentSimulation = async (initialStatus) => {
       const fakeAccident = {
         cameraId: selectedCamera.cameraId,
         location: selectedCamera.location,
-        // date: randomDate.toISOString(),
-        date: new Date(),
+        date: randomDate.toISOString(),
+        // date: new Date(),
         severity: randomSeverity,
         video: "",
         falsePositive: randomFalsePositive,
@@ -93,7 +95,7 @@ const startFakeAccidentSimulation = async (initialStatus) => {
     } catch (error) {
       console.error("Error during fake accident simulation:", error);
     }
-  }, 3000); // Simulate every 3 seconds
+  }, 100); // Simulate every 1 second
 };
 
 module.exports = { startFakeAccidentSimulation };
