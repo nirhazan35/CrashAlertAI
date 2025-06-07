@@ -20,6 +20,7 @@ import RequestPasswordChange from './pages/RequestPasswordChange/RequestPassword
 import AuthLogs from './pages/AuthLogs/AuthLogs';
 import MantineProvider from './components/MantineProvider/MantineProvider';
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 
 function App() {
   const { user } = useAuth();

@@ -17,6 +17,7 @@ import {
   Group,
   Stack
 } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { 
   IconEye,
   IconAlertCircle,
@@ -142,6 +143,13 @@ const AccidentLog = ({
                                   e.stopPropagation();
                                   if (log.video) {
                                     window.open(log.video, '_blank', 'noopener,noreferrer');
+                                  } else {
+                                    notifications.show({
+                                      title: 'Video Not Available',
+                                      message: 'No video link is available for this accident report.',
+                                      color: 'orange',
+                                      autoClose: 3000,
+                                    });
                                   }
                                 }}
                                 variant="light"
