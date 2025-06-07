@@ -5,10 +5,15 @@ const cookieParser = require('cookie-parser');
 const { startFakeAccidentSimulation } = require("./src/services/MLmodel");
 const http = require("http");
 const { initSocket } = require("./src/socket");
+const ipProcessor = require('./src/middleware/ipProcessor');
 require('dotenv').config();
 
 const app = express();
 const port = 3001;
+
+// Trust proxy for proper IP extraction
+app.set('trust proxy', true);
+
 // Create HTTP server
 const server = http.createServer(app);
 
@@ -23,6 +28,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(ipProcessor); // IP processing middleware
 
 // Connect to MongoDB
 if (process.env.NODE_ENV !== "test") {

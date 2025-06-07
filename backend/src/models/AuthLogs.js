@@ -78,11 +78,8 @@ authLogsSchema.methods.initializeAndSave = async function (username, type, req =
   
   // Extract additional information from request object if provided
   if (req) {
-    // Get IP address
-    this.ipAddress = req.ip || 
-                    req.headers['x-forwarded-for'] || 
-                    req.connection.remoteAddress || 
-                    'Unknown';
+    // Get IP address (now cleaned by middleware)
+    this.ipAddress = req.ip || 'Unknown';
                     
     // Get user agent info
     const userAgent = req.headers['user-agent'] || 'Unknown';
