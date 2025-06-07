@@ -1,6 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../authentication/AuthProvider';
 import './AuthLogs.css';
+
+// Debounce utility function
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 const AuthLogs = () => {
   const { user } = useAuth();
@@ -28,38 +45,48 @@ const AuthLogs = () => {
     operatingSystem: ''
   });
 
+  // Debounce filters to prevent excessive API calls
+  const debouncedFilters = useDebounce(filters, 300);
+
+  // Create query parameters from filters
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams();
+    params.append('page', pagination.page);
+    params.append('limit', pagination.limit);
+    
+    // Add filters to query params if they exist
+    Object.entries(debouncedFilters).forEach(([key, value]) => {
+      if (value && value.trim()) {
+        // Special handling for "Unknown" values to include null/undefined values
+        if (value === 'Unknown' && 
+           (key === 'browser' || key === 'operatingSystem' || key === 'ipAddress')) {
+          params.append(key, 'Unknown');
+          // Add parameter to indicate we want to include null/undefined values
+          params.append(`${key}IncludeNull`, 'true');
+        } else {
+          params.append(key, value);
+        }
+      }
+    });
+    
+    return params.toString();
+  }, [debouncedFilters, pagination.page, pagination.limit]);
+
   // Fetch logs with current filters and pagination
   const fetchLogs = useCallback(async () => {
+    if (!user?.token) return;
+    
     try {
       setLoading(true);
-      
-      // Build query string from filters
-      const queryParams = new URLSearchParams();
-      queryParams.append('page', pagination.page);
-      queryParams.append('limit', pagination.limit);
-      
-      // Add filters to query params if they exist
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) {
-          // Special handling for "Unknown" values to include null/undefined values
-          if (value === 'Unknown' && 
-             (key === 'browser' || key === 'operatingSystem' || key === 'ipAddress')) {
-            queryParams.append(key, 'Unknown');
-            // Add parameter to indicate we want to include null/undefined values
-            queryParams.append(`${key}IncludeNull`, 'true');
-          } else {
-            queryParams.append(key, value);
-          }
-        }
-      });
+      setError(null);
       
       const response = await fetch(
-        `${process.env.REACT_APP_URL_BACKEND}/auth/logs?${queryParams.toString()}`,
+        `${process.env.REACT_APP_URL_BACKEND}/auth/logs?${queryParams}`,
         {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user?.token}`
+            'Authorization': `Bearer ${user.token}`
           }
         }
       );
@@ -72,7 +99,11 @@ const AuthLogs = () => {
       
       if (data.success) {
         setLogs(data.data.logs);
-        setPagination(data.data.pagination);
+        setPagination(prev => ({
+          ...prev,
+          total: data.data.pagination.total,
+          pages: data.data.pagination.pages
+        }));
       } else {
         throw new Error(data.message || 'Failed to fetch logs');
       }
@@ -82,14 +113,12 @@ const AuthLogs = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.page, pagination.limit, user?.token]);
+  }, [user?.token, queryParams]);
 
-  // Load logs on component mount and when filters or pagination changes
+  // Load logs when dependencies change
   useEffect(() => {
-    if (user?.token) {
-      fetchLogs();
-    }
-  }, [user?.token, fetchLogs]);
+    fetchLogs();
+  }, [fetchLogs]);
 
   // Handle filter changes
   const handleFilterChange = (e) => {
@@ -101,9 +130,6 @@ const AuthLogs = () => {
     
     // Reset to first page when filter changes
     setPagination(prev => ({ ...prev, page: 1 }));
-    
-    // Auto-apply filter change
-    setTimeout(fetchLogs, 0);
   };
 
   // Reset filters
@@ -123,9 +149,6 @@ const AuthLogs = () => {
     
     // Reset pagination to first page
     setPagination(prev => ({ ...prev, page: 1 }));
-    
-    // Fetch logs with reset filters
-    setTimeout(fetchLogs, 0);
   };
 
   // Handle page change

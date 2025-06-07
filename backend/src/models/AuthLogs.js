@@ -85,29 +85,31 @@ authLogsSchema.methods.initializeAndSave = async function (username, type, req =
     const userAgent = req.headers['user-agent'] || 'Unknown';
     this.deviceInfo = userAgent;
     
-    // Extract browser and OS information from user agent (simplified)
+    // Extract browser and OS information from user agent (improved)
     // In production, you might want to use a library like ua-parser-js
     if (userAgent.includes('Firefox')) {
       this.browser = 'Firefox';
-    } else if (userAgent.includes('Chrome')) {
-      this.browser = 'Chrome';
-    } else if (userAgent.includes('Safari')) {
-      this.browser = 'Safari';
-    } else if (userAgent.includes('Edge')) {
+    } else if (userAgent.includes('Edg/')) { // Modern Edge
       this.browser = 'Edge';
+    } else if (userAgent.includes('Edge/')) { // Legacy Edge
+      this.browser = 'Edge';
+    } else if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+      this.browser = 'Chrome';
+    } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+      this.browser = 'Safari';
     } else if (userAgent.includes('MSIE') || userAgent.includes('Trident/')) {
       this.browser = 'Internet Explorer';
     }
     
-    if (userAgent.includes('Windows')) {
+    if (userAgent.includes('Windows NT')) {
       this.operatingSystem = 'Windows';
-    } else if (userAgent.includes('Mac OS')) {
+    } else if (userAgent.includes('Mac OS X') || userAgent.includes('Macintosh')) {
       this.operatingSystem = 'MacOS';
-    } else if (userAgent.includes('Linux')) {
+    } else if (userAgent.includes('X11') || userAgent.includes('Linux')) {
       this.operatingSystem = 'Linux';
     } else if (userAgent.includes('Android')) {
       this.operatingSystem = 'Android';
-    } else if (userAgent.includes('iOS')) {
+    } else if (userAgent.includes('iPhone') || userAgent.includes('iPad') || userAgent.includes('iPod')) {
       this.operatingSystem = 'iOS';
     }
   }

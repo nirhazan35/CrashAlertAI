@@ -333,7 +333,7 @@ const getAuthLogs = async (req, res) => {
           $in: [null, 'Unknown', ''] 
         };
       } else {
-        filter.browser = browser;
+        filter.browser = new RegExp(browser, 'i'); // Case-insensitive regex match
       }
     }
     
@@ -344,7 +344,7 @@ const getAuthLogs = async (req, res) => {
           $in: [null, 'Unknown', ''] 
         };
       } else {
-        filter.operatingSystem = operatingSystem;
+        filter.operatingSystem = new RegExp(operatingSystem, 'i'); // Case-insensitive regex match
       }
     }
     
