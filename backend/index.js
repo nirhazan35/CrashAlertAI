@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./src/util/db');
@@ -6,7 +7,6 @@ const { startFakeAccidentSimulation } = require("./src/services/MLmodel");
 const http = require("http");
 const { initSocket } = require("./src/socket");
 const ipProcessor = require('./src/middleware/ipProcessor');
-require('dotenv').config();
 
 const app = express();
 const port = 3001;
