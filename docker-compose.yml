@@ -12,6 +12,7 @@ services:
       - EMAIL_ADDRESS=${EMAIL_ADDRESS}
       - EMAIL_PASS=${EMAIL_PASS}
       - INTERNAL_SECRET=${INTERNAL_SECRET}
+      - REACT_APP_URL_FRONTEND=${REACT_APP_URL_FRONTEND}
     depends_on:
       - mongo
     restart: unless-stopped
