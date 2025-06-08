@@ -45,19 +45,20 @@ jobs:
           command: npm run build
 
   deploy-to-server:
-    # Deploy to Render using webhooks
-    docker:
-      - image: cimg/base:stable
-    steps: 
-      - run:
-          name: Deploy to Render
-          command: |
-            if [ -n "$RENDER_FRONTEND_DEPLOY_HOOK" ]; then
-              curl -X POST "$RENDER_FRONTEND_DEPLOY_HOOK"
-            fi
-            if [ -n "$RENDER_BACKEND_DEPLOY_HOOK" ]; then
-              curl -X POST "$RENDER_BACKEND_DEPLOY_HOOK"
-            fi
+  docker:
+    - image: cimg/base:stable
+  steps:
+    - add_ssh_keys:
+        fingerprints:
+    - run:
+        name: Deploy to Ubuntu server via SSH
+        command: |
+          ssh -o StrictHostKeyChecking=no root@138.199.216.9 '
+            cd ~/CrashAlertAI &&
+            git pull origin main &&
+            docker compose down &&
+            docker compose up -d --build
+          '
 
 workflows:
   test-and-deploy:
