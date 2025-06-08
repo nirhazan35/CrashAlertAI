@@ -20,8 +20,6 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 initSocket(server);
 
-console.log('CORS allowed origin:', process.env.REACT_APP_URL_FRONTEND);
-
 // Middleware
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost', 'http://localhost:8080', process.env.REACT_APP_URL_FRONTEND],
