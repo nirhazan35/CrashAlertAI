@@ -29,26 +29,26 @@ services:
       - backend
     restart: unless-stopped
 
-  # model-service:
-  #   image: crashalert-model-service
-  #   build:
-  #     context: ./model-service
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8000:8000"
-  #   environment:
-  #     - INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL}
-  #     - INTERNAL_SECRET=${INTERNAL_SECRET}
-  #     - ACCIDENT_THRESHOLD=${ACCIDENT_THRESHOLD:-0.7}
-  #     - YOLO_WEIGHTS=/app/weights/best.pt
-  #   volumes:
-  #     - ./model-service/videos:/app/videos
-  #     - ./secrets/drive_sa.json:/app/credentials/drive_sa.json:ro
-  #     - ./weights/best.pt:/app/weights/best.pt:ro
-  #   depends_on:
-  #     - backend
-  #     - mongo
-  #   restart: unless-stopped
+  model-service:
+    image: crashalert-model-service
+    build:
+      context: ./model-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL}
+      - INTERNAL_SECRET=${INTERNAL_SECRET}
+      - ACCIDENT_THRESHOLD=${ACCIDENT_THRESHOLD:-0.7}
+      - YOLO_WEIGHTS=/app/weights/best.pt
+    volumes:
+      - ./model-service/videos:/app/videos
+      - ./secrets/drive_sa.json:/app/credentials/drive_sa.json:ro
+      - ./weights/best.pt:/app/weights/best.pt:ro
+    depends_on:
+      - backend
+      - mongo
+    restart: unless-stopped
 
   # MongoDB
   mongo:
