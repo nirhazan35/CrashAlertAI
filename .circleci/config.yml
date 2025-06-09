@@ -43,7 +43,7 @@ jobs:
           command: |
             ssh -o StrictHostKeyChecking=no root@138.199.216.9 '
               cd ~/CrashAlertAI &&
-              git pull origin server-setup-fixes &&
+              git pull origin main &&
               docker compose down &&
               docker compose up -d --build --remove-orphans
             '
@@ -59,4 +59,4 @@ workflows:
             - test-backend
           filters:
             branches:
-              only: server-setup-fixes
+              only: main
