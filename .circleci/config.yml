@@ -2,7 +2,6 @@ version: 2.1
 
 orbs:
   node:   circleci/node@5
-  docker: circleci/docker@3
 
 jobs:
   test-frontend:
@@ -51,7 +50,7 @@ jobs:
           command: |
             ssh -o StrictHostKeyChecking=no user@138.199.216.9 '
               cd ~/CrashAlertAI &&
-              git pull origin main &&
+              git pull origin server-setup-fixes &&
               docker compose pull &&
               docker compose up -d --remove-orphans --pull always
             '
@@ -65,4 +64,4 @@ workflows:
           requires: [ test-frontend, test-backend ]
       - deploy:
           requires: [ build-push ]
-          filters: { branches: { only: main } }
+          filters: { branches: { only: server-setup-fixes } }
