@@ -32,52 +32,32 @@ jobs:
             cd backend
             npm test
 
-  build-push:
-    docker:
-      - image: cimg/base:2024.01
-    steps:
-      - setup_remote_docker
-      - checkout
-      - run:
-          name: Docker Hub login
-          command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-      - run:
-          name: Build & push (branch-tagged)
-          command: |
-            SHORT=$(git rev-parse --short "$CIRCLE_SHA1")
-            TAG="${CIRCLE_BRANCH}-${SHORT}"
-            docker compose build
-            docker tag crashalert-backend       "$DOCKERHUB_USER/crashalert-backend:$TAG"
-            docker tag crashalert-frontend      "$DOCKERHUB_USER/crashalert-frontend:$TAG"
-            docker tag crashalert-model-service "$DOCKERHUB_USER/crashalert-model-service:$TAG"
-            docker push "$DOCKERHUB_USER/crashalert-backend:$TAG"
-            docker push "$DOCKERHUB_USER/crashalert-frontend:$TAG"
-            docker push "$DOCKERHUB_USER/crashalert-model-service:$TAG"
-
-  deploy:
+  deploy-via-ssh:
     docker:
       - image: cimg/base:2024.01
     steps:
       - add_ssh_keys:
-          fingerprints: [ "YOUR_SSH_FINGERPRINT" ]
+          fingerprints:
+            []
       - run:
-          name: Deploy to server (zero-downtime)
+          name: Deploy to server
           command: |
             ssh -o StrictHostKeyChecking=no user@138.199.216.9 '
               cd ~/CrashAlertAI &&
-              git pull origin main &&
-              docker compose pull &&
-              docker compose up -d --remove-orphans --pull always
+              git pull origin server-setup-fixes &&
+              docker compose down &&
+              docker compose up -d --build --remove-orphans
             '
 
 workflows:
-  test-build-deploy:
+  test-and-deploy:
     jobs:
       - test-frontend
       - test-backend
-      - build-push:
-          requires: [ test-frontend, test-backend ]
-      - deploy:
-          requires: [ build-push ]
+      - deploy-via-ssh:
+          requires:
+            - test-frontend
+            - test-backend
           filters:
-            branches: { only: main }
+            branches:
+              only: server-setup-fixes
