@@ -12,8 +12,8 @@ COPY . .
 
 ENV NODE_ENV=production
 EXPOSE 3001
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD \
-  wget -qO- http://localhost:3001/health || wget -qO- http://138.199.216.9:3001/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:3001/health || exit 1
 
 USER appuser
 CMD ["node", "index.js"]
