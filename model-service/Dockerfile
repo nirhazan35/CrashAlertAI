@@ -1,17 +1,16 @@
 # ---------- Builder ----------
 FROM python:3.11-slim AS builder
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
-      ffmpeg \
-      curl \
-  && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY requirements.txt .
 RUN pip wheel -r requirements.txt --wheel-dir /wheels
 
 # ---------- Runtime ----------
 FROM python:3.11-slim
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ffmpeg \
+      curl \
+  && rm -rf /var/lib/apt/lists/*
 RUN addgroup --system appgroup && adduser --system --group appuser
 WORKDIR /app
 COPY --from=builder /wheels /wheels
