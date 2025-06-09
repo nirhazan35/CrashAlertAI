@@ -8,6 +8,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ffmpeg git build-essential && \
     rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /app/credentials /app/videos /app/weights
 
 # 2. Python dependencies
 WORKDIR /app

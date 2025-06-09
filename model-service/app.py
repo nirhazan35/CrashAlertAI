@@ -204,10 +204,5 @@ def process_video(req: RunRequest, bg: BackgroundTasks):
 def health_check():
     return {
         "status": "healthy", 
-        "model_loaded": model is not None,
-        "config": {
-            "video_dir": VIDEO_DIR,
-            "model_weights": MODEL_WEIGHTS,
-            "backend_url": BACKEND_URL
-        }
+        "model_loaded": model is not None
     }
