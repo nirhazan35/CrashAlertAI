@@ -132,8 +132,8 @@ const login = async (req, res) => {
     // Set the Refresh Token in an HTTP-only cookie
     res.cookie('jwt', refreshToken, {
         httpOnly: true,
-        sameSite: 'None',
-        secure: true,
+        sameSite: 'Lax',
+        secure: false,
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     });
 
@@ -191,7 +191,11 @@ const logout = async (req, res) => {
     
     if (!user) {
       await authLog.updateResult("Failure", "Invalid session");
-      res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+      res.clearCookie("jwt", { 
+        httpOnly: true, 
+        sameSite: "Lax", 
+        secure: false 
+      });
       return res.status(204).send(); // No content
     }
     
@@ -218,7 +222,11 @@ const logout = async (req, res) => {
     });
 
     // Clear the refresh token cookie
-    res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+    res.clearCookie("jwt", { 
+      httpOnly: true, 
+      sameSite: "Lax", 
+      secure: false 
+    });
     await authLog.updateResult("Success");
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
