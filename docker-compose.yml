@@ -3,11 +3,6 @@ version: "3.8"
 volumes:
   mongodb_data:
 
-secrets:
-  mongo_url:   { file: ./secrets/mongo_url.txt }
-  email_user:  { file: ./secrets/email_address.txt }
-  email_pass:  { file: ./secrets/email_pass.txt }
-
 services:
   backend:
     build: ./backend
@@ -18,13 +13,9 @@ services:
       REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
       INTERNAL_SECRET:      ${INTERNAL_SECRET}
       REACT_APP_URL_FRONTEND: ${REACT_APP_URL_FRONTEND}      
-      MONGO_URL_FILE:   /run/secrets/mongo_url
-      EMAIL_ADDRESS_FILE: /run/secrets/email_user
-      EMAIL_PASS_FILE:    /run/secrets/email_pass
-    secrets:
-      - mongo_url
-      - email_user
-      - email_pass
+      MONGO_URL: ${MONGO_URL}
+      EMAIL_ADDRESS: ${EMAIL_ADDRESS}
+      EMAIL_PASS: ${EMAIL_PASS}
     ports: ["3001:3001"]
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
