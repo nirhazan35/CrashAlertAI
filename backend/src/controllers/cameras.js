@@ -33,39 +33,61 @@ const getLocations = async (req, res) => {
 
 // Assign cameras to a user
 const assignCameras = async (req, res) => {
-    const userId = req.body.userId;
-    const cameraIds = req.body.cameraIds;
-    if (!userId || !Array.isArray(cameraIds)) {
-        return res.status(400).json({ message: 'Invalid input' });
-    }
+  const userId = req.body.userId;
+  const cameraIds = req.body.cameraIds;
+  if (!userId || !Array.isArray(cameraIds)) {
+      return res.status(400).json({ message: 'Invalid input' });
+  }
 
-    try {
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+  try {
+      const user = await User.findById(userId);
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
 
-        // Ensure all cameras exist before assignment
-        const cameras = await Camera.find({ cameraId: { $in: cameraIds } });
-        if (cameras.length !== cameraIds.length) {
-            return res.status(400).json({ message: 'One or more cameras not found' });
-        }
-        // Update camera users lists
-        await Camera.updateMany(
-            { cameraId: { $in: cameraIds } },
-            { $addToSet: { users: userId } }
-        );
-        
-        await Camera.updateMany(
-            { cameraId: { $nin: cameraIds } },
-            { $pull: { users: userId } }
-        );
-        user.assignedCameras = cameraIds;
-        await user.save();
-        res.status(200).json({ message: 'Cameras assigned successfully' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+      // Create case-insensitive regex patterns
+      const patterns = cameraIds.map(id => new RegExp(`^${id}$`, 'i'));
+      
+      // Find cameras using case-insensitive match
+      const cameras = await Camera.find({ 
+          cameraId: { $in: patterns } 
+      });
+      
+      if (cameras.length !== cameraIds.length) {
+          // Find which IDs are missing
+          const foundIds = cameras.map(cam => cam.cameraId.toLowerCase());
+          const missingIds = cameraIds.filter(id => 
+              !foundIds.includes(id.toLowerCase())
+          );
+          
+          return res.status(400).json({ 
+              message: 'One or more cameras not found',
+              missing: missingIds
+          });
+      }
+
+      // Get the EXACT camera IDs from database
+      const exactCameraIds = cameras.map(cam => cam.cameraId);
+      
+      // Update camera assignments
+      await Camera.updateMany(
+          { cameraId: { $in: exactCameraIds } },
+          { $addToSet: { users: userId } }
+      );
+      
+      await Camera.updateMany(
+          { cameraId: { $nin: exactCameraIds } },
+          { $pull: { users: userId } }
+      );
+      
+      // Save with exact case from database
+      user.assignedCameras = exactCameraIds;
+      await user.save();
+      
+      res.status(200).json({ message: 'Cameras assigned successfully' });
+  } catch (error) {
+      res.status(500).json({ message: error.message });
+  }
 };
 
 const addNewCamera = async (req, res) => {
