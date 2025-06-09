@@ -1,5 +1,4 @@
 import React from 'react';
-import { Container, Text, Paper, Stack } from '@mantine/core';
 
 const Health = () => {
   const healthData = {
@@ -10,33 +9,38 @@ const Health = () => {
   };
 
   return (
-    <Container size="sm" style={{ paddingTop: '2rem' }}>
-      <Paper shadow="xs" padding="md">
-        <Stack spacing="md">
-          <Text size="xl" weight={500}>
-            Frontend Health Check
-          </Text>
-          <div>
-            <Text size="sm" color="dimmed">Status:</Text>
-            <Text size="md" color="green" weight={500}>
-              {healthData.status}
-            </Text>
-          </div>
-          <div>
-            <Text size="sm" color="dimmed">Timestamp:</Text>
-            <Text size="md">{healthData.timestamp}</Text>
-          </div>
-          <div>
-            <Text size="sm" color="dimmed">Version:</Text>
-            <Text size="md">{healthData.version}</Text>
-          </div>
-          <div>
-            <Text size="sm" color="dimmed">Environment:</Text>
-            <Text size="md">{healthData.environment}</Text>
-          </div>
-        </Stack>
-      </Paper>
-    </Container>
+    <div style={{ 
+      padding: '2rem', 
+      maxWidth: '600px', 
+      margin: '0 auto',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      <div style={{ 
+        border: '1px solid #e0e0e0', 
+        borderRadius: '8px', 
+        padding: '1.5rem',
+        backgroundColor: '#f9f9f9'
+      }}>
+        <h1 style={{ margin: '0 0 1rem 0', fontSize: '1.5rem', color: '#333' }}>
+          Frontend Health Check
+        </h1>
+        <div style={{ marginBottom: '1rem' }}>
+          <strong>Status:</strong>{' '}
+          <span style={{ color: '#28a745', fontWeight: 'bold' }}>
+            {healthData.status}
+          </span>
+        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <strong>Timestamp:</strong> {healthData.timestamp}
+        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <strong>Version:</strong> {healthData.version}
+        </div>
+        <div>
+          <strong>Environment:</strong> {healthData.environment}
+        </div>
+      </div>
+    </div>
   );
 };
 
