@@ -18,6 +18,7 @@ import AddNewCamera from './pages/AddNewCamera/AddCamera';
 import SidebarLayout from './components/sidebar/SidebarLayout';
 import RequestPasswordChange from './pages/RequestPasswordChange/RequestPasswordChange';
 import AuthLogs from './pages/AuthLogs/AuthLogs';
+import Health from './pages/Health/Health';
 import MantineProvider from './components/MantineProvider/MantineProvider';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
@@ -31,6 +32,7 @@ function App() {
       <Router>
         <Routes>
           {/* Public routes */}
+          <Route path="/health" element={<Health />} />
           <Route path="/login" element={user?.isLoggedIn ? <Navigate to="/dashboard" /> : <Login />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

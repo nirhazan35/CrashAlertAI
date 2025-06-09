@@ -1,61 +1,51 @@
 version: 2.1
+
 orbs:
   node: circleci/node@5
 
 jobs:
   test-frontend:
-    # Test frontend React app
     executor: node/default
-    working_directory: ~/project/frontend
+    working_directory: ~/project
     steps:
-      - checkout:
-          path: ~/project
+      - checkout
       - node/install-packages:
           pkg-manager: npm
+          app-dir: frontend
       - run:
           name: Run frontend tests
-          command: npm test -- --watchAll=false
+          command: |
+            cd frontend
+            npm test -- --watchAll=false
 
   test-backend:
-    # Test backend Node.js API
     executor: node/default
-    working_directory: ~/project/backend
+    working_directory: ~/project
     steps:
-      - checkout:
-          path: ~/project
+      - checkout
       - node/install-packages:
           pkg-manager: npm
+          app-dir: backend
       - run:
           name: Run backend tests
-          command: npm test
+          command: |
+            cd backend
+            npm test
 
-  build-website:
-    # Build frontend React app
-    executor: node/default
-    working_directory: ~/project/frontend
-    steps:
-      - checkout:
-          path: ~/project
-      - node/install-packages:
-          pkg-manager: npm
-      - run:
-          name: Build frontend
-          command: npm run build
-
-  deploy-to-server:
+  deploy-via-ssh:
     docker:
       - image: cimg/base:stable
     steps:
       - add_ssh_keys:
           fingerprints: []
       - run:
-          name: Deploy to Ubuntu server via SSH
+          name: Deploy to server
           command: |
             ssh -o StrictHostKeyChecking=no root@138.199.216.9 '
               cd ~/CrashAlertAI &&
               git pull origin main &&
               docker compose down &&
-              docker compose up -d --build
+              docker compose up -d --build --remove-orphans
             '
 
 workflows:
@@ -63,17 +53,10 @@ workflows:
     jobs:
       - test-frontend
       - test-backend
-      - build-website:
-          requires:
-            - test-frontend
-          filters:
-            branches:
-              only: main
-      - deploy-to-server:
+      - deploy-via-ssh:
           requires:
             - test-frontend
             - test-backend
-            - build-website
           filters:
             branches:
               only: main

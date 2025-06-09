@@ -45,6 +45,10 @@ app.get('/', (req, res) => {
   res.send('CrashAlertAI Backend is running!');
 });
 
+app.get('/health', (req, res) => {
+  res.send('OK');
+});
+
 // startFakeAccidentSimulation('active');
 
 // Start server

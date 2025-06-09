@@ -1,63 +1,72 @@
+volumes:
+  mongodb_data:
+
 services:
   backend:
-    image: crashalert-backend
     build: ./backend
-    ports:
-      - "3001:3001"
+    image: crashalert-backend
     environment:
-      - NODE_ENV=production
-      - MONGO_URL=${MONGO_URL}
-      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
-      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
-      - EMAIL_ADDRESS=${EMAIL_ADDRESS}
-      - EMAIL_PASS=${EMAIL_PASS}
-      - INTERNAL_SECRET=${INTERNAL_SECRET}
-      - REACT_APP_URL_FRONTEND=${REACT_APP_URL_FRONTEND}
+      NODE_ENV: production
+      ACCESS_TOKEN_SECRET:  ${ACCESS_TOKEN_SECRET}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET}
+      INTERNAL_SECRET:      ${INTERNAL_SECRET}
+      REACT_APP_URL_FRONTEND: ${REACT_APP_URL_FRONTEND}      
+      MONGO_URL: ${MONGO_URL}
+      EMAIL_ADDRESS: ${EMAIL_ADDRESS}
+      EMAIL_PASS: ${EMAIL_PASS}
+    ports: ["3001:3001"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://138.199.216.9:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
-      - mongo
+      mongo: { condition: service_started }
     restart: unless-stopped
+    user: "1001:1001"
 
   frontend:
-    image: crashalert-frontend
     build:
       context: ./frontend
-      args:
+      args: 
         REACT_APP_URL_BACKEND: ${REACT_APP_URL_BACKEND}
-    ports:
-      - "3000:80"  # Matching Nginx port
+    image: crashalert-frontend
+    ports: ["3000:80"]
     depends_on:
-      - backend
+      backend: { condition: service_healthy }
     restart: unless-stopped
 
   model-service:
+    build: ./model-service
     image: crashalert-model-service
-    build:
-      context: ./model-service
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
     environment:
-      - INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL}
-      - INTERNAL_SECRET=${INTERNAL_SECRET}
-      - ACCIDENT_THRESHOLD=${ACCIDENT_THRESHOLD:-0.7}
-      - YOLO_WEIGHTS=/app/weights/best.pt
+      INTERNAL_BACKEND_URL: ${INTERNAL_BACKEND_URL}
+      INTERNAL_SECRET:      ${INTERNAL_SECRET}
+      ACCIDENT_THRESHOLD:   ${ACCIDENT_THRESHOLD:-0.7}
+      YOLO_WEIGHTS:         /app/weights/best.pt
+      VIDEO_DIR:            /app/videos
     volumes:
       - ./model-service/videos:/app/videos
       - ./secrets/drive_sa.json:/app/credentials/drive_sa.json:ro
       - ./weights/best.pt:/app/weights/best.pt:ro
+    read_only: true
+    tmpfs: [ /tmp ]
+    ports: ["8000:8000"]
     depends_on:
-      - backend
-      - mongo
+      backend: { condition: service_started }
+      mongo:   { condition: service_started }
     restart: unless-stopped
+    user: "1001:1001"
 
-  # MongoDB
   mongo:
     image: mongo:latest
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
-
-volumes:
-  mongodb_data:
