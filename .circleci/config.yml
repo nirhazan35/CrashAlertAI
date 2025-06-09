@@ -1,27 +1,40 @@
 version: 2.1
 
 orbs:
-  node:   circleci/node@5
+  node: circleci/node@5
 
 jobs:
   test-frontend:
     executor: node/default
-    working_directory: ~/project/frontend
+    working_directory: ~/project
     steps:
       - checkout
-      - node/install-packages: { pkg-manager: npm }
-      - run: npm test -- --watchAll=false
+      - node/install-packages:
+          pkg-manager: npm
+          app-dir: frontend
+      - run:
+          name: Run frontend tests
+          command: |
+            cd frontend
+            npm test -- --watchAll=false
 
   test-backend:
     executor: node/default
-    working_directory: ~/project/backend
+    working_directory: ~/project
     steps:
       - checkout
-      - node/install-packages: { pkg-manager: npm }
-      - run: npm test
+      - node/install-packages:
+          pkg-manager: npm
+          app-dir: backend
+      - run:
+          name: Run backend tests
+          command: |
+            cd backend
+            npm test
 
   build-push:
-    docker: [ { image: cimg/base:2024.01 } ]
+    docker:
+      - image: cimg/base:2024.01
     steps:
       - setup_remote_docker
       - checkout
@@ -42,15 +55,17 @@ jobs:
             docker push "$DOCKERHUB_USER/crashalert-model-service:$TAG"
 
   deploy:
-    docker: [ { image: cimg/base:2024.01 } ]
+    docker:
+      - image: cimg/base:2024.01
     steps:
-      - add_ssh_keys: { fingerprints: [ "YOUR_SSH_FINGERPRINT" ] }
+      - add_ssh_keys:
+          fingerprints: [ "YOUR_SSH_FINGERPRINT" ]
       - run:
           name: Deploy to server (zero-downtime)
           command: |
             ssh -o StrictHostKeyChecking=no user@138.199.216.9 '
               cd ~/CrashAlertAI &&
-              git pull origin server-setup-fixes &&
+              git pull origin main &&
               docker compose pull &&
               docker compose up -d --remove-orphans --pull always
             '
@@ -64,4 +79,5 @@ workflows:
           requires: [ test-frontend, test-backend ]
       - deploy:
           requires: [ build-push ]
-          filters: { branches: { only: server-setup-fixes } }
+          filters:
+            branches: { only: main }
