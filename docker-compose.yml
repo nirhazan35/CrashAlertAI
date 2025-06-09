@@ -44,6 +44,7 @@ services:
       INTERNAL_SECRET:      ${INTERNAL_SECRET}
       ACCIDENT_THRESHOLD:   ${ACCIDENT_THRESHOLD:-0.7}
       YOLO_WEIGHTS:         /app/weights/best.pt
+      VIDEO_DIR:            /app/videos
     volumes:
       - ./model-service/videos:/app/videos
       - ./secrets/drive_sa.json:/app/credentials/drive_sa.json:ro
