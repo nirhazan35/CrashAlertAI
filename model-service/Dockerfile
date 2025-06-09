@@ -20,6 +20,6 @@ ENV PYTHONUNBUFFERED=1 \
     GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/drive_sa.json
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD wget -qO- http://127.0.0.1:8000/health || exit 1
+  CMD curl -fs http://127.0.0.1:8000/health || exit 1
 USER appuser
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
