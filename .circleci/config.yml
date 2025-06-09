@@ -34,15 +34,14 @@ jobs:
 
   deploy-via-ssh:
     docker:
-      - image: cimg/base:2024.01
+      - image: cimg/base:stable
     steps:
       - add_ssh_keys:
-          fingerprints:
-            []
+          fingerprints: []
       - run:
           name: Deploy to server
           command: |
-            ssh -o StrictHostKeyChecking=no user@138.199.216.9 '
+            ssh -o StrictHostKeyChecking=no root@138.199.216.9 '
               cd ~/CrashAlertAI &&
               git pull origin server-setup-fixes &&
               docker compose down &&
