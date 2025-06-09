@@ -1,79 +1,68 @@
 version: 2.1
+
 orbs:
-  node: circleci/node@5
+  node:   circleci/node@5
+  docker: circleci/docker@3
 
 jobs:
   test-frontend:
-    # Test frontend React app
     executor: node/default
     working_directory: ~/project/frontend
     steps:
-      - checkout:
-          path: ~/project
-      - node/install-packages:
-          pkg-manager: npm
-      - run:
-          name: Run frontend tests
-          command: npm test -- --watchAll=false
+      - checkout
+      - node/install-packages: { pkg-manager: npm }
+      - run: npm test -- --watchAll=false
 
   test-backend:
-    # Test backend Node.js API
     executor: node/default
     working_directory: ~/project/backend
     steps:
-      - checkout:
-          path: ~/project
-      - node/install-packages:
-          pkg-manager: npm
-      - run:
-          name: Run backend tests
-          command: npm test
+      - checkout
+      - node/install-packages: { pkg-manager: npm }
+      - run: npm test
 
-  build-website:
-    # Build frontend React app
-    executor: node/default
-    working_directory: ~/project/frontend
+  build-push:
+    docker: [ { image: cimg/base:2024.01 } ]
     steps:
-      - checkout:
-          path: ~/project
-      - node/install-packages:
-          pkg-manager: npm
+      - setup_remote_docker
+      - checkout
       - run:
-          name: Build frontend
-          command: npm run build
-
-  deploy-to-server:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - add_ssh_keys:
-          fingerprints: []
+          name: Docker Hub login
+          command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
       - run:
-          name: Deploy to Ubuntu server via SSH
+          name: Build & push (branch-tagged)
           command: |
-            ssh -o StrictHostKeyChecking=no root@138.199.216.9 '
+            SHORT=$(git rev-parse --short "$CIRCLE_SHA1")
+            TAG="${CIRCLE_BRANCH}-${SHORT}"
+            docker compose build
+            docker tag crashalert-backend       "$DOCKERHUB_USER/crashalert-backend:$TAG"
+            docker tag crashalert-frontend      "$DOCKERHUB_USER/crashalert-frontend:$TAG"
+            docker tag crashalert-model-service "$DOCKERHUB_USER/crashalert-model-service:$TAG"
+            docker push "$DOCKERHUB_USER/crashalert-backend:$TAG"
+            docker push "$DOCKERHUB_USER/crashalert-frontend:$TAG"
+            docker push "$DOCKERHUB_USER/crashalert-model-service:$TAG"
+
+  deploy:
+    docker: [ { image: cimg/base:2024.01 } ]
+    steps:
+      - add_ssh_keys: { fingerprints: [ "YOUR_SSH_FINGERPRINT" ] }
+      - run:
+          name: Deploy to server (zero-downtime)
+          command: |
+            ssh -o StrictHostKeyChecking=no user@138.199.216.9 '
               cd ~/CrashAlertAI &&
               git pull origin main &&
-              docker compose down &&
-              docker compose up -d --build
+              docker compose pull &&
+              docker compose up -d --remove-orphans --pull always
             '
 
 workflows:
-  test-and-deploy:
+  test-build-deploy:
     jobs:
       - test-frontend
       - test-backend
-      - build-website:
-          requires:
-            - test-frontend
-          filters:
-            branches:
-              only: main
-      - deploy-to-server:
-          requires:
-            - test-frontend
-            - test-backend
-            - build-website
-          filters:
-            branches:
-              only: main
+      - build-push:
+          requires: [ test-frontend, test-backend ]
+      - deploy:
+          requires: [ build-push ]
+          filters: { branches: { only: main } }
