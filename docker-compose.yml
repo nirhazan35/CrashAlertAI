@@ -60,8 +60,11 @@ services:
     user: "1001:1001"
 
   mongo:
-    image: mongo:7
-    volumes: [ mongodb_data:/data/db ]
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
       interval: 30s
