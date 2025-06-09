@@ -1,9 +1,7 @@
 const Accident = require("../models/Accident");
 const formatDateTime = require("../util/DateFormatting");
-const { emitAccidentUpdate, emitNotification } = require("../services/socketService");
-const { clients } = require("../socket/index");
+const { emitAccidentUpdate, emitNotification, emitNewAccident } = require("../services/socketService");
 const User = require("../models/User");
-const { find, findById } = require("../models/Camera");
 
 const saveNewAccident = async (req, res) => {
   try {
@@ -35,6 +33,7 @@ const saveNewAccident = async (req, res) => {
 
     // Save the accident and send a response
     const savedAccident = await newAccident.save();
+    emitNewAccident(savedAccident);
     return res.status(201).json({
       success: true,
       message: "New accident saved successfully.",
