@@ -31,5 +31,3 @@ venv/
 **/build
 **/*.egg-info
 **/requirements1.txt
-**/requirements.txt
-**/requirements.txt
