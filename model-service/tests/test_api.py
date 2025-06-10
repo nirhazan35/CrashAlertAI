@@ -17,12 +17,6 @@ class TestAPIEndpoints:
         assert "model_loaded" in response_data
         assert isinstance(response_data["model_loaded"], bool)
     
-    def test_test_endpoint(self, client):
-        """Test the test endpoint."""
-        response = client.get("/test")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == {"status": "healthy"}
-    
     @patch('app.VIDEO_DIR', '/tmp/test_videos')
     @patch('os.listdir')
     def test_list_videos_success(self, mock_listdir, client):

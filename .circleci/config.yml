@@ -31,6 +31,36 @@ jobs:
           command: |
             cd backend
             npm test
+    
+  test-model-service:
+    docker:
+      - image: cimg/python:3.11
+    working_directory: ~/project
+    environment:
+      SERVICE_ACCOUNT_FILE: /app/credentials/drive_sa.json
+    steps:
+      - checkout
+
+      - run:
+          name: Restore Google Drive Credentials
+          command: |
+            sudo mkdir -p /app/credentials
+            echo "$GOOGLE_DRIVE_SA_B64" | base64 -d | sudo tee /app/credentials/drive_sa.json > /dev/null
+
+      - run:
+          name: Install dependencies
+          command: |
+            cd model-service
+            python -m venv venv
+            source venv/bin/activate
+            pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+            pip install -r test_requirements.txt
+
+      - run:
+          name: Run model service tests
+          command: |
+            cd model-service
+            ./run_tests.sh
 
   deploy-via-ssh:
     docker:
@@ -53,10 +83,12 @@ workflows:
     jobs:
       - test-frontend
       - test-backend
+      - test-model-service
       - deploy-via-ssh:
           requires:
             - test-frontend
             - test-backend
+            - test-model-service
           filters:
             branches:
               only: main

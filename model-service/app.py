@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from uploader import trim_video_ffmpeg, upload_to_drive
-import torch
 from dotenv import load_dotenv
 
 # Load environment variables from .env file (for local development)
@@ -19,7 +18,7 @@ logger = logging.getLogger("model-service")
 
 # Configuration
 MODEL_WEIGHTS = os.getenv("YOLO_WEIGHTS", "/app/weights/best.pt")
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cpu"
 THRESHOLD = 0.7
 COOLDOWN_SECONDS = 20
 VIDEO_DIR = os.getenv("VIDEO_DIR", "/app/videos")
@@ -179,11 +178,6 @@ def broadcast(video_path, timestamp, metadata, confidence):
 def list_videos():
     vids = [f for f in os.listdir(VIDEO_DIR) if f.endswith(".mp4")]
     return [{"id": v.split(".")[0], "file": v} for v in vids]
-
-@app.get("/test")
-def test():
-    
-    return {"status": "healthy"}
 
 @app.post("/run")
 def process_video(req: RunRequest, bg: BackgroundTasks):
