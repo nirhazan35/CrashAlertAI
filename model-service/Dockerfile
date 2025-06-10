@@ -6,17 +6,25 @@ COPY requirements.txt .
 RUN pip wheel -r requirements.txt --wheel-dir /wheels
 
 # ---------- Runtime ----------
-FROM python:3.11-slim
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      ffmpeg \
-      curl \
-  && rm -rf /var/lib/apt/lists/*
-RUN addgroup --system appgroup && adduser --system --group appuser
-WORKDIR /app
-COPY --from=builder /wheels /wheels
-RUN pip install --no-cache-dir /wheels/* && rm -rf /wheels
-COPY . .
-RUN mkdir -p /app/videos /app/weights /app/credentials && chown -R appuser:appgroup /app
+  FROM python:3.11-slim
+  RUN apt-get update && apt-get install -y --no-install-recommends \
+        ffmpeg \
+        curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+  
+  RUN addgroup --system appgroup && adduser --system --group appuser
+  WORKDIR /app
+  
+  COPY --from=builder /wheels /wheels
+  RUN pip install --no-cache-dir /wheels/* && rm -rf /wheels
+  
+  COPY app.py ./
+  COPY uploader.py ./
+  
+  RUN mkdir -p /app/videos /app/weights /app/credentials && \
+      chown -R appuser:appgroup /app
+
 ENV PYTHONUNBUFFERED=1 \
     GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/drive_sa.json
 EXPOSE 8000
