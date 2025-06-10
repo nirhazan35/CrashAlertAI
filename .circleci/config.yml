@@ -38,6 +38,12 @@ jobs:
     working_directory: ~/project
     steps:
       - checkout
+      
+      - run:
+          name: Restore Google Drive Credentials
+          command: |
+            mkdir -p model-service/app/credentials
+            echo "$GOOGLE_DRIVE_SA_B64" | base64 -d > model-service/app/credentials/drive_sa.json
       - run:
           name: Install dependencies
           command: |
