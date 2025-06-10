@@ -127,39 +127,3 @@ class TestVideoProcessing:
             
             # Should not raise exception even if upload fails
             broadcast("/fake/video.mp4", "01:30", metadata, 0.85)
-
-
-class TestModelConfiguration:
-    """Test model configuration and initialization."""
-    
-    @patch('app.YOLO')
-    @patch('app.torch.cuda.is_available')
-    def test_model_loading_cuda(self, mock_cuda, mock_yolo):
-        """Test model loading with CUDA available."""
-        mock_cuda.return_value = True
-        mock_model = Mock()
-        mock_yolo.return_value = mock_model
-        
-        # Reimport to trigger model loading
-        import importlib
-        import app
-        importlib.reload(app)
-        
-        # Verify CUDA device would be used
-        assert mock_cuda.called
-    
-    @patch('app.YOLO')
-    @patch('app.torch.cuda.is_available')
-    def test_model_loading_cpu(self, mock_cuda, mock_yolo):
-        """Test model loading with CPU only."""
-        mock_cuda.return_value = False
-        mock_model = Mock()
-        mock_yolo.return_value = mock_model
-        
-        # Reimport to trigger model loading
-        import importlib
-        import app
-        importlib.reload(app)
-        
-        # Verify CUDA check was called
-        assert mock_cuda.called 

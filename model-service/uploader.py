@@ -1,15 +1,3 @@
-"""
-CrashAlertAI • Video-trim & Google-Drive uploader
--------------------------------------------------
-Functions
----------
-trim_video_ffmpeg(input_video, start_time, duration, output_video)
-    → str  |  Path to the trimmed MP4.
-
-upload_to_drive(file_path)
-    → str  |  Public Google-Drive "/view" URL in a date-based sub-folder.
-"""
-
 import os
 import subprocess
 import datetime
