@@ -30,3 +30,20 @@ secrets/
 videos
 
 requirements1.txt
+
+.git
+__pycache__/
+*.pyc
+*.pkl
+*.h5
+*.pt
+
+data/
+
+.DS_Store
+.vscode/
+.pytest_cache/
+.coverage
+.coverage.*
+.coverage.*.*
+.coverage.*.*.*

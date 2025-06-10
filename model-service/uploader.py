@@ -89,7 +89,7 @@ def upload_to_drive(logger: logging.Logger, file_path: str) -> str:
 
 if __name__ == "__main__":
     SAMPLE = "/app/videos/demo.mp4"
-    start, dur = 5.0, 15.0                       # example offsets
+    start, dur = 5.0, 15.0 
     clip = trim_video_ffmpeg(SAMPLE, start, dur)
     print("🎬  Trimmed clip:", clip)
     link = upload_to_drive(clip)
