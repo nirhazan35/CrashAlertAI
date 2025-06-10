@@ -44,7 +44,7 @@ jobs:
             cd model-service
             python -m venv venv
             source venv/bin/activate
-            pip install -r requirements.txt
+            pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
             pip install -r test_requirements.txt
       - run:
           name: Run model service tests
