@@ -38,12 +38,13 @@ jobs:
     working_directory: ~/project
     steps:
       - checkout
-      
+
       - run:
           name: Restore Google Drive Credentials
           command: |
-            mkdir -p model-service/app/credentials
-            echo "$GOOGLE_DRIVE_SA_B64" | base64 -d > model-service/app/credentials/drive_sa.json
+            sudo mkdir -p /app/credentials
+            echo "$GOOGLE_DRIVE_SA_B64" | base64 -d | sudo tee /app/credentials/drive_sa.json > /dev/null
+
       - run:
           name: Install dependencies
           command: |
@@ -52,6 +53,7 @@ jobs:
             source venv/bin/activate
             pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
             pip install -r test_requirements.txt
+
       - run:
           name: Run model service tests
           command: |
