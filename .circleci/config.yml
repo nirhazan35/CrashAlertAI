@@ -31,6 +31,26 @@ jobs:
           command: |
             cd backend
             npm test
+    
+  test-model-service:
+    docker:
+      - image: cimg/python:3.9
+    working_directory: ~/project
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            cd model-service
+            python -m venv venv
+            source venv/bin/activate
+            pip install -r requirements.txt
+            pip install -r test_requirements.txt
+      - run:
+          name: Run model service tests
+          command: |
+            cd model-service
+            ./run_tests.sh
 
   deploy-via-ssh:
     docker:
@@ -53,10 +73,12 @@ workflows:
     jobs:
       - test-frontend
       - test-backend
+      - test-model-service
       - deploy-via-ssh:
           requires:
             - test-frontend
             - test-backend
+            - test-model-service
           filters:
             branches:
               only: main
