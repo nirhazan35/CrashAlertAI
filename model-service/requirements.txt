@@ -1,21 +1,9 @@
-# Core web framework
-fastapi
-uvicorn
-
-# YOLOv8 from Ultralytics (includes torch and dependencies)
-ultralytics
-
-# Inference utilities
-opencv-python
-
-# Environment management
-python-dotenv
-
-# Google Drive upload
-google-auth
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
-
-# HTTP calls
-requests
+opencv-python-headless==4.11.0.86
+python-dotenv==1.0.1
+google-auth==2.29.0
+google-api-python-client==2.123.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.0
+requests==2.32.4
+fastapi==0.111.0
+uvicorn==0.29.0
