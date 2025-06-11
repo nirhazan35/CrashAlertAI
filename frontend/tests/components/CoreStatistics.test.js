@@ -106,11 +106,11 @@ describe('CoreStatistics Component', () => {
     expect(screen.getByText('14.4%')).toBeInTheDocument();
     
     // Check top locations and responders
-    expect(screen.getByText('Top Locations')).toBeInTheDocument();
+    expect(screen.getByText('Top 5 Locations')).toBeInTheDocument();
     expect(screen.getByText('Main Street')).toBeInTheDocument();
     expect(screen.getByText('32 accidents', { exact: false })).toBeInTheDocument();
     
-    expect(screen.getByText('Top Responders')).toBeInTheDocument();
+    expect(screen.getByText('Top 5 Responders')).toBeInTheDocument();
     expect(screen.getByText('John Smith')).toBeInTheDocument();
     expect(screen.getByText('42 accidents', { exact: false })).toBeInTheDocument();
   });
