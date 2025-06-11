@@ -72,9 +72,10 @@ jobs:
           name: Deploy to server
           command: |
             export COMPOSE_BAKE=true
+            export NODE_ENV=production
             ssh -o StrictHostKeyChecking=no root@138.199.216.9 '
               cd ~/CrashAlertAI &&
-              git pull origin main &&
+              git pull origin fix &&
               docker compose down &&
               docker system prune -af &&  # Clean unused images
               docker compose up -d --build --remove-orphans
@@ -93,4 +94,4 @@ workflows:
             - test-model-service
           filters:
             branches:
-              only: main
+              only: fix
