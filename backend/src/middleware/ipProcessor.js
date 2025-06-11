@@ -52,7 +52,7 @@ const ipProcessor = (req, res, next) => {
   }
 
   // Override req.ip with cleaned IP
-  req.ip = clientIP;
+  req.cleanedIp = clientIP;
   next();
 };
 

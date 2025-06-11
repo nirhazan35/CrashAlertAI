@@ -81,7 +81,7 @@ const login = async (req, res) => {
 
     // Get device info from user agent
     const deviceInfo = req.headers['user-agent'] || 'Unknown Device';
-    const ipAddress = req.ip || 'Unknown';
+    const ipAddress = req.cleanedIp || req.ip || 'Unknown';
 
     // If single session only is enabled, invalidate all existing sessions
     if (user.singleSessionOnly && user.activeSessions.length > 0) {
