@@ -7,30 +7,50 @@ describe('Email Service', () => {
 
     describe('sendPasswordChangeEmail', () => {
         it('should send password change email successfully', async () => {
-            const userData = {
-                email: global.testUser.email,
-                name: global.testUser.username
+            const emailData = {
+                to: global.testUser.email,
+                subject: 'Password Reset Request',
+                text: `A password reset request has been made for the user: ${global.testUser.username}`,
+                html: `<p>A password reset request has been made for the user: ${global.testUser.username}</p>`
             };
 
-            await sendPasswordChangeEmail(userData);
+            await sendPasswordChangeEmail(emailData);
 
             expect(global.mockTransporter.sendMail).toHaveBeenCalledWith({
-                from: process.env.SMTP_FROM,
-                to: userData.email,
-                subject: expect.stringContaining('Password Change'),
-                html: expect.stringContaining(userData.name)
+                from: `"CrashAlertAI" <${process.env.EMAIL_ADDRESS}>`,
+                to: emailData.to,
+                subject: emailData.subject,
+                text: emailData.text,
+                html: emailData.html,
+                headers: {
+                    'X-Content-Type-Options': 'nosniff',
+                    'X-XSS-Protection': '1; mode=block',
+                    'X-Mailer': 'CrashAlertAI'
+                }
             });
         });
 
         it('should handle email sending failure', async () => {
-            const userData = {
-                email: global.testUser.email,
-                name: global.testUser.username
+            const emailData = {
+                to: global.testUser.email,
+                subject: 'Password Reset Request',
+                text: `A password reset request has been made for the user: ${global.testUser.username}`,
+                html: `<p>A password reset request has been made for the user: ${global.testUser.username}</p>`
             };
 
             global.mockTransporter.sendMail.mockRejectedValueOnce(new Error('SMTP error'));
 
-            await expect(sendPasswordChangeEmail(userData)).rejects.toThrow('SMTP error');
+            await expect(sendPasswordChangeEmail(emailData)).rejects.toThrow('SMTP error');
+        });
+
+        it('should validate required fields', async () => {
+            const invalidEmailData = {
+                to: global.testUser.email,
+                subject: 'Password Reset Request'
+                // Missing text and html
+            };
+
+            await expect(sendPasswordChangeEmail(invalidEmailData)).rejects.toThrow('Missing required fields: to, subject, and text/html content');
         });
     });
 
@@ -50,10 +70,15 @@ describe('Email Service', () => {
             await sendAccidentNotification(userData, accidentData);
 
             expect(global.mockTransporter.sendMail).toHaveBeenCalledWith({
-                from: process.env.SMTP_FROM,
+                from: `"CrashAlertAI" <${process.env.EMAIL_ADDRESS}>`,
                 to: userData.email,
-                subject: expect.stringContaining('Accident Alert'),
-                html: expect.stringContaining(accidentData.location)
+                subject: 'Accident Alert',
+                html: expect.stringContaining(accidentData.location),
+                headers: {
+                    'X-Content-Type-Options': 'nosniff',
+                    'X-XSS-Protection': '1; mode=block',
+                    'X-Mailer': 'CrashAlertAI'
+                }
             });
         });
 
