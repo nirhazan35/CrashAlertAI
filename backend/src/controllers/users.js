@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const authLogs = require("../models/AuthLogs");
 const jwt = require("jsonwebtoken");
-const { sendEmail } = require("../services/emailService");
+const { sendPasswordChangeEmail } = require("../services/emailService");
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -105,7 +105,7 @@ const requestPasswordChange = async (req, res) => {
       text: `A password reset request has been made for the user: ${username}, click the link below to reset the password: ${resetLink}`,
       html: `<p>A password reset request has been made for the user: ${username}, click the link below to reset the password: <a href="${resetLink}">${resetLink}</a></p>`,
     };
-    await sendEmail(forgotPasswordEmail);
+    await sendPasswordChangeEmail(forgotPasswordEmail);
     res.status(200).json({ message: "Password reset request sent successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to send password reset request", error: error.message });
@@ -128,7 +128,7 @@ const notifyPasswordChange = async (req, res) => {
       text: `Your password has been changed successfully. your new password is: ${newPassword}`,
       html: `<p>Your password has been changed successfully. your new password is: ${newPassword}</p>`,
     };
-    await sendEmail(emailData);
+    await sendPasswordChangeEmail(emailData);
     res.status(200).json({ message: "Password change notification sent successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to send password change notification", error: error.message });

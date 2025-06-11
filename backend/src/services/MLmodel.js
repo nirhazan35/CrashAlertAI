@@ -29,7 +29,8 @@ const startFakeAccidentSimulation = async (initialStatus) => {
   }
 
   // Severity options
-  const severityOptions = ['high', 'medium', 'low', 'no severity'];
+  // const severityOptions = ['high', 'medium', 'low', 'no severity'];
+  const severityOptions = ['high', 'medium', 'low'];
   // const severityOptions = ['no severity'];
 
   // Function to generate a random date within a specific range
@@ -55,7 +56,7 @@ const startFakeAccidentSimulation = async (initialStatus) => {
       const randomSeverity = severityOptions[Math.floor(Math.random() * severityOptions.length)];
 
       // Randomly select whether it's a false positive
-      const randomFalsePositive = Math.random() < 0.01; // 1% chance
+      const randomFalsePositive = Math.random() < 0.1; // 10% chance
 
       // Always assign to a random user
       let assignedTo = users[Math.floor(Math.random() * users.length)].username;
