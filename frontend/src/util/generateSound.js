@@ -1,7 +1,9 @@
 const playBeep = async () => {
   try {
     // Try to load and play the mp3 file
-    const audio = new Audio('./alarming-304.mp3');
+    console.log('Loading audio file...');
+    const audio = new Audio('/alarming-304.mp3');
+    console.log('Audio file loaded:', audio);
     
     // Check if the audio file can be loaded
     await new Promise((resolve, reject) => {
