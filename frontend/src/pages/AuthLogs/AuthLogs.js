@@ -312,7 +312,14 @@ const AuthLogs = () => {
                       {log.result}
                     </span>
                   </td>
-                  <td style={{ textAlign: 'center' }}>{log.ipAddress || 'Unknown'}</td>
+                  <td style={{ textAlign: 'center' }}>
+                    {(() => {
+                      const ip = log.ipAddress || 'Unknown';
+                      if (ip === '::1') return '127.0.0.1';
+                      if (ip.startsWith('::ffff:')) return ip.slice(7);
+                      return ip;
+                    })()}
+                  </td>
                   <td style={{ textAlign: 'center' }}>{log.browser || 'Unknown'}</td>
                   <td style={{ textAlign: 'center' }}>{log.operatingSystem || 'Unknown'}</td>
                 </tr>
