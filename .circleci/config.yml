@@ -72,6 +72,7 @@ jobs:
           name: Deploy to server
           command: |
             export COMPOSE_BAKE=true
+            export NODE_ENV=production
             ssh -o StrictHostKeyChecking=no root@138.199.216.9 '
               cd ~/CrashAlertAI &&
               git pull origin main &&

@@ -63,8 +63,8 @@ const startFakeAccidentSimulation = async (initialStatus) => {
       const fakeAccident = {
         cameraId: selectedCamera.cameraId,
         location: selectedCamera.location,
-        date: randomDate.toISOString(),
-        // date: new Date(),
+        // date: randomDate.toISOString(),
+        date: new Date(),
         severity: randomSeverity,
         video: "",
         falsePositive: randomFalsePositive,
@@ -95,7 +95,7 @@ const startFakeAccidentSimulation = async (initialStatus) => {
     } catch (error) {
       console.error("Error during fake accident simulation:", error);
     }
-  }, 100); // Simulate every 1 second
+  }, 1000); // Simulate every 1 second
 };
 
 module.exports = { startFakeAccidentSimulation };
