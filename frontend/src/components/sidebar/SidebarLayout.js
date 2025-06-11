@@ -8,6 +8,7 @@ import {
   ScrollArea,
   useMantineTheme,
   ActionIcon,
+  Image,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import Sidebar from './sidebar';
@@ -55,6 +56,13 @@ const SidebarLayout = () => {
             <Text size="lg" fw={700} c={theme.colors.brand[7]}>
               CrashAlert AI
             </Text>
+            <Image
+              src="/favicon.ico"
+              alt="CrashAlert AI Logo"
+              h={28}
+              w={28}
+              fit="contain"
+            />
             {user && (
                           <Text size="sm" c="dimmed">
                             Welcome, {user.username} ({user.role})
