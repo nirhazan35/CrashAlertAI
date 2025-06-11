@@ -4,6 +4,9 @@
  */
 
 const ipProcessor = (req, res, next) => {
+  // Store original IP for debugging
+  const originalIP = req.ip;
+  
   // Get the real IP address from various sources
   let clientIP = req.ip || 
                 req.headers['x-forwarded-for'] || 
@@ -22,12 +25,29 @@ const ipProcessor = (req, res, next) => {
     
     // Convert IPv4-mapped IPv6 to IPv4
     if (clientIP.startsWith('::ffff:')) {
-      clientIP = clientIP.substring(7);
+      const cleanedIP = clientIP.substring(7);
+      // Log the conversion for debugging (remove in production)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`IP Conversion: ${clientIP} -> ${cleanedIP}`);
+      }
+      clientIP = cleanedIP;
     }
     
     // Convert IPv6 loopback to IPv4 loopback for consistency
     if (clientIP === '::1') {
       clientIP = '127.0.0.1';
+    }
+
+    // Validate the cleaned IP
+    if (clientIP && clientIP !== 'Unknown') {
+      // Basic IPv4 validation
+      const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+      if (!ipv4Regex.test(clientIP)) {
+        // If it's not a valid IPv4, log it for debugging
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Invalid IP format detected: ${clientIP}, Original: ${originalIP}`);
+        }
+      }
     }
   }
 
