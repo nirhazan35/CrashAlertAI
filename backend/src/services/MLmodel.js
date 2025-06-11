@@ -55,16 +55,19 @@ const startFakeAccidentSimulation = async (initialStatus) => {
       const randomSeverity = severityOptions[Math.floor(Math.random() * severityOptions.length)];
 
       // Randomly select whether it's a false positive
-      const randomFalsePositive = Math.random() < 0.10; // 10% chance
+      const randomFalsePositive = Math.random() < 0.01; // 1% chance
 
       // Always assign to a random user
-      const assignedTo = users[Math.floor(Math.random() * users.length)].username;
+      let assignedTo = users[Math.floor(Math.random() * users.length)].username;
+      if (initialStatus === 'active') {
+        assignedTo = null;
+      }
       // Create fake accident object
       const fakeAccident = {
         cameraId: selectedCamera.cameraId,
         location: selectedCamera.location,
-        // date: randomDate.toISOString(),
-        date: new Date(),
+        date: randomDate.toISOString(),
+        // date: new Date(),
         severity: randomSeverity,
         video: "",
         falsePositive: randomFalsePositive,
@@ -95,7 +98,7 @@ const startFakeAccidentSimulation = async (initialStatus) => {
     } catch (error) {
       console.error("Error during fake accident simulation:", error);
     }
-  }, 1000); // Simulate every 1 second
+  }, 100); // Simulate every 1 second
 };
 
 module.exports = { startFakeAccidentSimulation };

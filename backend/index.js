@@ -50,6 +50,7 @@ app.get('/health', (req, res) => {
 });
 
 // startFakeAccidentSimulation('active');
+// startFakeAccidentSimulation('handled');
 
 // Start server
 if (process.env.NODE_ENV !== "test") {

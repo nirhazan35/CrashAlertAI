@@ -5,7 +5,7 @@ const User = require("../models/User");
 
 const saveNewAccident = async (req, res) => {
   try {
-    const { cameraId, location, date, severity, video, status, falsePositive } = req.body;
+    const { cameraId, location, date, severity, video, status, falsePositive, assignedTo } = req.body;
 
     // Validate required fields
     if (!cameraId || !location || !severity) {
@@ -22,6 +22,7 @@ const saveNewAccident = async (req, res) => {
       date: date || new Date(),
       severity,
       video,
+      assignedTo: assignedTo || null,
       status: status || 'active',
       falsePositive: falsePositive || 'false',
     });

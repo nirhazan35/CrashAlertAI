@@ -163,9 +163,9 @@ const CoreStatistics = ({
         </Grid.Col>
         <Grid.Col span={12}>
           <Paper shadow="sm" p="md" radius="md">
-            <Text size="sm" weight={500} mb="md">Top Responders</Text>
+            <Text size="sm" weight={500} mb="md">Top 5 Responders</Text>
             <List spacing="xs">
-              {mostActiveResponders.map((responder, index) => (
+              {mostActiveResponders.slice(0, 5).map((responder, index) => (
                 <List.Item
                   key={index}
                   icon={
@@ -183,10 +183,9 @@ const CoreStatistics = ({
             </List>
           </Paper>
         </Grid.Col>
-
         <Grid.Col span={12}>
           <Paper shadow="sm" p="md" radius="md">
-            <Text size="sm" weight={500} mb="md">Top Locations</Text>
+            <Text size="sm" weight={500} mb="md">Top 5 Locations</Text>
             <List spacing="xs">
               {top5Locations.map((loc, index) => (
                 <List.Item
