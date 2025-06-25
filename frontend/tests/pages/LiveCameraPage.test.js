@@ -41,9 +41,27 @@ describe('LiveCameraPage Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useAuth.mockReturnValue({ user: mockUser });
-    global.fetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockCameras)
+    // Mock fetch for get-cameras, calculate-risk, and last-accident
+    global.fetch.mockImplementation((url, options) => {
+      if (url.includes('/cameras/get-cameras')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockCameras)
+        });
+      }
+      if (url.includes('/cameras/calculate-risk')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ risk: 'low' })
+        });
+      }
+      if (url.includes('/cameras/last-accident')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ displayDate: '01/01/2024', displayTime: '12:00' })
+        });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
     });
   });
 
@@ -65,18 +83,19 @@ describe('LiveCameraPage Component', () => {
       </BrowserRouter>
     );
 
+    // Wait for camera info and risk badge to appear
     await waitFor(() => {
       expect(screen.getByText('Camera 1')).toBeInTheDocument();
       expect(screen.getByText('Location1')).toBeInTheDocument();
       expect(screen.getByText('Camera 2')).toBeInTheDocument();
       expect(screen.getByText('Location2')).toBeInTheDocument();
+      // Wait for risk badge
+      expect(screen.getAllByText('LOW RISK').length).toBeGreaterThan(0);
     });
 
     // Check for status badges - use getAllByText since there are multiple instances
     const onlineBadges = screen.getAllByText('ONLINE');
     expect(onlineBadges.length).toBeGreaterThan(0);
-    const riskBadges = screen.getAllByText('LOW RISK');
-    expect(riskBadges.length).toBeGreaterThan(0);
   });
 
   test('toggles between grid and list view', async () => {
@@ -167,8 +186,12 @@ describe('LiveCameraPage Component', () => {
     const refreshButton = screen.getByRole('button', { name: /refresh/i });
     fireEvent.click(refreshButton);
 
+    // Count only the get-cameras calls
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledTimes(2);
+      const getCamerasCalls = global.fetch.mock.calls.filter(
+        ([url]) => url.includes('/cameras/get-cameras')
+      );
+      expect(getCamerasCalls.length).toBe(2);
     });
   });
 
