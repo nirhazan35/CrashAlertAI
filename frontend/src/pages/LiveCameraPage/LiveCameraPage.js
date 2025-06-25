@@ -66,30 +66,33 @@ const LiveCameraFeed = () => {
       }
 
       const cameraData = await response.json();
-      // Transform the data to match our component's expected format
-      const formattedCameras = cameraData.map(camera => {
-        // Determine camera status based on data (online/offline/maintenance)
+      // For each camera, fetch riskLevel and lastIncident asynchronously
+      const formattedCameras = await Promise.all(cameraData.map(async camera => {
         const status = determineStatus(camera);
-
-        // Calculate risk level based on active accidents
-        const riskLevel = calculateRiskLevel(camera.activeAccidents);
-
-        // Determine last incident time from accident history
-        const lastIncident = determineLastIncident(camera.accidentHistory);
-
+        let riskLevel = 'loading';
+        let lastIncident = 'loading';
+        try {
+          riskLevel = await calculateRiskLevel(camera);
+        } catch (e) {
+          riskLevel = 'unknown';
+        }
+        try {
+          lastIncident = await determineLastIncident(camera);
+        } catch (e) {
+          lastIncident = 'N/A';
+        }
         return {
           id: camera.cameraId,
-          name: `Camera ${camera.cameraId}`, // Using cameraId as name, adjust as needed
+          name: `Camera ${camera.cameraId}`,
           location: camera.location,
           status: status,
           lastUpdated: new Date(camera.date),
-          feed: status === 'online' ? `https://www.example.com/stream/${camera.cameraId}` : null, // Placeholder URL
+          feed: status === 'online' ? `https://www.example.com/stream/${camera.cameraId}` : null,
           riskLevel: riskLevel,
           lastIncident: lastIncident,
-          // Keep raw data for any additional processing
           rawData: camera
         };
-      });
+      }));
 
       setCameras(formattedCameras);
 
@@ -107,11 +110,7 @@ const LiveCameraFeed = () => {
 
   // Helper function to determine camera status
   const determineStatus = (camera) => {
-    // This is a placeholder logic - replace with your actual status determination
-    // For example, you might have a status field in your camera model
-    // or determine it based on last update time or active accidents
-
-    // For now, we'll simulate a status based on camera ID
+    // simulated status based on camera ID
     const cameraIdNum = parseInt(camera.cameraId.replace(/\D/g, ''), 10);
 
     if (isNaN(cameraIdNum)) return 'online'; // Default to online if parsing fails
@@ -122,30 +121,45 @@ const LiveCameraFeed = () => {
   };
 
   // Helper function to calculate risk level based on active accidents
-  const calculateRiskLevel = (activeAccidents) => {
-    if (!activeAccidents || !Array.isArray(activeAccidents)) return 'low';
-
-    const accidentCount = activeAccidents.length;
-
-    if (accidentCount >= 3) return 'high';
-    if (accidentCount >= 1) return 'medium';
-    return 'low';
+  const calculateRiskLevel = async (camera) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/cameras/calculate-risk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.token}`
+        },
+        body: JSON.stringify({ cameraId: camera.cameraId })
+      });
+      if (!response.ok) return 'unknown';
+      const data = await response.json();
+      return data.risk ? data.risk : 'unknown';
+    } catch (error) {
+      return 'unknown';
+    }
   };
 
   // Helper function to determine the time of the last incident
-  const determineLastIncident = (accidentHistory) => {
-    if (!accidentHistory || !Array.isArray(accidentHistory) || accidentHistory.length === 0) {
-      return 'No recent incidents';
+  const determineLastIncident = async (camera) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/cameras/last-accident`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.token}`
+        },
+        body: JSON.stringify({ cameraId: camera.cameraId })
+      });
+
+      if (!response.ok) return 'N/A';
+      const data = await response.json();
+      if (data && data.displayDate && data.displayTime) {
+        return data.displayDate + ' ' + data.displayTime;
+      }
+      return 'N/A';
+    } catch (error) {
+      return 'N/A';
     }
-
-    // This is a placeholder - normally you would sort accident history and get the most recent
-    // For demonstration purposes, we'll return a relative time
-
-    const randomHours = Math.floor(Math.random() * 72); // Random time within last 3 days
-
-    if (randomHours < 1) return 'Less than an hour ago';
-    if (randomHours < 24) return `${randomHours} hours ago`;
-    return `${Math.floor(randomHours / 24)} days ago`;
   };
 
   // Fetch cameras on component mount

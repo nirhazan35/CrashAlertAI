@@ -1,5 +1,6 @@
 const Camera = require("../models/Camera");
 const User = require("../models/User");
+const Accident = require("../models/Accident");
 
 // Get all cameras
 const getCameras = async (req, res) => {
@@ -149,10 +150,70 @@ const addNewCamera = async (req, res) => {
   }
 };
 
+// Calculate risk class for a camera
+const calculateRisk = async (req, res) => {
+  try {
+    const cameraId = req.body.cameraId;
+    if (!cameraId) {
+      return res.status(400).json({ message: "cameraId header is required" });
+    }
+    // Get total number of handled accidents (excluding false positives)
+    const totalAccidents = await Accident.countDocuments({ status: 'handled', falsePositive: false });
+    // Get total number of cameras
+    const totalCameras = await Camera.countDocuments();
+    if (totalCameras === 0) {
+      return res.status(400).json({ message: "No cameras found in the system" });
+    }
+    // Calculate median
+    const median = totalAccidents / totalCameras;
+    // Get accident count for this camera
+    const cameraAccidents = await Accident.countDocuments({ cameraId, status: 'handled', falsePositive: false });
+    // Calculate thresholds
+    const lower = median * 0.8;
+    const upper = median * 1.2;
+    let risk = 'medium';
+    if (cameraAccidents < lower) risk = 'low';
+    else if (cameraAccidents > upper) risk = 'high';
+    // Return result
+    return res.status(200).json({
+      cameraId,
+      risk,
+      stats: {
+        cameraAccidents,
+        totalAccidents,
+        totalCameras,
+        median,
+        lower,
+        upper
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Error calculating risk", error: error.message });
+  }
+};
+
+// Get last accident for a camera
+const getLastAccident = async (req, res) => {
+  try {
+    const cameraId = req.body.cameraId;
+    if (!cameraId) {
+      return res.status(400).json({ message: "cameraId header is required" });
+    }
+    const lastAccident = await Accident.findOne({ cameraId, falsePositive: false }).sort({ date: -1 });
+    if (!lastAccident) {
+      return res.status(404).json({ message: "No accident found for this camera" });
+    }
+    return res.status(200).json(lastAccident);
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching last accident", error: error.message });
+  }
+};
 
 module.exports = {
   getCameras,
   getLocations,
   assignCameras,
-  addNewCamera
+  addNewCamera,
+  calculateRisk,
+  getLastAccident
 };
