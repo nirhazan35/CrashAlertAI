@@ -30,6 +30,7 @@ import {
   subYears, 
   isAfter, 
   isWithinInterval,
+  differenceInCalendarDays,
 } from 'date-fns';
 
 /**
@@ -58,6 +59,7 @@ export default function StatisticsPage() {
     trends: {
       monthlyTrends: [],
       weeklyTrends: [],
+      dailyTrends: [],
       hourlyTrends: []
     },
     falsePositives: {
@@ -65,6 +67,8 @@ export default function StatisticsPage() {
       cameraTrends: []
     }
   });
+  // Track the number of days covered by the filtered dataset
+  const [rangeDays, setRangeDays] = useState(0);
 
   /**
    * Filter accidents by time period (day, month, year, all)
@@ -167,12 +171,22 @@ export default function StatisticsPage() {
     const coreStats = calculateCoreStatistics(filteredAccidents);
     const timeBasedStats = calculateTimeBasedTrends(filteredAccidents);
     const falsePositiveStats = calculateFalsePositiveTrends(filteredAccidents);
+    
+    const calculatedRangeDays = filteredAccidents.length
+      ? differenceInCalendarDays(
+          new Date(Math.max(...filteredAccidents.map(a => new Date(a.date)))),
+          new Date(Math.min(...filteredAccidents.map(a => new Date(a.date))))
+        ) + 1
+      : 0;
+
+    setRangeDays(calculatedRangeDays);
 
     setStatistics({
       core: coreStats,
       trends: {
         monthlyTrends: timeBasedStats.monthlyTrends || [],
         weeklyTrends: timeBasedStats.weeklyTrends || [],
+        dailyTrends: timeBasedStats.dailyTrends || [],
         hourlyTrends: timeBasedStats.hourlyTrends || []
       },
       falsePositives: {
@@ -319,7 +333,7 @@ export default function StatisticsPage() {
 
           {/* Time-based Trends */}
           <Grid.Col span={12}>
-            <TimeBasedTrends trends={statistics.trends} />
+            <TimeBasedTrends trends={statistics.trends} rangeDays={rangeDays} />
           </Grid.Col>
 
           {/* False Positive Analysis */}

@@ -40,69 +40,65 @@ jest.mock('@mantine/charts', () => ({
 describe('TimeBasedTrends Component', () => {
   const mockTrends = {
     monthlyTrends: [
-      { date: '2024-03', count: 5 },
-      { date: '2024-02', count: 8 },
-      { date: '2024-01', count: 3 }
+      { date: '2024-03-01', count: 5 },
+      { date: '2024-02-01', count: 8 },
+      { date: '2024-01-01', count: 3 }
     ],
     weeklyTrends: [
-      { week: '2024-W10', count: 2 },
-      { week: '2024-W09', count: 4 },
-      { week: '2024-W08', count: 1 }
+      { week: '2024-10', count: 2 },
+      { week: '2024-09', count: 4 },
+      { week: '2024-08', count: 1 }
+    ],
+    dailyTrends: [
+      { date: '2024-03-01', count: 1 },
+      { date: '2024-03-02', count: 2 }
     ],
     hourlyTrends: [
-      { hour: '00', count: 1 },
-      { hour: '01', count: 2 },
-      { hour: '02', count: 3 }
+      { hour: 0, count: 1 },
+      { hour: 1, count: 2 },
+      { hour: 2, count: 3 }
     ]
   };
 
-  test('renders time-based trends with correct title', () => {
-    renderWithMantine(<TimeBasedTrends trends={mockTrends} />);
-    expect(screen.getByText('Monthly Accident Trends')).toBeInTheDocument();
+  test('renders only hourly chart and title when rangeDays is 1', () => {
+    renderWithMantine(<TimeBasedTrends trends={mockTrends} rangeDays={1} />);
+    expect(screen.getByText('Time-of-Day Analysis')).toBeInTheDocument();
+    expect(screen.getByTestId('line-chart-hour')).toBeInTheDocument();
+    expect(screen.queryByText('Monthly Accident Trends')).not.toBeInTheDocument();
+    expect(screen.queryByText('Weekly Accident Trends')).not.toBeInTheDocument();
+    expect(screen.queryByText('Daily Accident Trends')).not.toBeInTheDocument();
+  });
+
+  test('renders daily and hourly charts when rangeDays is 7', () => {
+    renderWithMantine(<TimeBasedTrends trends={mockTrends} rangeDays={7} />);
+    expect(screen.getByText('Daily Accident Trends')).toBeInTheDocument();
+    expect(screen.getByTestId('line-chart-day')).toBeInTheDocument();
+    expect(screen.getByText('Time-of-Day Analysis')).toBeInTheDocument();
+    expect(screen.getByTestId('line-chart-hour')).toBeInTheDocument();
+    expect(screen.queryByText('Monthly Accident Trends')).not.toBeInTheDocument();
+    expect(screen.queryByText('Weekly Accident Trends')).not.toBeInTheDocument();
+  });
+
+  test('renders weekly, daily, and hourly charts when rangeDays is 14', () => {
+    renderWithMantine(<TimeBasedTrends trends={mockTrends} rangeDays={14} />);
     expect(screen.getByText('Weekly Accident Trends')).toBeInTheDocument();
-    expect(screen.getByText('Time of Day Analysis')).toBeInTheDocument();
+    expect(screen.getByTestId('line-chart-week')).toBeInTheDocument();
+    expect(screen.getByText('Daily Accident Trends')).toBeInTheDocument();
+    expect(screen.getByTestId('line-chart-day')).toBeInTheDocument();
+    expect(screen.getByText('Time-of-Day Analysis')).toBeInTheDocument();
+    expect(screen.getByTestId('line-chart-hour')).toBeInTheDocument();
+    expect(screen.queryByText('Monthly Accident Trends')).not.toBeInTheDocument();
   });
 
-  test('displays monthly trends chart', () => {
-    renderWithMantine(<TimeBasedTrends trends={mockTrends} />);
-    const chart = screen.getByTestId('line-chart-month');
-    expect(chart).toBeInTheDocument();
-    
-    const chartData = screen.getByTestId('chart-data-month');
-    expect(JSON.parse(chartData.textContent)).toEqual(
-      mockTrends.monthlyTrends.map(item => ({
-        month: expect.any(String),
-        accidents: item.count
-      }))
-    );
-  });
-
-  test('displays weekly trends chart', () => {
-    renderWithMantine(<TimeBasedTrends trends={mockTrends} />);
-    const chart = screen.getByTestId('line-chart-week');
-    expect(chart).toBeInTheDocument();
-    
-    const chartData = screen.getByTestId('chart-data-week');
-    expect(JSON.parse(chartData.textContent)).toEqual(
-      mockTrends.weeklyTrends.map(item => ({
-        week: expect.any(String),
-        accidents: item.count
-      }))
-    );
-  });
-
-  test('displays hourly trends chart', () => {
-    renderWithMantine(<TimeBasedTrends trends={mockTrends} />);
-    const chart = screen.getByTestId('line-chart-hour');
-    expect(chart).toBeInTheDocument();
-    
-    const chartData = screen.getByTestId('chart-data-hour');
-    expect(JSON.parse(chartData.textContent)).toEqual(
-      mockTrends.hourlyTrends.map(item => ({
-        hour: expect.any(String),
-        accidents: item.count
-      }))
-    );
+  test('renders monthly, weekly, and hourly charts when rangeDays is 90', () => {
+    renderWithMantine(<TimeBasedTrends trends={mockTrends} rangeDays={90} />);
+    expect(screen.getByText('Monthly Accident Trends')).toBeInTheDocument();
+    expect(screen.getByTestId('line-chart-month')).toBeInTheDocument();
+    expect(screen.getByText('Weekly Accident Trends')).toBeInTheDocument();
+    expect(screen.getByTestId('line-chart-week')).toBeInTheDocument();
+    expect(screen.getByText('Time-of-Day Analysis')).toBeInTheDocument();
+    expect(screen.getByTestId('line-chart-hour')).toBeInTheDocument();
+    expect(screen.queryByText('Daily Accident Trends')).not.toBeInTheDocument();
   });
 
   test('handles empty data gracefully', () => {
@@ -111,12 +107,13 @@ describe('TimeBasedTrends Component', () => {
         trends={{
           monthlyTrends: [],
           weeklyTrends: [],
+          dailyTrends: [],
           hourlyTrends: []
         }} 
+        rangeDays={1}
       />
     );
-    expect(screen.getByText('Monthly Accident Trends')).toBeInTheDocument();
-    expect(screen.getByText('Weekly Accident Trends')).toBeInTheDocument();
-    expect(screen.getByText('Time of Day Analysis')).toBeInTheDocument();
+    expect(screen.getByText('Time-of-Day Analysis')).toBeInTheDocument();
+    expect(screen.getByTestId('line-chart-hour')).toBeInTheDocument();
   });
 }); 

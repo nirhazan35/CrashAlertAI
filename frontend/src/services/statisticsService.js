@@ -120,21 +120,24 @@ const calculateCoreStatistics = (accidents) => {
 };
 
 const calculateTimeBasedTrends = (accidents) => {
-  // Monthly Trends
   const monthlyTrends = accidents.reduce((acc, accident) => {
     const month = format(new Date(accident.date), 'yyyy-MM');
     acc[month] = (acc[month] || 0) + 1;
     return acc;
   }, {});
 
-  // Weekly Trends
   const weeklyTrends = accidents.reduce((acc, accident) => {
     const week = format(new Date(accident.date), 'yyyy-ww');
     acc[week] = (acc[week] || 0) + 1;
     return acc;
   }, {});
 
-  // Time of Day Analysis - Using UTC hours
+  const dailyTrendsObj = accidents.reduce((acc, a) => {
+    const key = format(new Date(a.date), 'yyyy-MM-dd');
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
+
   const hourlyTrends = accidents.reduce((acc, accident) => {
     const date = new Date(accident.date);
     const hour = date.getUTCHours(); 
@@ -149,6 +152,9 @@ const calculateTimeBasedTrends = (accidents) => {
     weeklyTrends: Object.entries(weeklyTrends)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([week, count]) => ({ week, count })),
+    dailyTrends: Object.entries(dailyTrendsObj)
+      .sort(([d1], [d2]) => d1.localeCompare(d2))
+      .map(([date, count]) => ({ date, count })),
     hourlyTrends: Object.entries(hourlyTrends)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([hour, count]) => ({ hour: parseInt(hour), count }))
