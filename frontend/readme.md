@@ -23,7 +23,7 @@ Setup & Installation
    ```
 2. **Environment variables:** Create a `.env` file in the frontend root with the following variables:
    ```
-   REACT_APP_URL_BACKEND=<your-backend-url>   # e.g. http://localhost:3001
+   REACT_APP_URL_BACKEND: <your-backend-url>   # e.g. http://localhost:3001
    ```
 3. **Start the development server:**
    ```
