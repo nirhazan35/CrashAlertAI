@@ -3,7 +3,7 @@ CrashAlertAI Model Service
 
 Overview
 --------
-This is the model inference microservice for CrashAlertAI. It uses a YOLOv11 model to detect accidents in video files, trims relevant video segments, uploads them to Google Drive, and notifies the backend. The service is built with FastAPI and is designed to run in a containerized environment.
+This is the model inference microservice for CrashAlertAI. It uses a YOLO11 model to detect accidents in video files, trims relevant video segments, uploads them to Google Drive, and notifies the backend. The service is built with FastAPI and is designed to run in a containerized environment.
 
 Directory Structure
 -------------------
@@ -27,15 +27,17 @@ The following files/directories are required for the service to run but are **no
 
 Setup & Installation
 --------------------
-1. **Clone the repository and enter the directory:**
+1. **Enter the directory:**
    ```
-   git clone <repo-url>
    cd model-service
    ```
 2. **Install dependencies (for local development):**
    ```
    python3 -m venv venv
-   source venv/bin/activate
+   Mac/Linux: 
+    source venv/bin/activate
+   Windows: 
+    venv/Scripts/activate
    pip install -r requirements.txt
    ```
 3. **Prepare required files:**
@@ -44,12 +46,11 @@ Setup & Installation
    - Add your Google Drive service account JSON to `credentials/drive_sa.json`.
    - Create a `.env` file with the following variables:
      ```
-     YOLO_WEIGHTS=weights/best.pt
-     VIDEO_DIR=videos
-     INTERNAL_BACKEND_URL=<backend-accident-endpoint>
-     INTERNAL_SECRET=<internal-api-secret>
-     SERVICE_ACCOUNT_FILE=credentials/drive_sa.json
-     # (Optional) Other variables as needed
+     YOLO_WEIGHTS: Path to YOLO model weights (e.g., `weights/best.pt`)
+     VIDEO_DIR: Path to directory containing input videos (e.g., `videos`)
+     INTERNAL_BACKEND_URL: Backend endpoint to notify of detected accidents (e.g., `http://localhost:3001/accidents/internal-new-accident`)
+     INTERNAL_SECRET: Secret for authenticating with the backend (must match backend's key)
+     SERVICE_ACCOUNT_FILE: Path to Google Drive service account JSON (e.g., `credentials/drive_sa.json`)
      ```
 
 Running the Service
@@ -108,10 +109,6 @@ Testing
 - **Run all tests:**
   ```
   ./run_tests.sh
-  ```
-  or
-  ```
-  pytest tests/ -v --tb=short
   ```
 
 Notes

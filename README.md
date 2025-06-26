@@ -7,7 +7,6 @@ CrashAlertAI is an end-to-end platform for real-time accident detection, alertin
 ## Project Structure
 
 ```
-.
 ├── frontend/         # React web application (user/admin dashboard)
 ├── backend/          # Node.js/Express REST API and Socket.IO server
 ├── model-service/    # FastAPI microservice for accident detection (YOLOv11)
@@ -19,7 +18,7 @@ CrashAlertAI is an end-to-end platform for real-time accident detection, alertin
 
 ## Features
 
-- **Real-Time Accident Detection:** Video analysis using YOLOv11, with automatic alerting and video clip generation.
+- **Real-Time Accident Detection:** Video analysis using our custom trained YOLO11 model, with automatic alerting and video clip generation.
 - **User & Camera Management:** Admin and user roles, camera assignment, and management.
 - **Live Monitoring & Analytics:** Real-time dashboard, statistics, and historical accident logs.
 - **Notifications:** Real-time notifications for admins and users.
@@ -39,32 +38,27 @@ CrashAlertAI is an end-to-end platform for real-time accident detection, alertin
 
 ### 1. Prepare Required Files
 
-Some files are **not tracked in git** and must be added manually:
+Some files must be added manually:
 
-- **Model Weights:** `model-service/weights/best.pt` (YOLOv11 weights)
-- **Google Credentials:** `model-service/credentials/drive_sa.json` (Google Drive service account)
+- **Model Weights:** `weights/best.pt` (YOLO11 weights)
+- **Google Credentials:** `secrets/drive_sa.json` (Google Drive service account)
 - **Videos Directory:** `model-service/videos/` (input videos for testing)
 - **Environment Variables:** `.env` file in the project root (see below)
 
 ### 2. Environment Variables
 
-Create a `.env` file in the project root with the following variables (example):
+Create a `.env` file in the project root with the following variables:
 
 ```
-# Backend
+NODE_ENV: development / production
+MONGO_URL: MongoDB connection string
 ACCESS_TOKEN_SECRET: Secret key for signing JWT access tokens
-REFRESH_TOKEN_SECRET: Secret key for signing JWT refresh tokens
-INTERNAL_SECRET: Secret key for internal service authentication (model-service)
+INTERNAL_SECRET: Secret key for internal service 
 REACT_APP_URL_FRONTEND: Frontend URL allowed for CORS (e.g., http://localhost:3000)
-MONGO_URL: MongoDB connection string (e.g., mongodb://mongo:27017/crashalert)
+REACT_APP_URL_BACKEND: Backend URL
 EMAIL_ADDRESS: Email address used for sending notifications 
 EMAIL_PASS: Password or app password for the email account
-
-# Frontend
-REACT_APP_URL_BACKEND: Backend URL for the frontend to connect to (e.g., http://localhost:3001)
-
-# Model Service
-INTERNAL_BACKEND_URL: Backend endpoint to notify of detected accidents (e.g., http://backend:3001/accidents/internal-new-accident)
+INTERNAL_BACKEND_URL: Backend endpoint to notify of detected accidents (e.g., `http://localhost:3001/accidents/internal-new-accident`)
 ACCIDENT_THRESHOLD: Confidence threshold for accident detection (e.g., 0.7 for 70% confidence threshold)
 ```
 
@@ -100,7 +94,7 @@ This will build and start all services:
 
 ### Model Service (`/model-service`)
 - FastAPI microservice for video analysis
-- Runs YOLOv11 on uploaded videos, trims relevant clips, uploads to Google Drive
+- Runs YOLO11 on uploaded videos, trims relevant clips, uploads to Google Drive
 - Notifies backend of detected accidents
 
 ---
@@ -131,12 +125,6 @@ Each service has its own test suite:
 
 ## Notes & Tips
 
-- **Required Files:** `model-service/weights/best.pt`, `model-service/credentials/drive_sa.json`, `model-service/videos/`, and your `.env` file are not tracked in git and must be provided.
+- **Required Files:** `model-service/weights/best.pt`, `model-service/credentials/drive_sa.json`, `model-service/videos/`, and the `.env` files are not tracked in git and must be provided.
 - **Google Drive API:** Ensure your service account has permission to upload and share files.
-- **FFmpeg:** The model-service Docker image includes ffmpeg for video processing.
 - **CORS:** The backend is configured to allow requests from the frontend.
-- **Health Checks:** All services expose `/health` endpoints for monitoring.
-
----
-
-
