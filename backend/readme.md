@@ -24,12 +24,12 @@ Setup & Installation
    ```
 2. **Environment variables:** Create a `.env` file in the backend root with the following variables:
    ```
-   MONGO_URL=<your-mongodb-connection-string>
-   ACCESS_TOKEN_SECRET=<jwt-access-secret>
-   INTERNAL_SECRET=<internal-api-secret>
-   EMAIL_ADDRESS=<your-gmail-address>
-   EMAIL_PASS=<your-gmail-app-password>
-   REACT_APP_URL_FRONTEND=<frontend-url-for-cors>
+   MONGO_URL: MongoDB connection string (e.g., mongodb://localhost:27017/crashalert)
+   ACCESS_TOKEN_SECRET: Secret key for signing JWT access tokens
+   INTERNAL_SECRET: Secret key for internal service authentication (model-service)
+   EMAIL_ADDRESS: Email address used for sending notifications 
+   EMAIL_PASS: Password or app password for the email account
+   REACT_APP_URL_FRONTEND: Frontend URL allowed for CORS (e.g., http://localhost:3000)
    ```
 3. **Start the server:**
    - For development (with auto-reload):
