@@ -75,7 +75,7 @@ jobs:
             export NODE_ENV=production
             ssh -o StrictHostKeyChecking=no root@138.199.216.9 '
               cd ~/CrashAlertAI &&
-              git pull origin fix-statistics-view &&
+              git pull origin main &&
               docker compose down &&
               docker system prune -af &&  # Clean unused images
               docker compose up -d --build --remove-orphans
@@ -94,4 +94,4 @@ workflows:
             - test-model-service
           filters:
             branches:
-              only: fix-statistics-view
+              only: main
