@@ -11,7 +11,6 @@ Directory Structure
 - **components/**: Reusable UI components (Sidebar, Notifications, Accident Logs, etc.)
 - **services/**: API and socket services for backend communication and real-time updates.
 - **context/**: React context providers for global state (accident logs, authentication).
-- **theme/**: Custom Mantine theme configuration.
 - **util/**: Utility functions (e.g., sound notifications).
 - **authentication/**: Auth context and route protection.
 
@@ -38,13 +37,13 @@ Main Features
 - **Dashboard:** Real-time accident alerts, filtering, and quick access to accident details.
 - **Statistics & Analytics:** Visualizations of accident data, trends, severity, false positives, and export to CSV.
 - **Accident History:** Browse, filter, and export handled accident logs.
-- **Live Camera Feed:** View and filter live camera statuses and risk levels.
+- **Live Camera Feed:** View live camera statuses and risk levels.
 - **Camera Management:** Admins can add new cameras and assign cameras to users.
 - **User Management:** Admins can register and delete users, and manage user roles.
-- **Notifications:** Real-time notifications for admins, with a notification center and sound alerts.
+- **Notifications:** Real-time notifications for admins, with a notification center.
 - **Password Management:** Request password change, reset password, and notify users of changes.
 - **Health Check:** `/health` route for frontend status.
-- **Responsive Design:** Built with Mantine and MUI for a modern, mobile-friendly UI.
+- **Responsive Design:** Built with Mantine and MUI for a modern UI.
 
 Key Pages & Components
 ----------------------
