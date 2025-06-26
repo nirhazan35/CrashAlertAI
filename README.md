@@ -50,22 +50,22 @@ Some files are **not tracked in git** and must be added manually:
 
 Create a `.env` file in the project root with the following variables (example):
 
-```env
+```
 # Backend
-ACCESS_TOKEN_SECRET=your-access-token-secret
-REFRESH_TOKEN_SECRET=your-refresh-token-secret
-INTERNAL_SECRET=your-internal-api-secret
-REACT_APP_URL_FRONTEND=http://localhost:3000
-MONGO_URL=mongodb://mongo:27017/crashalert
-EMAIL_ADDRESS=your-email@gmail.com
-EMAIL_PASS=your-email-password
+ACCESS_TOKEN_SECRET: Secret key for signing JWT access tokens
+REFRESH_TOKEN_SECRET: Secret key for signing JWT refresh tokens
+INTERNAL_SECRET: Secret key for internal service authentication (model-service)
+REACT_APP_URL_FRONTEND: Frontend URL allowed for CORS (e.g., http://localhost:3000)
+MONGO_URL: MongoDB connection string (e.g., mongodb://mongo:27017/crashalert)
+EMAIL_ADDRESS: Email address used for sending notifications 
+EMAIL_PASS: Password or app password for the email account
 
 # Frontend
-REACT_APP_URL_BACKEND=http://localhost:3001
+REACT_APP_URL_BACKEND: Backend URL for the frontend to connect to (e.g., http://localhost:3001)
 
 # Model Service
-INTERNAL_BACKEND_URL=http://backend:3001/accidents/internal-new-accident
-ACCIDENT_THRESHOLD=0.7
+INTERNAL_BACKEND_URL: Backend endpoint to notify of detected accidents (e.g., http://backend:3001/accidents/internal-new-accident)
+ACCIDENT_THRESHOLD: Confidence threshold for accident detection (e.g., 0.7 for 70% confidence threshold)
 ```
 
 > **Note:** Adjust paths and secrets as needed for your environment.
@@ -139,12 +139,4 @@ Each service has its own test suite:
 
 ---
 
-## License
 
-This project is for educational and research purposes. For production use, review all dependencies, security, and privacy requirements.
-
----
-
-## Contact
-
-For questions or support, contact the project maintainer.
