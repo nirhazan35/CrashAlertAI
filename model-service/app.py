@@ -239,6 +239,50 @@ def process_video(req: RunRequest, bg: BackgroundTasks):
     })
     return {"status": "processing_started", "video": req.videoId} 
 
+@app.post("/run-bbox")
+def process_video_with_bbox(req: RunRequest, bg: BackgroundTasks):
+    file_path = os.path.join(VIDEO_DIR, f"{req.videoId}.mp4")
+    logger.info(f"Processing video with bbox: {file_path}")
+    logger.info(f"Camera ID: {req.cameraId}")
+    logger.info(f"Location: {req.location}")
+    if not os.path.isfile(file_path):
+        raise HTTPException(404, detail="Video file not found")
+    bg.add_task(predict_video_with_bbox, file_path, {
+        "cameraId": req.cameraId,
+        "location": req.location
+    })
+    return {"status": "processing_started", "video": req.videoId}
+
+def predict_video_with_bbox(video_path, metadata):
+    """
+    Process a video for accident detection using YOLOv11m and save video with bounding boxes.
+    """
+    logger = logging.getLogger(__name__)
+    CONFIDENCE_THRESHOLD = 0.5
+    ACCIDENT_CLASS_ID = 0
+    try:
+        # Run YOLO and save video with bounding boxes
+        results = model.track(source=video_path, conf=CONFIDENCE_THRESHOLD, save=True, verbose=False)
+        # Find the output video with bounding boxes
+        output_dir = os.path.join(os.path.dirname(video_path), "runs", "track")
+        # Find the most recent video in the output directory
+        import glob
+        import shutil
+        bbox_video_path = None
+        for path in glob.glob(os.path.join("runs", "track", "*", os.path.basename(video_path))):
+            bbox_video_path = path
+        if bbox_video_path is None:
+            logger.error(f"No output video with bounding boxes found for {video_path}")
+            return
+        # Move/copy the video to a temp location for upload
+        temp_bbox_path = f"/tmp/bbox_{uuid.uuid4().hex}.mp4"
+        shutil.copy(bbox_video_path, temp_bbox_path)
+        # Upload to Google Drive
+        gdrive_link = upload_to_drive(logger, temp_bbox_path)
+        logger.info(f"Uploaded bbox video to: {gdrive_link}")
+    except Exception as e:
+        logger.error(f"Error in predict_video_with_bbox: {str(e)}")
+
 @app.get("/health")
 def health_check():
     return {
