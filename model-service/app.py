@@ -1,7 +1,7 @@
 import os, time, uuid, cv2, requests, logging, threading, subprocess
 from ultralytics import YOLO
 from datetime import datetime, timedelta
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Request
 from pydantic import BaseModel
 from uploader import trim_video_ffmpeg, upload_to_drive
 from dotenv import load_dotenv
@@ -192,14 +192,17 @@ def ensure_thumbnails():
             cv2.imwrite(thumb_path, frame)
         cap.release()
 
-# Mount the thumbnails directory for static serving
-app.mount("/thumbnails", StaticFiles(directory=os.path.join(VIDEO_DIR, "thumbnails")), name="thumbnails")
+# Ensure thumbnails directory exists before mounting
+thumb_dir = os.path.join(VIDEO_DIR, "thumbnails")
+os.makedirs(thumb_dir, exist_ok=True)
+app.mount("/thumbnails", StaticFiles(directory=thumb_dir), name="thumbnails")
 
 @app.get("/videos")
-def list_videos():
+def list_videos(request: Request):
     ensure_thumbnails()
     vids = [f for f in os.listdir(VIDEO_DIR) if f.endswith(".mp4")]
     video_list = []
+    base_url = str(request.base_url).rstrip("/")
     for v in vids:
         # Attempt to extract cameraId and location from filename, or set to None
         # Example filename: camera123_locationABC_20230101.mp4
@@ -210,7 +213,7 @@ def list_videos():
             camera_id = parts[0] if parts[0] else None
             location = parts[1] if parts[1] else None
         video_id = v.split(".")[0]
-        thumb_url = f"/thumbnails/{video_id}.jpg"
+        thumb_url = f"{base_url}/thumbnails/{video_id}.jpg"
         video_list.append({
             "id": video_id,
             "file": v,
