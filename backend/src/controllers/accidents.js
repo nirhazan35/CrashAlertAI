@@ -2,6 +2,7 @@ const Accident = require("../models/Accident");
 const formatDateTime = require("../util/DateFormatting");
 const { emitAccidentUpdate, emitNotification, emitNewAccident } = require("../services/socketService");
 const User = require("../models/User");
+const Camera = require("../models/Camera");
 
 const saveNewAccident = async (req, res) => {
   try {
@@ -215,10 +216,17 @@ const updateAccidentDetails = async (req, res) => {
 
 const runInference = async (req, res) => {
   try {
-    const { videoId, cameraId, location } = req.body;
-    if (!videoId || !cameraId || !location) {
-      return res.status(400).json({ message: "videoId, cameraId, and location are required" });
+    const { videoId, cameraId } = req.body;
+    if (!videoId || !cameraId) {
+      return res.status(400).json({ message: "videoId and cameraId are required" });
     }
+
+    // Find the camera object by cameraId
+    const camera = await Camera.findOne({ cameraId });
+    if (!camera) {
+      return res.status(404).json({ message: `Camera with cameraId ${cameraId} not found` });
+    }
+    const location = camera.location;
 
     // Compose model-service URL and secret
     const modelServiceUrl = process.env.MODEL_SERVICE_URL || "http://localhost:8000/run";
