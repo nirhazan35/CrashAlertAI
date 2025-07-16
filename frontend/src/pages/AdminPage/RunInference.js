@@ -40,10 +40,6 @@ const RunInference = () => {
     setStatus('');
     setError('');
     if (!selectedVideo) return;
-    if (!selectedVideo.cameraId) {
-      setError('Selected video is missing cameraId.');
-      return;
-    }
     setLoading(true);
     try {
       const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/run-inference`, {
@@ -54,7 +50,7 @@ const RunInference = () => {
         },
         body: JSON.stringify({
           videoId: selectedVideo.id,
-          cameraId: selectedVideo.cameraId,
+          cameraId: "CAM_TelAviv_SouthEntry",
         }),
       });
       const data = await response.json();
@@ -123,11 +119,6 @@ const RunInference = () => {
                         style={{ marginBottom: 8 }}
                       />
                       <div style={{ fontWeight: 500 }}>{video.name || video.file}</div>
-                      {(!video.cameraId) && (
-                        <div style={{ color: 'red', fontSize: 12, marginTop: 4 }}>
-                          Missing cameraId
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -136,7 +127,7 @@ const RunInference = () => {
                 type="submit"
                 fullWidth
                 size="lg"
-                disabled={!selectedVideo || !selectedVideo.cameraId}
+                disabled={!selectedVideo}
                 style={{ marginTop: '1.5rem' }}
               >
                 Run Inference
