@@ -5,6 +5,7 @@ from fastapi import FastAPI, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from uploader import trim_video_ffmpeg, upload_to_drive
 from dotenv import load_dotenv
+from fastapi.staticfiles import StaticFiles
 
 # Load environment variables from .env file (for local development)
 load_dotenv()
@@ -174,8 +175,29 @@ def broadcast(video_path, timestamp, metadata, confidence):
         error_message = f"❌ Error in broadcast function: {str(e)}"
         logger.error(error_message)
 
+def ensure_thumbnails():
+    thumb_dir = os.path.join(VIDEO_DIR, "thumbnails")
+    os.makedirs(thumb_dir, exist_ok=True)
+    for fname in os.listdir(VIDEO_DIR):
+        if not fname.endswith(".mp4"):
+            continue
+        video_id = fname.rsplit(".", 1)[0]
+        thumb_path = os.path.join(thumb_dir, f"{video_id}.jpg")
+        if os.path.exists(thumb_path):
+            continue
+        video_path = os.path.join(VIDEO_DIR, fname)
+        cap = cv2.VideoCapture(video_path)
+        success, frame = cap.read()
+        if success:
+            cv2.imwrite(thumb_path, frame)
+        cap.release()
+
+# Mount the thumbnails directory for static serving
+app.mount("/thumbnails", StaticFiles(directory=os.path.join(VIDEO_DIR, "thumbnails")), name="thumbnails")
+
 @app.get("/videos")
 def list_videos():
+    ensure_thumbnails()
     vids = [f for f in os.listdir(VIDEO_DIR) if f.endswith(".mp4")]
     video_list = []
     for v in vids:
@@ -187,13 +209,15 @@ def list_videos():
         if len(parts) >= 2:
             camera_id = parts[0] if parts[0] else None
             location = parts[1] if parts[1] else None
+        video_id = v.split(".")[0]
+        thumb_url = f"/thumbnails/{video_id}.jpg"
         video_list.append({
-            "id": v.split(".")[0],
+            "id": video_id,
             "file": v,
             "cameraId": camera_id,
             "location": location,
             "name": v,
-            # "thumbnailUrl": None,  # Add if you have thumbnails
+            "thumbnailUrl": thumb_url,
         })
     return video_list
 
