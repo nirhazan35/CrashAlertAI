@@ -100,4 +100,4 @@ class TestAPIEndpoints:
         }
         
         response = client.post("/run", json=request_data)
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY 
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY  
