@@ -213,6 +213,75 @@ const updateAccidentDetails = async (req, res) => {
   }
 };
 
+const runInference = async (req, res) => {
+  try {
+    const { videoId, cameraId, location } = req.body;
+    if (!videoId || !cameraId || !location) {
+      return res.status(400).json({ message: "videoId, cameraId, and location are required" });
+    }
+
+    // Compose model-service URL and secret
+    const modelServiceUrl = process.env.MODEL_SERVICE_URL || "http://localhost:8000/run";
+    const internalSecret = process.env.INTERNAL_SECRET;
+
+    // Use fetch (assume global or polyfilled)
+    const response = await fetch(modelServiceUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-INTERNAL-SECRET": internalSecret,
+      },
+      body: JSON.stringify({ videoId, cameraId, location }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ message: data.detail || data.message || "Model service error", error: data });
+    }
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error running inference:", error);
+    res.status(500).json({ message: "Error running inference", error: error.message });
+  }
+};
+
+const getVideos = async (req, res) => {
+  try {
+    const modelServiceUrl = process.env.MODEL_SERVICE_VIDEOS_URL || "http://localhost:8000/videos";
+    const internalSecret = process.env.INTERNAL_SECRET;
+
+    const response = await fetch(modelServiceUrl, {
+      method: "GET",
+      headers: {
+        "X-INTERNAL-SECRET": internalSecret,
+      },
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      return res.status(response.status).json({ success: false, message: data.detail || data.message || "Model service error", error: data });
+    }
+    const videos = await response.json();
+
+    if (!Array.isArray(videos) || videos.length === 0) {
+      return res.status(200).json({ success: false, message: "No videos found.", data: [] });
+    }
+
+    const formattedVideos = videos.map(v => ({
+      id: v.id,
+      file: v.file,
+      cameraId: v.cameraId || null,
+      location: v.location || null,
+      name: v.name || v.file,
+      thumbnailUrl: v.thumbnailUrl || undefined,
+    }));
+
+    res.status(200).json({ success: true, data: formattedVideos });
+  } catch (error) {
+    console.error("Error fetching videos from model-service:", error);
+    res.status(500).json({ success: false, message: "Error fetching videos", error: error.message });
+  }
+};
+
 module.exports = {
   saveNewAccident,
   getActiveAccidents,
@@ -220,4 +289,6 @@ module.exports = {
   getHandledAccidents,
   updateAccidentDetails,
   filterAccidentsByUser,
+  runInference,
+  getVideos,
 };

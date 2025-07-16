@@ -177,7 +177,25 @@ def broadcast(video_path, timestamp, metadata, confidence):
 @app.get("/videos")
 def list_videos():
     vids = [f for f in os.listdir(VIDEO_DIR) if f.endswith(".mp4")]
-    return [{"id": v.split(".")[0], "file": v} for v in vids]
+    video_list = []
+    for v in vids:
+        # Attempt to extract cameraId and location from filename, or set to None
+        # Example filename: camera123_locationABC_20230101.mp4
+        camera_id = None
+        location = None
+        parts = v.split('_')
+        if len(parts) >= 2:
+            camera_id = parts[0] if parts[0] else None
+            location = parts[1] if parts[1] else None
+        video_list.append({
+            "id": v.split(".")[0],
+            "file": v,
+            "cameraId": camera_id,
+            "location": location,
+            "name": v,
+            # "thumbnailUrl": None,  # Add if you have thumbnails
+        })
+    return video_list
 
 @app.post("/run")
 def process_video(req: RunRequest, bg: BackgroundTasks):
