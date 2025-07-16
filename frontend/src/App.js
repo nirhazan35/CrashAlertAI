@@ -20,6 +20,7 @@ import RequestPasswordChange from './pages/RequestPasswordChange/RequestPassword
 import AuthLogs from './pages/AuthLogs/AuthLogs';
 import Health from './pages/Health/Health';
 import MantineProvider from './components/MantineProvider/MantineProvider';
+import RunInference from './pages/AdminPage/RunInference';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 
@@ -56,6 +57,7 @@ function App() {
               <Route path="/logs" element={<AuthLogs />} />
               <Route path="/delete-user" element={<DeleteUser />} />
               <Route path="/add-new-camera" element={<AddNewCamera />} />
+              <Route path="/run-inference" element={<RunInference />} />
             </Route>
           </Route>
         </Routes>

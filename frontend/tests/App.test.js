@@ -3,6 +3,20 @@ import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../src/App';
 import { AuthProvider } from '../src/authentication/AuthProvider';
+import { renderWithAllProviders } from './utils/test-utils';
+
+jest.mock('../src/services/socket', () => ({
+  connectSocket: jest.fn(),
+  disconnectSocket: jest.fn(),
+  emitAccidentUpdate: jest.fn(),
+  emitNotification: jest.fn(),
+  emitNewAccident: jest.fn(),
+  ensureSocketInitialized: jest.fn(), // no-op
+  getSocket: jest.fn(() => ({})), // dummy socket object
+  onNewAccident: jest.fn(),
+  onAccidentUpdate: jest.fn(),
+  onNotification: jest.fn(),
+}));
 
 // Mock the components and hooks used in App.js
 jest.mock('../src/authentication/AuthProvider', () => ({
@@ -79,7 +93,7 @@ jest.mock('react-router-dom', () => {
       // Handle admin routes
       if (path === '/admin' || path === '/register' || path === '/reset-password' || 
           path === '/manage-cameras' || path === '/logs' || path === '/delete-user' || 
-          path === '/add-new-camera') {
+          path === '/add-new-camera' || path === '/run-inference') {
         return <div data-testid="admin-route">{element}</div>;
       }
       
@@ -100,11 +114,7 @@ describe('App Component', () => {
       user: { isLoggedIn: false }
     });
     
-    render(
-      <MemoryRouter initialEntries={['/login']}>
-        <App />
-      </MemoryRouter>
-    );
+    renderWithAllProviders(<App />, { initialRoute: '/login' });
     
     expect(screen.getByTestId('login')).toBeInTheDocument();
   });
@@ -114,11 +124,7 @@ describe('App Component', () => {
       user: { isLoggedIn: true, role: 'user' }
     });
     
-    render(
-      <MemoryRouter initialEntries={['/login']}>
-        <App />
-      </MemoryRouter>
-    );
+    renderWithAllProviders(<App />, { initialRoute: '/login' });
     
     expect(screen.queryByTestId('login')).not.toBeInTheDocument();
     expect(screen.getByTestId('navigate-to-/dashboard')).toBeInTheDocument();
@@ -129,11 +135,7 @@ describe('App Component', () => {
       user: { isLoggedIn: false }
     });
     
-    render(
-      <MemoryRouter initialEntries={['/forgot-password']}>
-        <App />
-      </MemoryRouter>
-    );
+    renderWithAllProviders(<App />, { initialRoute: '/forgot-password' });
     
     expect(screen.getByTestId('forgot-password')).toBeInTheDocument();
   });
@@ -143,11 +145,7 @@ describe('App Component', () => {
       user: { isLoggedIn: true, role: 'user' }
     });
     
-    render(
-      <MemoryRouter initialEntries={['/dashboard']}>
-        <App />
-      </MemoryRouter>
-    );
+    renderWithAllProviders(<App />, { initialRoute: '/dashboard' });
     
     // Find all protected routes and get the one containing the dashboard
     const protectedRoutes = screen.getAllByTestId('protected-route');
@@ -163,11 +161,7 @@ describe('App Component', () => {
       user: { isLoggedIn: true, role: 'admin' }
     });
     
-    render(
-      <MemoryRouter initialEntries={['/admin']}>
-        <App />
-      </MemoryRouter>
-    );
+    renderWithAllProviders(<App />, { initialRoute: '/admin' });
     
     expect(screen.getByTestId('admin')).toBeInTheDocument();
   });
@@ -177,11 +171,7 @@ describe('App Component', () => {
       user: { isLoggedIn: true, role: 'user' }
     });
     
-    render(
-      <MemoryRouter initialEntries={['/admin']}>
-        <App />
-      </MemoryRouter>
-    );
+    renderWithAllProviders(<App />, { initialRoute: '/admin' });
     
     expect(screen.getByTestId('unauthorized')).toBeInTheDocument();
   });

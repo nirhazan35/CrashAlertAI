@@ -1,10 +1,11 @@
 import os, time, uuid, cv2, requests, logging, threading, subprocess
 from ultralytics import YOLO
 from datetime import datetime, timedelta
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Request
 from pydantic import BaseModel
 from uploader import trim_video_ffmpeg, upload_to_drive
 from dotenv import load_dotenv
+from fastapi.staticfiles import StaticFiles
 
 # Load environment variables from .env file (for local development)
 load_dotenv()
@@ -174,10 +175,54 @@ def broadcast(video_path, timestamp, metadata, confidence):
         error_message = f"❌ Error in broadcast function: {str(e)}"
         logger.error(error_message)
 
+def ensure_thumbnails():
+    thumb_dir = os.path.join(VIDEO_DIR, "thumbnails")
+    os.makedirs(thumb_dir, exist_ok=True)
+    for fname in os.listdir(VIDEO_DIR):
+        if not fname.endswith(".mp4"):
+            continue
+        video_id = fname.rsplit(".", 1)[0]
+        thumb_path = os.path.join(thumb_dir, f"{video_id}.jpg")
+        if os.path.exists(thumb_path):
+            continue
+        video_path = os.path.join(VIDEO_DIR, fname)
+        cap = cv2.VideoCapture(video_path)
+        success, frame = cap.read()
+        if success:
+            cv2.imwrite(thumb_path, frame)
+        cap.release()
+
+# Ensure thumbnails directory exists before mounting
+thumb_dir = os.path.join(VIDEO_DIR, "thumbnails")
+os.makedirs(thumb_dir, exist_ok=True)
+app.mount("/thumbnails", StaticFiles(directory=thumb_dir), name="thumbnails")
+
 @app.get("/videos")
-def list_videos():
+def list_videos(request: Request):
+    ensure_thumbnails()
     vids = [f for f in os.listdir(VIDEO_DIR) if f.endswith(".mp4")]
-    return [{"id": v.split(".")[0], "file": v} for v in vids]
+    video_list = []
+    base_url = str(request.base_url).rstrip("/")
+    for v in vids:
+        # Attempt to extract cameraId and location from filename, or set to None
+        # Example filename: camera123_locationABC_20230101.mp4
+        camera_id = None
+        location = None
+        parts = v.split('_')
+        if len(parts) >= 2:
+            camera_id = parts[0] if parts[0] else None
+            location = parts[1] if parts[1] else None
+        video_id = v.split(".")[0]
+        thumb_url = f"{base_url}/thumbnails/{video_id}.jpg"
+        video_list.append({
+            "id": video_id,
+            "file": v,
+            "cameraId": camera_id,
+            "location": location,
+            "name": v,
+            "thumbnailUrl": thumb_url,
+        })
+    return video_list
 
 @app.post("/run")
 def process_video(req: RunRequest, bg: BackgroundTasks):

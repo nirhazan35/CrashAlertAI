@@ -28,8 +28,22 @@ class TestAPIEndpoints:
         
         videos = response.json()
         assert len(videos) == 2
-        assert videos[0] == {"id": "video1", "file": "video1.mp4"}
-        assert videos[1] == {"id": "video2", "file": "video2.mp4"}
+        assert videos[0] == {
+            "id": "video1",
+            "file": "video1.mp4",
+            "cameraId": None,
+            "location": None,
+            "name": "video1.mp4",
+            "thumbnailUrl": "http://testserver/thumbnails/video1.jpg"
+        }
+        assert videos[1] == {
+            "id": "video2",
+            "file": "video2.mp4",
+            "cameraId": None,
+            "location": None,
+            "name": "video2.mp4",
+            "thumbnailUrl": "http://testserver/thumbnails/video2.jpg"
+        }
     
     @patch('app.VIDEO_DIR', '/tmp/test_videos')
     @patch('os.listdir')
@@ -86,4 +100,4 @@ class TestAPIEndpoints:
         }
         
         response = client.post("/run", json=request_data)
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY 
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY  

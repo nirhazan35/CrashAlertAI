@@ -22,6 +22,10 @@ const AdminPage = () => {
     navigate('/add-new-camera');
   };
 
+  const handleRunInferenceClick = () => {
+    navigate('/run-inference');
+  };
+
   return (
     <div className="admin-page">
       <Container maxWidth="lg" className="admin-container">
@@ -70,6 +74,15 @@ const AdminPage = () => {
                 size="medium"
               >
                 Delete User
+              </Button>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={handleRunInferenceClick}
+                className="admin-button"
+                size="medium"
+              >
+                Run Inference
               </Button>
             </Box>
           </Box>
