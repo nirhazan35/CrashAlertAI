@@ -40,8 +40,8 @@ const RunInference = () => {
     setStatus('');
     setError('');
     if (!selectedVideo) return;
-    if (!selectedVideo.cameraId || !selectedVideo.location) {
-      setError('Selected video is missing cameraId or location.');
+    if (!selectedVideo.cameraId) {
+      setError('Selected video is missing cameraId.');
       return;
     }
     setLoading(true);
@@ -55,7 +55,6 @@ const RunInference = () => {
         body: JSON.stringify({
           videoId: selectedVideo.id,
           cameraId: selectedVideo.cameraId,
-          location: selectedVideo.location,
         }),
       });
       const data = await response.json();
@@ -124,9 +123,9 @@ const RunInference = () => {
                         style={{ marginBottom: 8 }}
                       />
                       <div style={{ fontWeight: 500 }}>{video.name || video.file}</div>
-                      {(!video.cameraId || !video.location) && (
+                      {(!video.cameraId) && (
                         <div style={{ color: 'red', fontSize: 12, marginTop: 4 }}>
-                          Missing camera/location
+                          Missing cameraId
                         </div>
                       )}
                     </div>
@@ -137,7 +136,7 @@ const RunInference = () => {
                 type="submit"
                 fullWidth
                 size="lg"
-                disabled={!selectedVideo || !selectedVideo.cameraId || !selectedVideo.location}
+                disabled={!selectedVideo || !selectedVideo.cameraId}
                 style={{ marginTop: '1.5rem' }}
               >
                 Run Inference
