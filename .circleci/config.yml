@@ -37,6 +37,7 @@ jobs:
       - image: cimg/python:3.11
     working_directory: ~/project
     environment:
+      VIDEO_DIR: /tmp/videos
       SERVICE_ACCOUNT_FILE: /app/credentials/drive_sa.json
     steps:
       - checkout
