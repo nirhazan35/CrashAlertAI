@@ -266,7 +266,9 @@ def get_latest_inference_bbox_dir(base_dir):
 def predict_video_with_bbox(video_path, metadata):
     """
     Process a video for accident detection using YOLOv11m, save video with bounding boxes,
-    and post accident to backend.
+    and post accident to backend. The trimmed segment will have bounding boxes for all frames
+    where the model detects the accident class, and the cooldown period is used to avoid
+    duplicate alerts for the same accident.
     """
     logger = logging.getLogger(__name__)
     CONFIDENCE_THRESHOLD = 0.5
@@ -297,8 +299,7 @@ def predict_video_with_bbox(video_path, metadata):
         last_detection_time = None
         cooldown_period = timedelta(seconds=30)
         frame_count = 0
-        accident_timestamps = []
-        accident_confidences = []
+        accident_events = []  # List of (current_time_seconds, confidence) for first detection in each cooldown
 
         for results in results_iter:
             current_time = timedelta(seconds=frame_count / fps)
@@ -311,14 +312,16 @@ def predict_video_with_bbox(video_path, metadata):
                 confidence = detection.conf.item()
                 if cls_id == ACCIDENT_CLASS_ID and confidence >= CONFIDENCE_THRESHOLD:
                     current_datetime = datetime.now()
+                    # Only send one alert per cooldown period
                     if last_detection_time is None or (current_datetime - last_detection_time) > cooldown_period:
                         last_detection_time = current_datetime
                         minutes = int(current_time.total_seconds() // 60)
                         seconds = int(current_time.total_seconds() % 60)
                         timestamp_str = f"{minutes:02d}:{seconds:02d}"
                         logger.info(f"🔍 Accident detected at {timestamp_str} with confidence {confidence:.2f}")
-                        accident_timestamps.append(current_time_seconds)
-                        accident_confidences.append(confidence)
+                        accident_events.append((current_time_seconds, confidence))
+                    # Once we record the first detection in this cooldown, skip further detections until cooldown expires
+                    break
 
         # 3. Now the output video should exist in the latest inference_bbox* directory
         latest_dir = get_latest_inference_bbox_dir(base_dir)
@@ -331,9 +334,8 @@ def predict_video_with_bbox(video_path, metadata):
             logger.error("No inference_bbox output directory found")
             return
 
-        # 4. For each detected accident, trim/upload/post
-        for i, current_time_seconds in enumerate(accident_timestamps):
-            confidence = accident_confidences[i]
+        # 4. For each detected accident event, trim/upload/post (one per cooldown period)
+        for current_time_seconds, confidence in accident_events:
             clip_path = f"/tmp/clip_bbox_{uuid.uuid4().hex}.mp4"
             trim_video_ffmpeg(
                 input_video=bbox_video_path,
