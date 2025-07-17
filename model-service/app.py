@@ -256,6 +256,13 @@ def process_video_with_bbox(req: RunRequest, bg: BackgroundTasks):
     })
     return {"status": "processing_started", "video": req.videoId}
 
+def get_latest_inference_bbox_dir(base_dir):
+    dirs = glob.glob(os.path.join(base_dir, "inference_bbox*"))
+    if not dirs:
+        return None
+    dirs.sort(key=os.path.getmtime, reverse=True)
+    return dirs[0]
+
 def predict_video_with_bbox(video_path, metadata):
     """
     Process a video for accident detection using YOLOv11m, save video with bounding boxes,
@@ -265,8 +272,8 @@ def predict_video_with_bbox(video_path, metadata):
     CONFIDENCE_THRESHOLD = 0.5
     ACCIDENT_CLASS_ID = 0
     try:
-        output_dir = os.path.join("runs", "track", "inference_bbox")
-        os.makedirs(output_dir, exist_ok=True)
+        base_dir = os.path.join("runs", "track")
+        os.makedirs(base_dir, exist_ok=True)
 
         # 1. Run YOLO and save video with bounding boxes to a known location
         results_iter = model.track(
@@ -313,10 +320,15 @@ def predict_video_with_bbox(video_path, metadata):
                         accident_timestamps.append(current_time_seconds)
                         accident_confidences.append(confidence)
 
-        # 3. Now the output video should exist
-        bbox_video_path = os.path.join(output_dir, os.path.basename(video_path))
-        if not os.path.exists(bbox_video_path):
-            logger.error(f"No output video with bounding boxes found at {bbox_video_path}")
+        # 3. Now the output video should exist in the latest inference_bbox* directory
+        latest_dir = get_latest_inference_bbox_dir(base_dir)
+        if latest_dir:
+            bbox_video_path = os.path.join(latest_dir, os.path.basename(video_path))
+            if not os.path.exists(bbox_video_path):
+                logger.error(f"No output video with bounding boxes found at {bbox_video_path}")
+                return
+        else:
+            logger.error("No inference_bbox output directory found")
             return
 
         # 4. For each detected accident, trim/upload/post
