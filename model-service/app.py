@@ -6,6 +6,8 @@ from pydantic import BaseModel
 from uploader import trim_video_ffmpeg, upload_to_drive
 from dotenv import load_dotenv
 from fastapi.staticfiles import StaticFiles
+import glob
+import shutil
 
 # Load environment variables from .env file (for local development)
 load_dotenv()
@@ -27,6 +29,7 @@ BACKEND_URL = os.getenv("INTERNAL_BACKEND_URL")
 SECRET_HEADER_NAME = "X-INTERNAL-SECRET"
 SECRET = os.environ["INTERNAL_SECRET"]
 
+ACCIDENT_CLASS_ID = 0  # Class ID for accident
 app = FastAPI(title="CrashAlertAI-Model-Service")
 
 # Load YOLO11 model
@@ -255,31 +258,92 @@ def process_video_with_bbox(req: RunRequest, bg: BackgroundTasks):
 
 def predict_video_with_bbox(video_path, metadata):
     """
-    Process a video for accident detection using YOLOv11m and save video with bounding boxes.
+    Process a video for accident detection using YOLOv11m, save video with bounding boxes,
+    and post accident to backend.
     """
     logger = logging.getLogger(__name__)
     CONFIDENCE_THRESHOLD = 0.5
     ACCIDENT_CLASS_ID = 0
     try:
-        # Run YOLO and save video with bounding boxes
-        results = model.track(source=video_path, conf=CONFIDENCE_THRESHOLD, save=True, verbose=False)
-        # Find the output video with bounding boxes
-        output_dir = os.path.join(os.path.dirname(video_path), "runs", "track")
-        # Find the most recent video in the output directory
-        import glob
-        import shutil
+        # 1. Run YOLO and save video with bounding boxes
+        results = model.track(source=video_path, conf=CONFIDENCE_THRESHOLD, save=True, stream=True, verbose=False)
+        # 2. Find the output video with bounding boxes
         bbox_video_path = None
         for path in glob.glob(os.path.join("runs", "track", "*", os.path.basename(video_path))):
             bbox_video_path = path
         if bbox_video_path is None:
             logger.error(f"No output video with bounding boxes found for {video_path}")
             return
-        # Move/copy the video to a temp location for upload
-        temp_bbox_path = f"/tmp/bbox_{uuid.uuid4().hex}.mp4"
-        shutil.copy(bbox_video_path, temp_bbox_path)
-        # Upload to Google Drive
-        gdrive_link = upload_to_drive(logger, temp_bbox_path)
-        logger.info(f"Uploaded bbox video to: {gdrive_link}")
+
+        # 3. Accident detection loop (like predict_video)
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            logger.error(f"Error: Could not open video file {video_path}")
+            return
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        cap.release()
+
+        last_detection_time = None
+        cooldown_period = timedelta(seconds=30)
+        frame_count = 0
+
+        for results in model.track(source=video_path, stream=True, conf=CONFIDENCE_THRESHOLD, verbose=False):
+            current_time = timedelta(seconds=frame_count / fps)
+            current_time_seconds = int(current_time.total_seconds())
+            frame_count += 1
+
+            detections = results.boxes
+            for detection in detections:
+                cls_id = int(detection.cls.item())
+                confidence = detection.conf.item()
+                if cls_id == ACCIDENT_CLASS_ID and confidence >= CONFIDENCE_THRESHOLD:
+                    current_datetime = datetime.now()
+                    if last_detection_time is None or (current_datetime - last_detection_time) > cooldown_period:
+                        last_detection_time = current_datetime
+                        minutes = int(current_time.total_seconds() // 60)
+                        seconds = int(current_time.total_seconds() % 60)
+                        timestamp_str = f"{minutes:02d}:{seconds:02d}"
+                        logger.info(f"🔍 Accident detected at {timestamp_str} with confidence {confidence:.2f}")
+
+                        # 4. Trim the bbox video around the accident
+                        clip_path = f"/tmp/clip_bbox_{uuid.uuid4().hex}.mp4"
+                        trim_video_ffmpeg(
+                            input_video=bbox_video_path,
+                            start_time=max(0, current_time_seconds - 7),
+                            duration=15,
+                            output_video=clip_path
+                        )
+                        # 5. Upload to Google Drive
+                        gdrive_link = upload_to_drive(logger, clip_path)
+                        logger.info(f"Uploaded bbox video to: {gdrive_link}")
+
+                        # 6. Post accident to backend (like broadcast)
+                        accident_doc = {
+                            "cameraId": metadata.get("cameraId", "unknown"),
+                            "location": metadata.get("location", "unknown"),
+                            "date": datetime.now().isoformat(),
+                            "displayDate": None,
+                            "displayTime": None,
+                            "severity": "no severity",
+                            "video": gdrive_link,
+                            "description": f"{confidence:.2f}",
+                            "assignedTo": None,
+                            "status": "active",
+                            "falsePositive": False,
+                        }
+                        response = requests.post(
+                            BACKEND_URL,
+                            headers={SECRET_HEADER_NAME: SECRET},
+                            json=accident_doc,
+                            timeout=10
+                        )
+                        if response.status_code == 201:
+                            logger.info("✅ Accident alert sent successfully")
+                        else:
+                            logger.info(f"❌ Accident alert sent but failed at backend: {response.status_code}")
+
+        logger.info(f"Completed accident detection with bbox on video: {video_path}")
+
     except Exception as e:
         logger.error(f"Error in predict_video_with_bbox: {str(e)}")
 
