@@ -14,6 +14,9 @@ services:
       MONGO_URL: ${MONGO_URL}
       EMAIL_ADDRESS: ${EMAIL_ADDRESS}
       EMAIL_PASS: ${EMAIL_PASS}
+      MODEL_SERVICE_URL: ${MODEL_SERVICE_URL}
+      MODEL_SERVICE_URL_BBOX: ${MODEL_SERVICE_URL_BBOX}
+      MODEL_SERVICE_VIDEOS_URL: ${MODEL_SERVICE_VIDEOS_URL}
     ports: ["3001:3001"]
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://138.199.216.9:3001/health"]
