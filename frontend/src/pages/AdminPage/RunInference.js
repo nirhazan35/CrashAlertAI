@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Title, Button, Image, Loader, Checkbox } from '@mantine/core';
+import {
+  Box,
+  Container,
+  Title,
+  Button,
+  Image,
+  Loader,
+  Switch,
+  SimpleGrid,
+  Center,
+} from '@mantine/core';
 import { useAuth } from '../../authentication/AuthProvider';
 import '../authFormCSS/AuthForm.css';
 
@@ -26,7 +36,7 @@ const RunInference = () => {
         });
         if (!response.ok) throw new Error('Failed to fetch videos');
         const data = await response.json();
-        setVideos(data.data || []); // Use data.data as per backend
+        setVideos(data.data || []);
       } catch (err) {
         setError('No Videos found.');
       } finally {
@@ -57,89 +67,106 @@ const RunInference = () => {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to run inference');
-      setStatus('Inference started! The accident will appear if detected.');
+      else setStatus('Inference started! The accident will appear if detected.');
     } catch (err) {
       setError(err.message || 'Failed to run inference');
     } finally {
       setLoading(false);
     }
   };
-
+ 
   return (
     <Box className="auth-page">
-      <Container size="xs">
-        <div className="auth-container">
-          <Title order={2} style={{ textAlign: 'center' }}>Run Inference</Title>
+      <Container size="xl" px="md">
+        <div className="auth-container" style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <Title order={2} ta="center">
+            Run Inference
+          </Title>
           <div className="auth-subtitle">
             Select a video stored on the server and run the model inference.
           </div>
 
-          {status && (
-            <div className="auth-message auth-message-success">{status}</div>
-          )}
-          {error && (
-            <div className="auth-message auth-message-error">{error}</div>
-          )}
+          {status && <div className="auth-message auth-message-success">{status}</div>}
+          {error && <div className="auth-message auth-message-error">{error}</div>}
+
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0' }}>
               <Loader size="lg" />
             </div>
           ) : (
             <form onSubmit={handleRunInference}>
-              <Checkbox
-                label="with bounding box (slower)"
-                checked={withBbox}
-                onChange={(event) => setWithBbox(event.currentTarget.checked)}
-                style={{ marginBottom: '1rem' }}
-              />
-              <div style={{ marginBottom: '2rem' }}>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                  gap: '1.5rem',
-                  justifyItems: 'center',
-                }}>
-                  {videos.map((video) => (
-                    <div
-                      key={video.id}
-                      onClick={() => setSelectedVideo(video)}
-                      style={{
-                        cursor: 'pointer',
-                        border: selectedVideo?.id === video.id ? '2px solid #3182ce' : '2px solid transparent',
-                        borderRadius: 10,
-                        boxShadow: selectedVideo?.id === video.id ? '0 0 0 2px #3182ce33' : '0 2px 8px rgba(0,0,0,0.06)',
-                        padding: 8,
-                        background: '#fff',
-                        transition: 'border 0.2s, box-shadow 0.2s',
-                        width: 170,
-                        textAlign: 'center',
-                      }}
-                      tabIndex={0}
-                      aria-label={`Select ${video.name || video.file}`}
-                    >
-                      <Image
-                        src={video.thumbnailUrl}
-                        alt={video.name || video.file}
-                        width={160}
-                        height={90}
-                        radius="md"
-                        withPlaceholder
-                        style={{ marginBottom: 8 }}
-                      />
-                      <div style={{ fontWeight: 500 }}>{video.name || video.file}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <Button
-                type="submit"
-                fullWidth
-                size="lg"
-                disabled={!selectedVideo}
-                style={{ marginTop: '1.5rem' }}
+              <Center mb="md">
+                <Switch
+                  size="md"
+                  color="blue"
+                  checked={withBbox}
+                  onChange={(e) => setWithBbox(e.currentTarget.checked)}
+                  label="Show bounding boxes (slower)"
+                  labelPosition="right"
+                />
+              </Center>
+
+              <SimpleGrid
+                cols={4}
+                spacing="lg"
+                mb="xl"
+                breakpoints={[
+                  { maxWidth: '62rem', cols: 3 },
+                  { maxWidth: '48rem', cols: 2 },
+                  { maxWidth: '36rem', cols: 1 },
+                ]}
               >
-                Run Inference
-              </Button>
+                {videos.map((video) => (
+                  <div
+                    key={video.id}
+                    onClick={() => setSelectedVideo(video)}
+                    tabIndex={0}
+                    aria-label={`Select ${video.name || video.file}`}
+                    style={{
+                      cursor: 'pointer',
+                      border:
+                        selectedVideo?.id === video.id
+                          ? '2px solid #3182ce'
+                          : '2px solid transparent',
+                      borderRadius: 12,
+                      boxShadow:
+                        selectedVideo?.id === video.id
+                          ? '0 0 0 2px #3182ce33'
+                          : '0 3px 12px rgba(0,0,0,0.08)',
+                      padding: 10,
+                      background: '#fff',
+                      transition: 'border 0.2s, box-shadow 0.2s',
+                    }}
+                  >
+                    <Image
+                      src={video.thumbnailUrl}
+                      alt={video.name || video.file}
+                      withPlaceholder
+                      radius="md"
+                      style={{
+                        width: '100%',
+                        aspectRatio: '16 / 9',
+                        marginBottom: 8,
+                        objectFit: 'cover',
+                      }}
+                    />
+                    <div style={{ fontWeight: 500, textAlign: 'center' }}>
+                      {video.name || video.file}
+                    </div>
+                  </div>
+                ))}
+              </SimpleGrid>
+
+              <Center mt="md">
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={!selectedVideo}
+                  style={{ width: 400 }}
+                >
+                  Run Inference
+                </Button>
+              </Center>
             </form>
           )}
         </div>
@@ -148,4 +175,4 @@ const RunInference = () => {
   );
 };
 
-export default RunInference; 
+export default RunInference;
