@@ -253,6 +253,40 @@ const runInference = async (req, res) => {
   }
 };
 
+const runInferenceWithBbox = async (req, res) => {
+  try {
+    const { videoId, cameraId } = req.body;
+    if (!videoId || !cameraId) {
+      return res.status(400).json({ message: "videoId and cameraId are required" });
+    }
+    // Find the camera object by cameraId
+    const camera = await Camera.findOne({ cameraId });
+    if (!camera) {
+      return res.status(404).json({ message: `Camera with cameraId ${cameraId} not found` });
+    }
+    const location = camera.location;
+    // Compose model-service URL and secret
+    const modelServiceUrl = process.env.MODEL_SERVICE_URL_BBOX || "http://localhost:8000/run-bbox";
+    const internalSecret = process.env.INTERNAL_SECRET;
+    const response = await fetch(modelServiceUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-INTERNAL-SECRET": internalSecret,
+      },
+      body: JSON.stringify({ videoId, cameraId, location }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ message: data.detail || data.message || "Model service error", error: data });
+    }
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error running inference with bbox:", error);
+    res.status(500).json({ message: "Error running inference with bbox", error: error.message });
+  }
+};
+
 const getVideos = async (req, res) => {
   try {
     const modelServiceUrl = process.env.MODEL_SERVICE_VIDEOS_URL || "http://localhost:8000/videos";
@@ -298,5 +332,6 @@ module.exports = {
   updateAccidentDetails,
   filterAccidentsByUser,
   runInference,
+  runInferenceWithBbox,
   getVideos,
 };

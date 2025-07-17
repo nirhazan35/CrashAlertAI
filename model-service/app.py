@@ -6,6 +6,8 @@ from pydantic import BaseModel
 from uploader import trim_video_ffmpeg, upload_to_drive
 from dotenv import load_dotenv
 from fastapi.staticfiles import StaticFiles
+import glob
+import shutil
 
 # Load environment variables from .env file (for local development)
 load_dotenv()
@@ -26,7 +28,9 @@ VIDEO_DIR = os.getenv("VIDEO_DIR", "/app/videos")
 BACKEND_URL = os.getenv("INTERNAL_BACKEND_URL")
 SECRET_HEADER_NAME = "X-INTERNAL-SECRET"
 SECRET = os.environ["INTERNAL_SECRET"]
+ACCIDENT_CLASS_ID = 0
 
+ACCIDENT_CLASS_ID = 0  # Class ID for accident
 app = FastAPI(title="CrashAlertAI-Model-Service")
 
 # Load YOLO11 model
@@ -53,10 +57,6 @@ def predict_video(video_path, metadata):
     # Set up logging
     logger = logging.getLogger(__name__)
     
-    # Configuration parameters
-    CONFIDENCE_THRESHOLD = 0.5  # Confidence threshold for detection
-    ACCIDENT_CLASS_ID = 0       # Class ID for accident
-    
     # Get video properties using OpenCV temporarily
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -76,7 +76,7 @@ def predict_video(video_path, metadata):
     logger.info(f"Starting accident detection on video: {video_path}")
     
     # Use YOLO's built-in video processing for better performance
-    for results in model.track(source=video_path, stream=True, conf=CONFIDENCE_THRESHOLD, verbose=False):
+    for results in model.track(source=video_path, stream=True, conf=THRESHOLD, verbose=False):
         # Calculate current timestamp in the video
         current_time = timedelta(seconds=frame_count / fps)
         current_time_seconds = int(current_time.total_seconds())
@@ -91,7 +91,7 @@ def predict_video(video_path, metadata):
             confidence = detection.conf.item()
             
             # Check if the detection is an accident with sufficient confidence
-            if cls_id == ACCIDENT_CLASS_ID and confidence >= CONFIDENCE_THRESHOLD:
+            if cls_id == ACCIDENT_CLASS_ID and confidence >= THRESHOLD:
                 # Check if we're outside the cooldown period
                 current_datetime = datetime.now()
                 
@@ -175,6 +175,117 @@ def broadcast(video_path, timestamp, metadata, confidence):
         error_message = f"❌ Error in broadcast function: {str(e)}"
         logger.error(error_message)
 
+def predict_video_with_bbox(video_path, metadata):
+    """
+    Process a video for accident detection using YOLOv11m, save video with bounding boxes,
+    and post accident to backend. The trimmed segment will have bounding boxes for all frames
+    where the model detects the accident class, and the cooldown period is used to avoid
+    duplicate alerts for the same accident.
+    """
+    logger = logging.getLogger(__name__)
+    
+    try:
+        base_dir = os.path.join("runs", "track")
+        os.makedirs(base_dir, exist_ok=True)
+
+        # 1. Run YOLO and save video with bounding boxes to a known location
+        results_iter = model.track(
+            source=video_path,
+            conf=THRESHOLD,
+            save=True,
+            stream=True,
+            verbose=False,
+            project="runs/track",
+            name="inference_bbox"
+        )
+
+        # 2. Accident detection loop (consume all results)
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            logger.error(f"Error: Could not open video file {video_path}")
+            return
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        cap.release()
+
+        last_detection_time = None
+        cooldown_period = timedelta(seconds=30)
+        frame_count = 0
+        accident_events = []  # List of (current_time_seconds, confidence) for first detection in each cooldown
+
+        for results in results_iter:
+            current_time = timedelta(seconds=frame_count / fps)
+            current_time_seconds = int(current_time.total_seconds())
+            frame_count += 1
+
+            detections = results.boxes
+            for detection in detections:
+                cls_id = int(detection.cls.item())
+                confidence = detection.conf.item()
+                if cls_id == ACCIDENT_CLASS_ID and confidence >= THRESHOLD:
+                    current_datetime = datetime.now()
+                    # Only send one alert per cooldown period
+                    if last_detection_time is None or (current_datetime - last_detection_time) > cooldown_period:
+                        last_detection_time = current_datetime
+                        minutes = int(current_time.total_seconds() // 60)
+                        seconds = int(current_time.total_seconds() % 60)
+                        timestamp_str = f"{minutes:02d}:{seconds:02d}"
+                        logger.info(f"🔍 Accident detected at {timestamp_str} with confidence {confidence:.2f}")
+                        accident_events.append((current_time_seconds, confidence))
+                    break
+
+        # 3. The output video should exist in the latest inference_bbox* directory
+        latest_dir = get_latest_inference_bbox_dir(base_dir)
+        if latest_dir:
+            bbox_video_path = os.path.join(latest_dir, os.path.basename(video_path))
+            if not os.path.exists(bbox_video_path):
+                logger.error(f"No output video with bounding boxes found at {bbox_video_path}")
+                return
+        else:
+            logger.error("No inference_bbox output directory found")
+            return
+
+        # 4. For each detected accident event, trim/upload/post (one per cooldown period)
+        for current_time_seconds, confidence in accident_events:
+            clip_path = f"/tmp/clip_bbox_{uuid.uuid4().hex}.mp4"
+            trim_video_ffmpeg(
+                input_video=bbox_video_path,
+                start_time=max(0, current_time_seconds - 7),
+                duration=15,
+                output_video=clip_path
+            )
+            gdrive_link = upload_to_drive(logger, clip_path)
+            try:
+                os.remove(bbox_video_path)
+                logger.info(f"Deleted temporary file: {bbox_video_path}")
+            except Exception as e:
+                logger.warning(f"Could not delete temporary file {bbox_video_path}: {e}")
+
+            accident_doc = {
+                "cameraId": metadata.get("cameraId", "unknown"),
+                "location": metadata.get("location", "unknown"),
+                "date": datetime.now().isoformat(),
+                "displayDate": None,
+                "displayTime": None,
+                "severity": "no severity",
+                "video": gdrive_link,
+                "description": f"{confidence:.2f}",
+                "assignedTo": None,
+                "status": "active",
+                "falsePositive": False,
+            }
+            response = requests.post(
+                BACKEND_URL,
+                headers={SECRET_HEADER_NAME: SECRET},
+                json=accident_doc,
+                timeout=10
+            )
+            if response.status_code == 201:
+                logger.info("✅ Accident alert sent successfully")
+            else:
+                logger.info(f"❌ Accident alert sent but failed at backend: {response.status_code}")
+    except Exception as e:
+        logger.error(f"Error in predict_video_with_bbox: {str(e)}")
+
 def ensure_thumbnails():
     thumb_dir = os.path.join(VIDEO_DIR, "thumbnails")
     os.makedirs(thumb_dir, exist_ok=True)
@@ -204,8 +315,6 @@ def list_videos(request: Request):
     video_list = []
     base_url = str(request.base_url).rstrip("/")
     for v in vids:
-        # Attempt to extract cameraId and location from filename, or set to None
-        # Example filename: camera123_locationABC_20230101.mp4
         camera_id = None
         location = None
         parts = v.split('_')
@@ -238,6 +347,27 @@ def process_video(req: RunRequest, bg: BackgroundTasks):
         "location": req.location
     })
     return {"status": "processing_started", "video": req.videoId} 
+
+@app.post("/run-bbox")
+def process_video_with_bbox(req: RunRequest, bg: BackgroundTasks):
+    file_path = os.path.join(VIDEO_DIR, f"{req.videoId}.mp4")
+    logger.info(f"Processing video with bbox: {file_path}")
+    logger.info(f"Camera ID: {req.cameraId}")
+    logger.info(f"Location: {req.location}")
+    if not os.path.isfile(file_path):
+        raise HTTPException(404, detail="Video file not found")
+    bg.add_task(predict_video_with_bbox, file_path, {
+        "cameraId": req.cameraId,
+        "location": req.location
+    })
+    return {"status": "processing_started", "video": req.videoId}
+
+def get_latest_inference_bbox_dir(base_dir):
+    dirs = glob.glob(os.path.join(base_dir, "inference_bbox*"))
+    if not dirs:
+        return None
+    dirs.sort(key=os.path.getmtime, reverse=True)
+    return dirs[0]
 
 @app.get("/health")
 def health_check():

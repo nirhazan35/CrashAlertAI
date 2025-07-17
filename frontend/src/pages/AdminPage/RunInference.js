@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Title, Button, Image, Loader } from '@mantine/core';
+import { Box, Container, Title, Button, Image, Loader, Checkbox } from '@mantine/core';
 import { useAuth } from '../../authentication/AuthProvider';
 import '../authFormCSS/AuthForm.css';
 
@@ -10,6 +10,7 @@ const RunInference = () => {
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [withBbox, setWithBbox] = useState(false);
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -42,7 +43,8 @@ const RunInference = () => {
     if (!selectedVideo) return;
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/run-inference`, {
+      const endpoint = withBbox ? '/accidents/run-inference-bbox' : '/accidents/run-inference';
+      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}${endpoint}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user?.token}`,
@@ -84,6 +86,12 @@ const RunInference = () => {
             </div>
           ) : (
             <form onSubmit={handleRunInference}>
+              <Checkbox
+                label="with bounding box (slower)"
+                checked={withBbox}
+                onChange={(event) => setWithBbox(event.currentTarget.checked)}
+                style={{ marginBottom: '1rem' }}
+              />
               <div style={{ marginBottom: '2rem' }}>
                 <div style={{
                   display: 'grid',
