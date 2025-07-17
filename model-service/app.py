@@ -265,12 +265,11 @@ def predict_video_with_bbox(video_path, metadata):
     CONFIDENCE_THRESHOLD = 0.5
     ACCIDENT_CLASS_ID = 0
     try:
-        # 1. Define and ensure output directory
         output_dir = os.path.join("runs", "track", "inference_bbox")
         os.makedirs(output_dir, exist_ok=True)
 
-        # 2. Run YOLO and save video with bounding boxes to a known location
-        results = model.track(
+        # 1. Run YOLO and save video with bounding boxes to a known location
+        results_iter = model.track(
             source=video_path,
             conf=CONFIDENCE_THRESHOLD,
             save=True,
@@ -280,13 +279,7 @@ def predict_video_with_bbox(video_path, metadata):
             name="inference_bbox"
         )
 
-        # 3. The output video path is now deterministic
-        bbox_video_path = os.path.join(output_dir, os.path.basename(video_path))
-        if not os.path.exists(bbox_video_path):
-            logger.error(f"No output video with bounding boxes found at {bbox_video_path}")
-            return
-
-        # 4. Accident detection loop (like predict_video)
+        # 2. Accident detection loop (consume all results)
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             logger.error(f"Error: Could not open video file {video_path}")
@@ -297,8 +290,10 @@ def predict_video_with_bbox(video_path, metadata):
         last_detection_time = None
         cooldown_period = timedelta(seconds=30)
         frame_count = 0
+        accident_timestamps = []
+        accident_confidences = []
 
-        for results in model.track(source=video_path, stream=True, conf=CONFIDENCE_THRESHOLD, verbose=False):
+        for results in results_iter:
             current_time = timedelta(seconds=frame_count / fps)
             current_time_seconds = int(current_time.total_seconds())
             frame_count += 1
@@ -315,43 +310,51 @@ def predict_video_with_bbox(video_path, metadata):
                         seconds = int(current_time.total_seconds() % 60)
                         timestamp_str = f"{minutes:02d}:{seconds:02d}"
                         logger.info(f"🔍 Accident detected at {timestamp_str} with confidence {confidence:.2f}")
+                        accident_timestamps.append(current_time_seconds)
+                        accident_confidences.append(confidence)
 
-                        # 5. Trim the bbox video around the accident
-                        clip_path = f"/tmp/clip_bbox_{uuid.uuid4().hex}.mp4"
-                        trim_video_ffmpeg(
-                            input_video=bbox_video_path,
-                            start_time=max(0, current_time_seconds - 7),
-                            duration=15,
-                            output_video=clip_path
-                        )
-                        # 6. Upload to Google Drive
-                        gdrive_link = upload_to_drive(logger, clip_path)
-                        logger.info(f"Uploaded bbox video to: {gdrive_link}")
+        # 3. Now the output video should exist
+        bbox_video_path = os.path.join(output_dir, os.path.basename(video_path))
+        if not os.path.exists(bbox_video_path):
+            logger.error(f"No output video with bounding boxes found at {bbox_video_path}")
+            return
 
-                        # 7. Post accident to backend (like broadcast)
-                        accident_doc = {
-                            "cameraId": metadata.get("cameraId", "unknown"),
-                            "location": metadata.get("location", "unknown"),
-                            "date": datetime.now().isoformat(),
-                            "displayDate": None,
-                            "displayTime": None,
-                            "severity": "no severity",
-                            "video": gdrive_link,
-                            "description": f"{confidence:.2f}",
-                            "assignedTo": None,
-                            "status": "active",
-                            "falsePositive": False,
-                        }
-                        response = requests.post(
-                            BACKEND_URL,
-                            headers={SECRET_HEADER_NAME: SECRET},
-                            json=accident_doc,
-                            timeout=10
-                        )
-                        if response.status_code == 201:
-                            logger.info("✅ Accident alert sent successfully")
-                        else:
-                            logger.info(f"❌ Accident alert sent but failed at backend: {response.status_code}")
+        # 4. For each detected accident, trim/upload/post
+        for i, current_time_seconds in enumerate(accident_timestamps):
+            confidence = accident_confidences[i]
+            clip_path = f"/tmp/clip_bbox_{uuid.uuid4().hex}.mp4"
+            trim_video_ffmpeg(
+                input_video=bbox_video_path,
+                start_time=max(0, current_time_seconds - 7),
+                duration=15,
+                output_video=clip_path
+            )
+            gdrive_link = upload_to_drive(logger, clip_path)
+            logger.info(f"Uploaded bbox video to: {gdrive_link}")
+
+            accident_doc = {
+                "cameraId": metadata.get("cameraId", "unknown"),
+                "location": metadata.get("location", "unknown"),
+                "date": datetime.now().isoformat(),
+                "displayDate": None,
+                "displayTime": None,
+                "severity": "no severity",
+                "video": gdrive_link,
+                "description": f"{confidence:.2f}",
+                "assignedTo": None,
+                "status": "active",
+                "falsePositive": False,
+            }
+            response = requests.post(
+                BACKEND_URL,
+                headers={SECRET_HEADER_NAME: SECRET},
+                json=accident_doc,
+                timeout=10
+            )
+            if response.status_code == 201:
+                logger.info("✅ Accident alert sent successfully")
+            else:
+                logger.info(f"❌ Accident alert sent but failed at backend: {response.status_code}")
 
         logger.info(f"Completed accident detection with bbox on video: {video_path}")
 
