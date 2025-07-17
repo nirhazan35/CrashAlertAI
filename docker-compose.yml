@@ -52,7 +52,6 @@ services:
       - ./model-service/videos:/app/videos
       - ./model-service/secrets/drive_sa.json:/app/credentials/drive_sa.json:ro
       - ./model-service/weights/best.pt:/app/weights/best.pt:ro
-    read_only: true
     tmpfs: [ /tmp ]
     ports: ["8000:8000"]
     depends_on:
