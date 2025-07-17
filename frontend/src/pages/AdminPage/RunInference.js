@@ -27,62 +27,75 @@ const RunInference = () => {
       setLoading(true);
       setError('');
       try {
-        const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}/accidents/get-videos`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${user?.token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        const response = await fetch(
+          `${process.env.REACT_APP_URL_BACKEND}/accidents/get-videos`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${user?.token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
         if (!response.ok) throw new Error('Failed to fetch videos');
         const data = await response.json();
         setVideos(data.data || []);
       } catch (err) {
-        setError('No Videos found.');
+        setError('No videos found.');
       } finally {
         setLoading(false);
       }
     };
+
     if (user?.token) fetchVideos();
-  }, [user]);
+  }, [user?.token]);
 
   const handleRunInference = async (e) => {
     e.preventDefault();
+    if (!selectedVideo) return;
+
     setStatus('');
     setError('');
-    if (!selectedVideo) return;
     setLoading(true);
+
     try {
-      const endpoint = withBbox ? '/accidents/run-inference-bbox' : '/accidents/run-inference';
-      const response = await fetch(`${process.env.REACT_APP_URL_BACKEND}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${user?.token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          videoId: selectedVideo.id,
-          cameraId: "CAM_TelAviv_SouthEntry",
-        }),
-      });
+      const endpoint = withBbox
+        ? '/accidents/run-inference-bbox'
+        : '/accidents/run-inference';
+
+      const response = await fetch(
+        `${process.env.REACT_APP_URL_BACKEND}${endpoint}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            videoId: selectedVideo.id,
+            cameraId: 'CAM_TelAviv_SouthEntry',
+          }),
+        }
+      );
+
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to run inference');
-      else setStatus('Inference started! The accident will appear if detected.');
+      setStatus('Inference started! The accident will appear if detected.');
     } catch (err) {
       setError(err.message || 'Failed to run inference');
     } finally {
       setLoading(false);
     }
   };
- 
+
   return (
     <Box className="auth-page">
       <Container size="xl" px="md">
-        <div className="auth-container" style={{ maxWidth: 1000, margin: '0 auto' }}>
+        <div className="auth-container" style={{ maxWidth: 1200, margin: '0 auto' }}>
           <Title order={2} ta="center">
             Run Inference
           </Title>
-          <div className="auth-subtitle">
+          <div className="auth-subtitle" style={{ maxWidth: 1200, margin: '0 auto', padding: '1 auto' }}>
             Select a video stored on the server and run the model inference.
           </div>
 
@@ -97,6 +110,7 @@ const RunInference = () => {
             <form onSubmit={handleRunInference}>
               <Center mb="md">
                 <Switch
+                  style={{top: 20}}
                   size="md"
                   color="blue"
                   checked={withBbox}
