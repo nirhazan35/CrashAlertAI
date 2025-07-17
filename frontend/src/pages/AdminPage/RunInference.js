@@ -90,12 +90,24 @@ const RunInference = () => {
                 label="with bounding box (slower)"
                 checked={withBbox}
                 onChange={(event) => setWithBbox(event.currentTarget.checked)}
-                style={{ marginBottom: '1rem' }}
+                size="md"
+                style={{ marginBottom: '1rem', alignItems: 'center', display: 'flex' }}
+                styles={{
+                  label: { marginLeft: 12, fontWeight: 500, display: 'flex', alignItems: 'center' },
+                  input: {
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingLeft: 0,
+                    paddingRight: 0,
+                    margin: 0,
+                  }
+                }}
               />
               <div style={{ marginBottom: '2rem' }}>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
                   gap: '1.5rem',
                   justifyItems: 'center',
                 }}>
