@@ -265,17 +265,28 @@ def predict_video_with_bbox(video_path, metadata):
     CONFIDENCE_THRESHOLD = 0.5
     ACCIDENT_CLASS_ID = 0
     try:
-        # 1. Run YOLO and save video with bounding boxes
-        results = model.track(source=video_path, conf=CONFIDENCE_THRESHOLD, save=True, stream=True, verbose=False)
-        # 2. Find the output video with bounding boxes
-        bbox_video_path = None
-        for path in glob.glob(os.path.join("runs", "track", "*", os.path.basename(video_path))):
-            bbox_video_path = path
-        if bbox_video_path is None:
-            logger.error(f"No output video with bounding boxes found for {video_path}")
+        # 1. Define and ensure output directory
+        output_dir = os.path.join("runs", "track", "inference_bbox")
+        os.makedirs(output_dir, exist_ok=True)
+
+        # 2. Run YOLO and save video with bounding boxes to a known location
+        results = model.track(
+            source=video_path,
+            conf=CONFIDENCE_THRESHOLD,
+            save=True,
+            stream=True,
+            verbose=False,
+            project="runs/track",
+            name="inference_bbox"
+        )
+
+        # 3. The output video path is now deterministic
+        bbox_video_path = os.path.join(output_dir, os.path.basename(video_path))
+        if not os.path.exists(bbox_video_path):
+            logger.error(f"No output video with bounding boxes found at {bbox_video_path}")
             return
 
-        # 3. Accident detection loop (like predict_video)
+        # 4. Accident detection loop (like predict_video)
         cap = cv2.VideoCapture(video_path)
         if not cap.isOpened():
             logger.error(f"Error: Could not open video file {video_path}")
@@ -305,7 +316,7 @@ def predict_video_with_bbox(video_path, metadata):
                         timestamp_str = f"{minutes:02d}:{seconds:02d}"
                         logger.info(f"🔍 Accident detected at {timestamp_str} with confidence {confidence:.2f}")
 
-                        # 4. Trim the bbox video around the accident
+                        # 5. Trim the bbox video around the accident
                         clip_path = f"/tmp/clip_bbox_{uuid.uuid4().hex}.mp4"
                         trim_video_ffmpeg(
                             input_video=bbox_video_path,
@@ -313,11 +324,11 @@ def predict_video_with_bbox(video_path, metadata):
                             duration=15,
                             output_video=clip_path
                         )
-                        # 5. Upload to Google Drive
+                        # 6. Upload to Google Drive
                         gdrive_link = upload_to_drive(logger, clip_path)
                         logger.info(f"Uploaded bbox video to: {gdrive_link}")
 
-                        # 6. Post accident to backend (like broadcast)
+                        # 7. Post accident to backend (like broadcast)
                         accident_doc = {
                             "cameraId": metadata.get("cameraId", "unknown"),
                             "location": metadata.get("location", "unknown"),
