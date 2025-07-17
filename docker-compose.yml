@@ -58,7 +58,6 @@ services:
       backend: { condition: service_started }
       mongo:   { condition: service_started }
     restart: unless-stopped
-    user: "1001:1001"
 
   mongo:
     image: mongo:latest
