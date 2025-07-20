@@ -1,0 +1,168 @@
+/* RunInference.css - Combines AuthForm color theme with AdminPage sizing */
+
+.runinference-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f6f8fd 0%, #f1f4f9 100%);
+  padding: 2rem;
+}
+
+.runinference-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+  padding: 3.5rem;
+  border-radius: var(--mantine-radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.9); /* semi-transparent white */
+  backdrop-filter: blur(10px); /* glassy blur */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.runinference-container::before,
+.runinference-container::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(5px);
+  z-index: 0;
+}
+
+.runinference-container::before {
+  width: 150px;
+  height: 150px;
+  top: -60px;
+  right: -60px;
+  background: linear-gradient(135deg, rgba(66, 153, 225, 0.1) 0%, rgba(66, 153, 225, 0.05) 100%);
+}
+
+.runinference-container::after {
+  width: 100px;
+  height: 100px;
+  bottom: -40px;
+  left: -40px;
+  background: linear-gradient(135deg, rgba(49, 130, 206, 0.1) 0%, rgba(49, 130, 206, 0.05) 100%);
+}
+
+.runinference-title {
+  text-align: center;
+  margin-bottom: 1.2rem;
+  font-weight: 700;
+  color: var(--mantine-color-gray-8);
+  font-size: 2.2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.runinference-subtitle {
+  text-align: center;
+  max-width: 520px;
+  margin: 0 auto 2.2rem auto;
+  color: var(--mantine-color-gray-6);
+  font-size: 1.08rem;
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+
+.runinference-message {
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.runinference-message-error {
+  color: var(--mantine-color-red-6);
+  background: rgba(255, 0, 0, 0.05);
+  border-color: rgba(255, 0, 0, 0.1);
+}
+
+.runinference-message-success {
+  color: var(--mantine-color-green-6);
+  background: rgba(0, 255, 0, 0.05);
+  border-color: rgba(0, 255, 0, 0.1);
+}
+
+.runinference-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.runinference-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.runinference-checkbox .mantine-Checkbox-input {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.runinference-checkbox .mantine-Checkbox-icon {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.runinference-grid {
+  margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  justify-items: center;
+}
+
+.runinference-video-card {
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 8px;
+  background: #fff;
+  transition: border 0.2s, box-shadow 0.2s;
+  width: 170px;
+  text-align: center;
+}
+
+.runinference-video-card.selected {
+  border: 2px solid #3182ce;
+  box-shadow: 0 0 0 2px #3182ce33;
+}
+
+.runinference-video-title {
+  font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+  .runinference-container {
+    max-width: 900px;
+    padding: 2.5rem;
+  }
+  .runinference-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .runinference-container {
+    max-width: 98vw;
+    padding: 1rem;
+  }
+  .runinference-grid {
+    grid-template-columns: 1fr;
+  }
+} 
