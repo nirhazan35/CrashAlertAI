@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from fastapi.staticfiles import StaticFiles
 import glob
 import shutil
+from pathlib import Path
 
 # Load environment variables from .env file (for local development)
 load_dotenv()
@@ -210,7 +211,7 @@ def predict_video_with_bbox(video_path, metadata):
         last_detection_time = None
         cooldown_period = timedelta(seconds=30)
         frame_count = 0
-        accident_events = []  # List of (current_time_seconds, confidence) for first detection in each cooldown
+        accident_events = []
 
         for results in results_iter:
             current_time = timedelta(seconds=frame_count / fps)
@@ -235,8 +236,11 @@ def predict_video_with_bbox(video_path, metadata):
 
         # 3. The output video should exist in the latest inference_bbox* directory
         latest_dir = get_latest_inference_bbox_dir(base_dir)
+        bbox_video_path = Path(latest_dir) / Path(video_path).name
+        bbox_video_path = bbox_video_path.with_suffix(".mp4")
         if latest_dir:
             bbox_video_path = os.path.join(latest_dir, os.path.basename(video_path))
+            
             if not os.path.exists(bbox_video_path):
                 logger.error(f"No output video with bounding boxes found at {bbox_video_path}")
                 return
