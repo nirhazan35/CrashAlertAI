@@ -109,7 +109,7 @@
 /* Buttons */
 .auth-container button {
   width: 100%;
-  padding: 0.875rem;
+  padding: 0.7rem;
   border: none;
   background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
   color: white;
