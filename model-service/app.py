@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from fastapi.staticfiles import StaticFiles
 import glob
 import shutil
+from pathlib import Path
 
 # Load environment variables from .env file (for local development)
 load_dotenv()
@@ -184,10 +185,10 @@ def predict_video_with_bbox(video_path, metadata):
     """
     logger = logging.getLogger(__name__)
     
+    base_dir = os.path.join(VIDEO_DIR, "runs", "track")
+    os.makedirs(base_dir, exist_ok=True)
+    bbox_video_path = None
     try:
-        base_dir = os.path.join(VIDEO_DIR, "runs", "track")
-        os.makedirs(base_dir, exist_ok=True)
-
         # 1. Run YOLO and save video with bounding boxes to a known location
         results_iter = model.track(
             source=video_path,
@@ -210,7 +211,7 @@ def predict_video_with_bbox(video_path, metadata):
         last_detection_time = None
         cooldown_period = timedelta(seconds=30)
         frame_count = 0
-        accident_events = []  # List of (current_time_seconds, confidence) for first detection in each cooldown
+        accident_events = []
 
         for results in results_iter:
             current_time = timedelta(seconds=frame_count / fps)
@@ -233,14 +234,15 @@ def predict_video_with_bbox(video_path, metadata):
                         accident_events.append((current_time_seconds, confidence))
                     break
 
-        # 3. The output video should exist in the latest inference_bbox* directory inside videos/runs/track
+        # 3. The output video should exist in the latest inference_bbox* directory
         latest_dir = get_latest_inference_bbox_dir(base_dir)
         if latest_dir:
-            # YOLO saves as .avi, so look for .avi file with same base name
-            base_name = os.path.splitext(os.path.basename(video_path))[0]
-            bbox_video_path_avi = os.path.join(latest_dir, base_name + '.avi')
-            if not os.path.exists(bbox_video_path_avi):
-                logger.error(f"No output video with bounding boxes found at {bbox_video_path_avi}")
+            # YOLO saves as .avi by default
+            avi_candidate = os.path.join(latest_dir, os.path.splitext(os.path.basename(video_path))[0] + ".avi")
+            if os.path.exists(avi_candidate):
+                bbox_video_path = avi_candidate
+            else:
+                logger.error(f"No output video with bounding boxes found at {avi_candidate}")
                 return
         else:
             logger.error("No inference_bbox output directory found")
@@ -249,47 +251,46 @@ def predict_video_with_bbox(video_path, metadata):
         # 4. For each detected accident event, trim/upload/post (one per cooldown period)
         for current_time_seconds, confidence in accident_events:
             clip_path = f"/tmp/clip_bbox_{uuid.uuid4().hex}.mp4"
-            try:
-                trim_video_ffmpeg(
-                    input_video=bbox_video_path_avi,
-                    start_time=max(0, current_time_seconds - 7),
-                    duration=15,
-                    output_video=clip_path
-                )
-                gdrive_link = upload_to_drive(logger, clip_path)
-                accident_doc = {
-                    "cameraId": metadata.get("cameraId", "unknown"),
-                    "location": metadata.get("location", "unknown"),
-                    "date": datetime.now().isoformat(),
-                    "displayDate": None,
-                    "displayTime": None,
-                    "severity": "no severity",
-                    "video": gdrive_link,
-                    "description": f"{confidence:.2f}",
-                    "assignedTo": None,
-                    "status": "active",
-                    "falsePositive": False,
-                }
-                response = requests.post(
-                    BACKEND_URL,
-                    headers={SECRET_HEADER_NAME: SECRET},
-                    json=accident_doc,
-                    timeout=10
-                )
-                if response.status_code == 201:
-                    logger.info("✅ Accident alert sent successfully")
-                else:
-                    logger.info(f"❌ Accident alert sent but failed at backend: {response.status_code}")
-            except Exception as e:
-                logger.error(f"Error processing accident event: {e}")
-            finally:
-                try:
-                    os.remove(bbox_video_path_avi)
-                    logger.info(f"Deleted temporary file: {bbox_video_path_avi}")
-                except Exception as e:
-                    logger.warning(f"Could not delete temporary file {bbox_video_path_avi}: {e}")
+            trim_video_ffmpeg(
+                input_video=bbox_video_path,
+                start_time=max(0, current_time_seconds - 7),
+                duration=15,
+                output_video=clip_path
+            )
+            gdrive_link = upload_to_drive(logger, clip_path)
+            accident_doc = {
+                "cameraId": metadata.get("cameraId", "unknown"),
+                "location": metadata.get("location", "unknown"),
+                "date": datetime.now().isoformat(),
+                "displayDate": None,
+                "displayTime": None,
+                "severity": "no severity",
+                "video": gdrive_link,
+                "description": f"{confidence:.2f}",
+                "assignedTo": None,
+                "status": "active",
+                "falsePositive": False,
+            }
+            response = requests.post(
+                BACKEND_URL,
+                headers={SECRET_HEADER_NAME: SECRET},
+                json=accident_doc,
+                timeout=10
+            )
+            if response.status_code == 201:
+                logger.info("✅ Accident alert sent successfully")
+            else:
+                logger.info(f"❌ Accident alert sent but failed at backend: {response.status_code}")
     except Exception as e:
         logger.error(f"Error in predict_video_with_bbox: {str(e)}")
+    finally:
+        # Always try to delete the output file
+        if bbox_video_path and os.path.exists(bbox_video_path):
+            try:
+                os.remove(bbox_video_path)
+                logger.info(f"Deleted temporary file: {bbox_video_path}")
+            except Exception as e:
+                logger.warning(f"Could not delete temporary file {bbox_video_path}: {e}")
 
 def ensure_thumbnails():
     thumb_dir = os.path.join(VIDEO_DIR, "thumbnails")
