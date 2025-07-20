@@ -124,9 +124,8 @@ describe('AccidentLog Component', () => {
     const rows = screen.getAllByRole('row');
     // First row is header, so we use index 1 for first data row
     fireEvent.click(rows[1]);
-    
-    // Check that the row has been selected (this would typically add a class)
-    expect(rows[1]).toHaveTextContent('Main Street');
+    // Now the first row should be the newest: 'Pine Road'
+    expect(rows[1]).toHaveTextContent('Pine Road');
   });
 
   test('calls handleRowDoubleClick when a row is double-clicked', () => {
@@ -135,9 +134,8 @@ describe('AccidentLog Component', () => {
     // Double-click on a row
     const rows = screen.getAllByRole('row');
     fireEvent.doubleClick(rows[1]); // First data row
-    
-    // Check that the handler was called with the correct log
-    expect(mockHandleRowDoubleClick).toHaveBeenCalledWith(mockAccidentLogs[0]);
+    // Now the first row is the newest: mockAccidentLogs[2]
+    expect(mockHandleRowDoubleClick).toHaveBeenCalledWith(mockAccidentLogs[2]);
   });
 
   test('uses custom handleRowDoubleClick when provided', () => {
@@ -147,9 +145,8 @@ describe('AccidentLog Component', () => {
     // Double-click on a row
     const rows = screen.getAllByRole('row');
     fireEvent.doubleClick(rows[1]); // First data row
-    
-    // Check that the custom handler was called, not the default one
-    expect(customHandler).toHaveBeenCalledWith(mockAccidentLogs[0]);
+    // Now the first row is the newest: mockAccidentLogs[2]
+    expect(customHandler).toHaveBeenCalledWith(mockAccidentLogs[2]);
     expect(mockHandleRowDoubleClick).not.toHaveBeenCalled();
   });
 
@@ -162,8 +159,8 @@ describe('AccidentLog Component', () => {
     
     fireEvent.click(activeRowButton);
     
-    // Check updateAccidentStatus was called with the correct parameters
-    expect(mockUpdateAccidentStatus).toHaveBeenCalledWith('1', 'assigned');
+    // Now the first row is the newest: mockAccidentLogs[2]
+    expect(mockUpdateAccidentStatus).toHaveBeenCalledWith('3', 'assigned');
   });
 
   test('displays "Assigned to" text for accidents assigned to other users', () => {
@@ -190,8 +187,9 @@ describe('AccidentLog Component', () => {
     
     // Check that the renderActions function was called for each log
     expect(customRenderActions).toHaveBeenCalledTimes(3);
-    expect(customRenderActions).toHaveBeenCalledWith(mockAccidentLogs[0], 0);
+    // Now the first row is the newest: mockAccidentLogs[2], then [1], then [0]
+    expect(customRenderActions).toHaveBeenCalledWith(mockAccidentLogs[2], 0);
     expect(customRenderActions).toHaveBeenCalledWith(mockAccidentLogs[1], 1);
-    expect(customRenderActions).toHaveBeenCalledWith(mockAccidentLogs[2], 2);
+    expect(customRenderActions).toHaveBeenCalledWith(mockAccidentLogs[0], 2);
   });
 });
