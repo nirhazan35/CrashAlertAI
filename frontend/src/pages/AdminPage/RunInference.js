@@ -248,11 +248,9 @@ const RunInference = () => {
                     disabled={!selectedVideo}
                     style={{ width: 400 }}
                     onClick={() => {
-                      setTimeout(() => {
-                        if (statusRef.current) {
-                          statusRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                      }, 100);
+                      if (statusRef.current) {
+                        statusRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }
                     }}
                   >
                     Run Inference
