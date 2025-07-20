@@ -43,7 +43,7 @@ const AccidentLog = ({
   // Sort logs by date
   const sortedLogs = logsToDisplay
     .slice()
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   // Calculate pagination
   const totalPages = Math.ceil(sortedLogs.length / itemsPerPage);
