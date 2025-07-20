@@ -185,7 +185,7 @@ def predict_video_with_bbox(video_path, metadata):
     logger = logging.getLogger(__name__)
     
     try:
-        base_dir = os.path.join("runs", "track")
+        base_dir = os.path.join(VIDEO_DIR, "runs", "track")
         os.makedirs(base_dir, exist_ok=True)
 
         # 1. Run YOLO and save video with bounding boxes to a known location
@@ -195,7 +195,7 @@ def predict_video_with_bbox(video_path, metadata):
             save=True,
             stream=True,
             verbose=False,
-            project="runs/track",
+            project=base_dir,
             name="inference_bbox"
         )
 
