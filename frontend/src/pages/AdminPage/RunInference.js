@@ -27,6 +27,8 @@ const RunInference = () => {
   const [error, setError] = useState('');
   const [withBbox, setWithBbox] = useState(false);
   const videoGridRef = useRef(null);
+  const runButtonRef = useRef(null);
+  const statusRef = useRef(null);
 
   useEffect(() => {
     const fetchAllCameras = async () => {
@@ -127,8 +129,8 @@ const RunInference = () => {
               ? 'Select a video and run inference.'
               : 'Select a camera to run inference on.'}
           </div>
-          {status && <div className="auth-message auth-message-success">{status}</div>}
-          {error && <div className="auth-message auth-message-error">{error}</div>}
+          {status && <div ref={statusRef} className="auth-message auth-message-success">{status}</div>}
+          {error && <div ref={statusRef} className="auth-message auth-message-error">{error}</div>}
           {/* Step 1: Camera selection grid */}
           <div
             className="camera-selection-grid"
@@ -194,7 +196,14 @@ const RunInference = () => {
                   {videos.map((video) => (
                     <div
                       key={video.id}
-                      onClick={() => setSelectedVideo(video)}
+                      onClick={() => {
+                        setSelectedVideo(video);
+                        setTimeout(() => {
+                          if (runButtonRef.current) {
+                            runButtonRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }
+                        }, 100);
+                      }}
                       tabIndex={0}
                       aria-label={`Select ${video.name || video.file}`}
                       style={{
@@ -233,10 +242,18 @@ const RunInference = () => {
                 </SimpleGrid>
                 <Center mt="md">
                   <Button
+                    ref={runButtonRef}
                     type="submit"
                     size="lg"
                     disabled={!selectedVideo}
                     style={{ width: 400 }}
+                    onClick={() => {
+                      setTimeout(() => {
+                        if (statusRef.current) {
+                          statusRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                      }, 100);
+                    }}
                   >
                     Run Inference
                   </Button>
