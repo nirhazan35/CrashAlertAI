@@ -366,22 +366,6 @@ const Alert = () => {
                           </Badge>
                         </Box>
                       )}
-                      
-                      {/* Visual color indicator based on selected severity */}
-                      <Box className="severity-indicator">
-                        <Box 
-                          className="severity-indicator-dot"
-                          style={{ 
-                            backgroundColor: selectedSeverity === 'high' ? theme.colors.danger[5] : 
-                                            selectedSeverity === 'medium' ? theme.colors.warning[5] : 
-                                            theme.colors.brand[5]
-                          }} 
-                        />
-                        <Text className="severity-indicator-text">
-                          {selectedSeverity === 'high' ? 'High priority response needed' : 
-                            selectedSeverity === 'medium' ? 'Moderate attention required' : 'Routine review'}
-                        </Text>
-                      </Box>
                     </Box>
                   </Grid.Col>
                   
