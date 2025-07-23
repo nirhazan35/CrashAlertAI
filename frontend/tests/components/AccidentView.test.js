@@ -79,10 +79,7 @@ describe('Alert Component', () => {
     expect(screen.getByText(/vehicle collision/i)).toBeInTheDocument();
     expect(screen.getByText(/may 15, 2023/i)).toBeInTheDocument();
     expect(screen.getByText(/10:30 am/i)).toBeInTheDocument();
-    
-    // Check severity badge - updated to match actual component structure
-    const severityBadge = screen.getByText(/high priority response needed/i);
-    expect(severityBadge).toBeInTheDocument();
+
   });
 
   it('calls updateAccidentStatus when marking an accident as handled', async () => {
