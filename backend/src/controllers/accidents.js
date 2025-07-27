@@ -3,56 +3,64 @@ const formatDateTime = require("../util/DateFormatting");
 const { emitAccidentUpdate, emitNotification, emitNewAccident } = require("../services/socketService");
 const User = require("../models/User");
 const Camera = require("../models/Camera");
+const ensureLocalDate = require('../utils/ensureLocalDate');
 
 const saveNewAccident = async (req, res) => {
   try {
-    const { cameraId, location, date, severity, video, status, falsePositive, assignedTo } = req.body;
-    console.log("initial date: ", date);
-    const newDate = new Date(date);
-    console.log("initial date2: ", newDate);
-    console.log("initial date2 type: ", typeof(newDate));
+    const {
+      cameraId,
+      location,
+      date: incomingDate,   // may be ISO string
+      severity,
+      video,
+      status,
+      falsePositive,
+      assignedTo,
+    } = req.body;
 
-    // Validate required fields
+    // 1. Basic validation
     if (!cameraId || !location || !severity) {
       return res.status(400).json({
         success: false,
-        message: "cameraId, location, and severity are required.",
+        message: 'cameraId, location, and severity are required.',
       });
     }
 
-    // Create a new Accident document
+    // 2. Convert date **only if it’s a string**
+    const date = ensureLocalDate(incomingDate || new Date());
+
+    // 3. Build document
     const newAccident = new Accident({
       cameraId,
       location,
-      date: newDate || new Date(),
+      date,                 // <─ always a Date object now
       severity,
       video,
-      assignedTo: assignedTo || null,
-      status: status || 'active',
-      falsePositive: falsePositive || 'false',
+      assignedTo: assignedTo ?? null,
+      status:     status     ?? 'active',
+      falsePositive: falsePositive ?? false,
     });
-    console.log("newAccident.date: ", newAccident.date)
 
-    // Format date & time using DateFormatting util
-    const { displayDate, displayTime } = formatDateTime(newAccident.date);
+    // 4. Pretty “display” fields (always Israel time)
+    const { displayDate, displayTime } = formatDateTime(date);
     newAccident.displayDate = displayDate;
     newAccident.displayTime = displayTime;
-    console.log("newAccident.displayTime: ", newAccident.displayTime)
 
-    // Save the accident and send a response
+    // 5. Save & respond
     const savedAccident = await newAccident.save();
     emitNewAccident(savedAccident);
+
     return res.status(201).json({
       success: true,
-      message: "New accident saved successfully.",
+      message: 'New accident saved successfully.',
       data: savedAccident,
     });
-  } catch (error) {
-    console.error("Error saving accident:", error);
+  } catch (err) {
+    console.error('Error saving accident:', err);
     return res.status(500).json({
       success: false,
-      message: "An error occurred while saving the accident.",
-      error: error.message,
+      message: 'An error occurred while saving the accident.',
+      error: err.message,
     });
   }
 };
