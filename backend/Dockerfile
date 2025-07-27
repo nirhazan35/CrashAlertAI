@@ -1,9 +1,16 @@
+# ---------- deps ----------
 FROM node:18-alpine AS deps
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci --omit=dev
 
+# ---------- runtime ----------
 FROM node:18-alpine
+
+RUN apk add --no-cache tzdata \
+ && cp /usr/share/zoneinfo/Asia/Jerusalem /etc/localtime
+ENV TZ=Asia/Jerusalem
+
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /usr/src/app
 
