@@ -28,6 +28,7 @@ const saveNewAccident = async (req, res) => {
       status: status || 'active',
       falsePositive: falsePositive || 'false',
     });
+    console.log("newAccident.date: ", newAccident.date)
 
     // Format date & time using DateFormatting util
     const { displayDate, displayTime } = formatDateTime(newAccident.date);
