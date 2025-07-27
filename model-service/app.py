@@ -146,7 +146,6 @@ def broadcast(video_path, timestamp, metadata, confidence):
 
         # Israel current time
         israel_time = datetime.now(ZoneInfo("Asia/Jerusalem")).isoformat()
-        logger.info("Time: ", israel_time)
         
         # Prepare accident document
         accident_doc = {
@@ -265,7 +264,6 @@ def predict_video_with_bbox(video_path, metadata):
 
             # Israel current time
             israel_time = datetime.now(ZoneInfo("Asia/Jerusalem")).isoformat()
-            logger.info("Time: ", israel_time)
 
             accident_doc = {
                 "cameraId": metadata.get("cameraId", "unknown"),

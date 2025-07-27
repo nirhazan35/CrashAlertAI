@@ -1,16 +1,16 @@
 const Accident = require("../models/Accident");
-const formatDateTime = require("../util/DateFormatting");
+const formatDateTime = require("../util/dateFormattingNewAccidents");
 const { emitAccidentUpdate, emitNotification, emitNewAccident } = require("../services/socketService");
 const User = require("../models/User");
 const Camera = require("../models/Camera");
-const ensureLocalDate = require('../utils/ensureLocalDate');
+const ensureLocalDate = require('../util/ensureLocalDate');
 
 const saveNewAccident = async (req, res) => {
   try {
     const {
       cameraId,
       location,
-      date: incomingDate,   // may be ISO string
+      date: incomingDate,
       severity,
       video,
       status,
@@ -18,49 +18,48 @@ const saveNewAccident = async (req, res) => {
       assignedTo,
     } = req.body;
 
-    // 1. Basic validation
     if (!cameraId || !location || !severity) {
       return res.status(400).json({
         success: false,
         message: 'cameraId, location, and severity are required.',
       });
     }
+    console.log("incomingDate: ", incomingDate)
+    const accidentDate = ensureLocalDate(incomingDate || new Date());
+    console.log("accidentDate: ", accidentDate)
+    console.log("accidentDate.toString(): ", accidentDate.toString())
 
-    // 2. Convert date **only if it’s a string**
-    const date = ensureLocalDate(incomingDate || new Date());
-
-    // 3. Build document
     const newAccident = new Accident({
       cameraId,
       location,
-      date,                 // <─ always a Date object now
+      date: accidentDate,
       severity,
       video,
       assignedTo: assignedTo ?? null,
-      status:     status     ?? 'active',
+      status:      status      ?? 'active',
       falsePositive: falsePositive ?? false,
     });
 
-    // 4. Pretty “display” fields (always Israel time)
-    const { displayDate, displayTime } = formatDateTime(date);
+    const { displayDate, displayTime } = formatDateTime(accidentDate);
     newAccident.displayDate = displayDate;
     newAccident.displayTime = displayTime;
+    console.log("displayDate: ", displayDate)
+    console.log("displayTime: ", displayTime)
 
-    // 5. Save & respond
     const savedAccident = await newAccident.save();
     emitNewAccident(savedAccident);
 
     return res.status(201).json({
       success: true,
       message: 'New accident saved successfully.',
-      data: savedAccident,
+      data:    savedAccident,
     });
   } catch (err) {
     console.error('Error saving accident:', err);
     return res.status(500).json({
       success: false,
       message: 'An error occurred while saving the accident.',
-      error: err.message,
+      error:   err.message,
     });
   }
 };

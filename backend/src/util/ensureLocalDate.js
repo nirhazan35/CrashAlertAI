@@ -1,4 +1,4 @@
-function ensureLocalDate(value) {
+const ensureLocalDate = (value) => {
   if (value instanceof Date) return value;
   if (typeof value !== 'string') return value;
 
