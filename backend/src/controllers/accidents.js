@@ -7,7 +7,10 @@ const Camera = require("../models/Camera");
 const saveNewAccident = async (req, res) => {
   try {
     const { cameraId, location, date, severity, video, status, falsePositive, assignedTo } = req.body;
-    console.log("initial date: ", date)
+    console.log("initial date: ", date);
+    const newDate = new Date(date);
+    console.log("initial date2: ", newDate);
+    console.log("initial date2 type: ", typeof(newDate));
 
     // Validate required fields
     if (!cameraId || !location || !severity) {
