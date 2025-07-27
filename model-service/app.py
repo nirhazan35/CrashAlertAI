@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 import glob
 import shutil
 from pathlib import Path
+import pytz
 
 # Load environment variables from .env file (for local development)
 load_dotenv()
@@ -143,12 +144,16 @@ def broadcast(video_path, timestamp, metadata, confidence):
         
         # Upload trimmed clip to Google Drive using existing function
         gdrive_link = upload_to_drive(logger, clip_path)
+
+        # Israel current time
+        tz = pytz.timezone("Asia/Jerusalem")
+        israel_time = datetime.now(tz).isoformat()
         
         # Prepare accident document
         accident_doc = {
             "cameraId": metadata.get("cameraId", "unknown"),
             "location": metadata.get("location", "unknown"),
-            "date": datetime.now().isoformat(),
+            "date": israel_time,
             "displayDate": None,
             "displayTime": None,
             "severity": "no severity",
@@ -258,10 +263,15 @@ def predict_video_with_bbox(video_path, metadata):
                 output_video=clip_path
             )
             gdrive_link = upload_to_drive(logger, clip_path)
+
+            # Israel current time
+            tz = pytz.timezone("Asia/Jerusalem")
+            israel_time = datetime.now(tz).isoformat()
+
             accident_doc = {
                 "cameraId": metadata.get("cameraId", "unknown"),
                 "location": metadata.get("location", "unknown"),
-                "date": datetime.now().isoformat(),
+                "date": israel_time,
                 "displayDate": None,
                 "displayTime": None,
                 "severity": "no severity",

@@ -5,11 +5,9 @@ import {
   Title,
   Button,
   Image,
-  Loader,
   Switch,
   SimpleGrid,
   Center,
-  Select,
 } from '@mantine/core';
 import { useAuth } from '../../authentication/AuthProvider';
 import { fetchCameras } from '../AdminPage/AdminActions';
@@ -28,7 +26,7 @@ const RunInference = () => {
   const [withBbox, setWithBbox] = useState(false);
   const videoGridRef = useRef(null);
   const runButtonRef = useRef(null);
-  const statusRef = useRef(null);
+  const inferenceTopRef = useRef(null);
 
   useEffect(() => {
     const fetchAllCameras = async () => {
@@ -46,7 +44,6 @@ const RunInference = () => {
     }
   }, [user?.token]);
 
-  // Fetch videos only after camera is selected
   useEffect(() => {
     if (!selectedCamera) return;
     const fetchVideos = async () => {
@@ -67,7 +64,6 @@ const RunInference = () => {
         const data = await response.json();
         const vids = data.data || [];
         setVideos(vids);
-        // Only scroll if there are videos
         if (vids.length > 0 && videoGridRef.current) {
           setTimeout(() => {
             videoGridRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -129,9 +125,12 @@ const RunInference = () => {
               ? 'Select a video and run inference.'
               : 'Select a camera to run inference on.'}
           </div>
-          {status && <div ref={statusRef} className="auth-message auth-message-success">{status}</div>}
-          {error && <div ref={statusRef} className="auth-message auth-message-error">{error}</div>}
-          {/* Step 1: Camera selection grid */}
+
+          <div ref={inferenceTopRef}></div> {/* <-- ADDED */}
+
+          {status && <div className="auth-message auth-message-success">{status}</div>}
+          {error && <div className="auth-message auth-message-error">{error}</div>}
+
           <div
             className="camera-selection-grid"
             style={{
@@ -150,7 +149,6 @@ const RunInference = () => {
                   setSelectedVideo(null);
                   setStatus('');
                   setError('');
-                  // Remove scroll logic from here
                 }}
                 tabIndex={0}
                 aria-label={`Select camera ${camera.name || camera.cameraId}`}
@@ -160,7 +158,6 @@ const RunInference = () => {
                   cursor: 'pointer',
                 }}
               >
-                {/* <div className="camera-id">Camera ID: {camera.cameraId}</div> */}
                 <div className="camera-name">{camera.name || camera.cameraId}</div>
                 {camera.location && (
                   <div style={{ color: '#888', fontSize: 13, marginTop: 4 }}>Location: {camera.location}</div>
@@ -168,7 +165,7 @@ const RunInference = () => {
               </div>
             ))}
           </div>
-          {/* Step 2: Video selection and inference, only if camera is selected */}
+
           {selectedCamera && (
             <div ref={videoGridRef}>
               <form onSubmit={handleRunInference}>
@@ -248,8 +245,8 @@ const RunInference = () => {
                     disabled={!selectedVideo}
                     style={{ width: 400 }}
                     onClick={() => {
-                      if (statusRef.current) {
-                        statusRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      if (inferenceTopRef.current) {
+                        inferenceTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
                       }
                     }}
                   >

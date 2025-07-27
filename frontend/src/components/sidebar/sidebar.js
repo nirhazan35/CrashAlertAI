@@ -7,8 +7,8 @@ import './sidebar.css';
 
 const navigationItems = [
   { icon: IconHome, label: 'Dashboard', to: '/' },
-  { icon: IconChartLine, label: 'Statistics', to: '/statistics' },
   { icon: IconHistory, label: 'History', to: '/history' },
+  { icon: IconChartLine, label: 'Statistics', to: '/statistics' },
   { icon: IconVideo, label: 'Live Feed', to: '/live' },
 ];
 

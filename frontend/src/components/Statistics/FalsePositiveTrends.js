@@ -51,27 +51,6 @@ const FalsePositiveTrends = ({ trends }) => {
           )}
         </Stack>
       </Paper>
-
-      {/* Camera Trends */}
-      <Paper shadow="sm" p="md" radius="md">
-        <Stack>
-          <Text size="lg" weight={500}>False Positives by Camera</Text>
-          {cameraTrends.length > 0 ? (
-            <BarChart
-              {...chartProps}
-              data={cameraTrends}
-              dataKey="cameraId"
-              series={[
-                { name: 'count', color: 'orange.6', label: 'False Positives' }
-              ]}
-            />
-          ) : (
-            <Center py="xl">
-              <Text color="dimmed">No camera data available</Text>
-            </Center>
-          )}
-        </Stack>
-      </Paper>
     </Stack>
   );
 };
