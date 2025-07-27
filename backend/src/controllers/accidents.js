@@ -24,7 +24,7 @@ const saveNewAccident = async (req, res) => {
     const newAccident = new Accident({
       cameraId,
       location,
-      date: date || new Date(),
+      date: newDate || new Date(),
       severity,
       video,
       assignedTo: assignedTo || null,
