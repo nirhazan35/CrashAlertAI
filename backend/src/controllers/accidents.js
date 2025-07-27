@@ -7,6 +7,7 @@ const Camera = require("../models/Camera");
 const saveNewAccident = async (req, res) => {
   try {
     const { cameraId, location, date, severity, video, status, falsePositive, assignedTo } = req.body;
+    console.log("initial date: ", date)
 
     // Validate required fields
     if (!cameraId || !location || !severity) {
@@ -32,6 +33,7 @@ const saveNewAccident = async (req, res) => {
     const { displayDate, displayTime } = formatDateTime(newAccident.date);
     newAccident.displayDate = displayDate;
     newAccident.displayTime = displayTime;
+    console.log("newAccident.displayTime: ", newAccident.displayTime)
 
     // Save the accident and send a response
     const savedAccident = await newAccident.save();
