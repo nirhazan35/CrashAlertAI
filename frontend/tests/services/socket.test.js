@@ -6,6 +6,11 @@ const mockSocket = {
   off: jest.fn(),
   emit: jest.fn(),
   disconnect: jest.fn(),
+  listeners: jest.fn((event) =>
+    mockSocket.on.mock.calls
+      .filter(call => call[0] === event)
+      .map(call => call[1])
+  ),
 };
 
 jest.mock('socket.io-client', () => ({

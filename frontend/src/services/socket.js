@@ -74,9 +74,11 @@ const ensureSocketInitialized = () => {
 // Listen for new accidents
 export const onNewAccident = (callback) => {
   ensureSocketInitialized();
-  socket.on("new_accident", (data) => {
+  if (socket.listeners("new_accident").length === 0) {
+    socket.on("new_accident", (data) => {
     callback(data);
-  });
+  });}
+  else return;
 };
 
 // Listen for accident updates
