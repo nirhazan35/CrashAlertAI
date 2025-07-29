@@ -7,7 +7,7 @@ from uploader import trim_video_ffmpeg, upload_to_drive
 from dotenv import load_dotenv
 from fastapi.staticfiles import StaticFiles
 import glob
-import pytz
+import shutil
 from zoneinfo import ZoneInfo
 
 # Load environment variables from .env file (for local development)
@@ -291,13 +291,14 @@ def predict_video_with_bbox(video_path, metadata):
     except Exception as e:
         logger.error(f"Error in predict_video_with_bbox: {str(e)}")
     finally:
-        # Always try to delete the output file
+        # Always try to delete the output folder
         if bbox_video_path and os.path.exists(bbox_video_path):
+            output_dir = os.path.dirname(bbox_video_path)  # Get the parent folder
             try:
-                os.remove(bbox_video_path)
-                logger.info(f"Deleted temporary file: {bbox_video_path}")
+                shutil.rmtree(output_dir)  # Remove the folder and all its contents
+                logger.info(f"Deleted temporary folder: {output_dir}")
             except Exception as e:
-                logger.warning(f"Could not delete temporary file {bbox_video_path}: {e}")
+                logger.warning(f"Could not delete temporary folder {output_dir}: {e}")
 
 def ensure_thumbnails():
     thumb_dir = os.path.join(VIDEO_DIR, "thumbnails")
