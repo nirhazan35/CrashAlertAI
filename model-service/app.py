@@ -1,4 +1,4 @@
-import os, time, uuid, cv2, requests, logging, threading, subprocess
+import os, uuid, cv2, requests, logging, threading
 from ultralytics import YOLO
 from datetime import datetime, timedelta
 from fastapi import FastAPI, BackgroundTasks, HTTPException, Request
@@ -7,9 +7,8 @@ from uploader import trim_video_ffmpeg, upload_to_drive
 from dotenv import load_dotenv
 from fastapi.staticfiles import StaticFiles
 import glob
-import shutil
-from pathlib import Path
 import pytz
+from zoneinfo import ZoneInfo
 
 # Load environment variables from .env file (for local development)
 load_dotenv()
@@ -146,8 +145,7 @@ def broadcast(video_path, timestamp, metadata, confidence):
         gdrive_link = upload_to_drive(logger, clip_path)
 
         # Israel current time
-        tz = pytz.timezone("Asia/Jerusalem")
-        israel_time = datetime.now(tz).isoformat()
+        israel_time = datetime.now(ZoneInfo("Asia/Jerusalem")).isoformat()
         
         # Prepare accident document
         accident_doc = {
@@ -265,8 +263,7 @@ def predict_video_with_bbox(video_path, metadata):
             gdrive_link = upload_to_drive(logger, clip_path)
 
             # Israel current time
-            tz = pytz.timezone("Asia/Jerusalem")
-            israel_time = datetime.now(tz).isoformat()
+            israel_time = datetime.now(ZoneInfo("Asia/Jerusalem")).isoformat()
 
             accident_doc = {
                 "cameraId": metadata.get("cameraId", "unknown"),
